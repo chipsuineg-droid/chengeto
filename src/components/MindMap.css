@@ -1,0 +1,221 @@
+.mindmap-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #1b1b22;
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mindmap-header {
+  padding: 16px 24px;
+  background-color: rgba(27, 27, 34, 0.9);
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.mindmap-header h2 {
+  color: #fff;
+  margin: 0;
+  font-size: 20px;
+}
+
+.mindmap-header p {
+  color: #9ca3af;
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.mindmap-close-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.mindmap-close-btn:hover {
+  color: #fff;
+}
+
+/* Controls Box */
+.mindmap-controls {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  background-color: #2d2d3a;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+.mindmap-controls button {
+  background: none;
+  border: none;
+  color: #e5e7eb;
+  padding: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #404052;
+}
+
+.mindmap-controls button:last-child {
+  border-bottom: none;
+}
+
+.mindmap-controls button:hover {
+  background-color: #404052;
+}
+
+/* Node Styling */
+.mindmap-node-container {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.mindmap-node-content {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.mindmap-node-box {
+  background-color: #3b3b4f;
+  color: #f3f4f6;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  white-space: nowrap;
+  transition: transform 0.1s, box-shadow 0.1s;
+  border: 1px solid #4f4f6b;
+}
+
+.mindmap-node-box:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.mindmap-root-box {
+  background-color: #4b4b73;
+  border: 1px solid #6366f1;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Toggle Button */
+.mindmap-toggle {
+  background-color: #4b5563;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  margin-left: 8px;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s;
+}
+
+.mindmap-toggle:hover {
+  background-color: #6b7280;
+}
+
+/* Tree Lines using CSS Pseudo-elements */
+.mindmap-children {
+  display: flex;
+  flex-direction: column;
+  margin-left: 50px; 
+  position: relative;
+  padding-left: 0;
+}
+
+.mindmap-child-wrapper {
+  position: relative;
+  display: flex;
+  padding: 8px 0;
+}
+
+/* We can use the classic CSS tree structure */
+.mindmap-child-wrapper::before, .mindmap-child-wrapper::after {
+  content: '';
+  position: absolute;
+  left: -25px;
+}
+
+/* Horizontal line to the item */
+.mindmap-child-wrapper::before {
+  border-top: 3px solid #818cf8;
+  top: 50%;
+  width: 25px;
+  height: 0;
+}
+
+/* Vertical line for the left column */
+.mindmap-child-wrapper::after {
+  border-left: 3px solid #818cf8;
+  height: 100%;
+  width: 0px;
+  top: 0;
+}
+
+/* First child - vertical line goes down from middle */
+.mindmap-child-wrapper:first-child::after {
+  top: 50%;
+  height: 50%;
+  border-top-left-radius: 24px; /* Big Curve! */
+}
+
+/* Last child - vertical line goes up to middle */
+.mindmap-child-wrapper:last-child::after {
+  height: 50%;
+  bottom: 50%;
+  top: auto;
+  border-bottom-left-radius: 24px; /* Big Curve! */
+}
+
+/* If only one child, no vertical line, just horizontal */
+.mindmap-child-wrapper:first-child:last-child::after {
+  display: none;
+}
+
+/* Connecting line from parent to the vertical spine */
+.mindmap-children::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -50px;
+  width: 25px;
+  border-top: 3px solid #818cf8;
+}
+
+/* Pop up animation for newly opened nodes */
+@keyframes popUp {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.mindmap-children > .mindmap-child-wrapper {
+  animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+

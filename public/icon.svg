@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3D8B3D" />
+      <stop offset="100%" stop-color="#1A4A1A" />
+    </linearGradient>
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7A7A" />
+      <stop offset="100%" stop-color="#E8533A" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <drop-shadow dx="0" dy="12" stdDeviation="16" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Background Circle for App Icon Grid -->
+  <rect width="512" height="512" rx="128" fill="#F4FAF0" />
+  <!-- Shield Shape -->
+  <path d="M256 50C160 50 110 90 110 220C110 330 190 400 256 462C322 400 402 330 402 220C402 90 352 50 256 50Z" 
+        fill="url(#shieldGrad)" filter="url(#shadow)"/>
+  <!-- Gold Shield Border Accent -->
+  <path d="M256 70C180 70 130 105 130 220C130 315 200 375 256 432C312 375 382 315 382 220C382 105 332 70 256 70Z" 
+        fill="none" stroke="#EBF5E1" stroke-width="6" opacity="0.3"/>
+  <!-- Heart Icon inside Shield for Protection / Care -->
+  <path d="M256 310 C256 310 200 270 180 230 C160 190 180 150 210 150 C230 150 246 165 256 180 C266 165 282 150 302 150 C332 150 352 190 332 230 C312 270 256 310 256 310 Z" 
+        fill="url(#heartGrad)" />
+  <!-- Small Star Sparkle for Protection/Safety -->
+  <path d="M256 120 L260 132 L272 136 L260 140 L256 152 L252 140 L240 136 L252 132 Z" fill="#EBF5E1" />
+</svg>
