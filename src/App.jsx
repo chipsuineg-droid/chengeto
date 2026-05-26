@@ -1203,10 +1203,21 @@ export default function Application() {
       {/* ── HEADER ── */}
       <header className={`nav-header ${page === "home" ? "home-header" : ""}`}>
         <div className="logo-group">
-          <div className="logo-title">
-            <span style={{ fontSize: '26px' }}>🛡️</span> CHENGETO
+          <div className="logo-icon-wrap">
+            <svg width="32" height="36" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>
+              <path d="M32 2L6 13v20c0 17.6 11.2 34 26 39 14.8-5 26-21.4 26-39V13L32 2z" fill="#1a6638" />
+              <path d="M32 8L10 17.5V33c0 14.5 9.2 28 22 32.2C44.8 61 54 47.5 54 33V17.5L32 8z" fill="#2d7a4f" />
+              <path d="M25 34l-5-5 3-3 2 2 8-8 3 3-11 11z" fill="#ffffff" />
+            </svg>
           </div>
-          <div className="logo-sub">Youth Health & Self-Care Platform</div>
+          <div className="logo-text-wrap">
+            <span className="logo-title-text">
+              CHENGETO
+            </span>
+            <span className="logo-sub-text">
+              Youth Health & Self-Care Platform
+            </span>
+          </div>
         </div>
         <div className="nav-links">
           <button onClick={() => setPage("home")} className={`nav-button ${page === "home" ? "active" : ""}`}>
@@ -1278,18 +1289,8 @@ export default function Application() {
               const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
               const name = currentUser?.nickname || currentUser?.name?.split(' ')[0] || 'there';
               return (
-                <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.4s' }}>
-                  <span style={{ 
-                    fontSize: '13px', 
-                    fontWeight: 600, 
-                    color: 'rgba(255, 255, 255, 0.95)', 
-                    background: 'rgba(0, 0, 0, 0.4)', 
-                    padding: '8px 18px', 
-                    borderRadius: '24px', 
-                    backdropFilter: 'blur(10px)', 
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                  }}>
+                <div style={{ marginTop: '-15px', marginBottom: '32px', animation: 'fadeInUp 0.4s' }}>
+                  <span className="hero-greeting-pill">
                     {greeting}, <span style={{ color: '#4ade80', fontWeight: 800 }}>{name}</span>! 👋 &nbsp;•&nbsp; What can we learn today?
                   </span>
                 </div>
@@ -1297,7 +1298,7 @@ export default function Application() {
             })()}
 
             {/* Shield SVG icon */}
-            <div style={{ marginBottom: '20px', animation: 'fadeInUp 0.5s' }}>
+            <div style={{ marginBottom: '24px', animation: 'fadeInUp 0.5s' }}>
               <svg width="64" height="72" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))' }}>
                 <path d="M32 2L6 13v20c0 17.6 11.2 34 26 39 14.8-5 26-21.4 26-39V13L32 2z" fill="#1a6638" />
                 <path d="M32 8L10 17.5V33c0 14.5 9.2 28 22 32.2C44.8 61 54 47.5 54 33V17.5L32 8z" fill="#2d7a4f" />
@@ -1309,40 +1310,16 @@ export default function Application() {
             <p className="hero-subtitle">
               Your safe, private space for sexual health & wellness. Explore trusted information, find local services, and access support anonymously.
             </p>
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button 
                 onClick={() => { setPage("portal"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-                className="btn btn-primary breathe-btn" 
-                style={{ 
-                  padding: '14px 28px', 
-                  fontSize: '14.5px', 
-                  borderRadius: '30px', 
-                  fontWeight: 700, 
-                  boxShadow: '0 4px 18px rgba(0,0,0,0.35)', 
-                  background: '#2d7a4f', 
-                  border: 'none', 
-                  color: '#fff',
-                  cursor: 'pointer',
-                  minWidth: '220px'
-                }}
+                className="breathe-btn"
               >
                 📦 Commodity Portal
               </button>
               <button 
                 onClick={() => { setPage("chat"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-                className="btn btn-primary breathe-btn-secondary" 
-                style={{ 
-                  padding: '14px 28px', 
-                  fontSize: '14.5px', 
-                  borderRadius: '30px', 
-                  fontWeight: 700, 
-                  boxShadow: '0 4px 18px rgba(0,0,0,0.35)', 
-                  background: '#2d7a4f', 
-                  border: 'none', 
-                  color: '#fff',
-                  cursor: 'pointer',
-                  minWidth: '220px'
-                }}
+                className="breathe-btn-secondary"
               >
                 💬 Private Chatbot
               </button>
@@ -1356,9 +1333,10 @@ export default function Application() {
                     background: 'rgba(255,255,255,0.12)', 
                     backdropFilter: 'blur(8px)', 
                     borderRadius: '30px', 
-                    padding: '14px 28px',
+                    padding: '14px 32px',
                     fontSize: '14.5px',
-                    minWidth: '200px'
+                    minWidth: '200px',
+                    fontWeight: 700
                   }}
                 >
                   📥 Install App
