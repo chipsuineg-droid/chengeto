@@ -1201,7 +1201,7 @@ export default function Application() {
       {currentUser && (
       <div>
       {/* ── HEADER ── */}
-      <header className="nav-header">
+      <header className={`nav-header ${page === "home" ? "home-header" : ""}`}>
         <div className="logo-group">
           <div className="logo-title">
             <span style={{ fontSize: '26px' }}>🛡️</span> CHENGETO
@@ -1270,27 +1270,32 @@ export default function Application() {
       {/* ── HOME VIEW ── */}
       {page === "home" && (
         <div className="animate-fade-in">
-          {/* ── PERSONALISED GREETING ── */}
-          {(() => {
-            const hour = new Date().getHours();
-            const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-            const name = currentUser?.nickname || currentUser?.name?.split(' ')[0] || 'there';
-            return (
-              <div style={{ background: `linear-gradient(135deg, ${currentUser?.avatarColor || '#059669'}18, ${currentUser?.avatarColor || '#059669'}08)`, borderBottom: '1px solid var(--color-border)', padding: '16px 24px' }}>
-                <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-main)' }}>
-                    {greeting}, <span style={{ color: currentUser?.avatarColor || 'var(--color-primary)' }}>{name}</span>! 👋
-                  </div>
-                  <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                    What can we learn today?
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
           {/* Hero section */}
           <section className="hero-banner">
+            {/* ── PERSONALISED GREETING pill overlay ── */}
+            {(() => {
+              const hour = new Date().getHours();
+              const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+              const name = currentUser?.nickname || currentUser?.name?.split(' ')[0] || 'there';
+              return (
+                <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.4s' }}>
+                  <span style={{ 
+                    fontSize: '13px', 
+                    fontWeight: 600, 
+                    color: 'rgba(255, 255, 255, 0.95)', 
+                    background: 'rgba(0, 0, 0, 0.4)', 
+                    padding: '8px 18px', 
+                    borderRadius: '24px', 
+                    backdropFilter: 'blur(10px)', 
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                  }}>
+                    {greeting}, <span style={{ color: '#4ade80', fontWeight: 800 }}>{name}</span>! 👋 &nbsp;•&nbsp; What can we learn today?
+                  </span>
+                </div>
+              );
+            })()}
+
             {/* Shield SVG icon */}
             <div style={{ marginBottom: '20px', animation: 'fadeInUp 0.5s' }}>
               <svg width="64" height="72" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))' }}>
@@ -1305,11 +1310,57 @@ export default function Application() {
               Your safe, private space for sexual health & wellness. Explore trusted information, find local services, and access support anonymously.
             </p>
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button onClick={() => setPage("quiz")} className="btn btn-primary" style={{ padding: '14px 36px', fontSize: '15px', borderRadius: '30px', fontWeight: 700, boxShadow: '0 4px 18px rgba(0,0,0,0.3)', background: '#2d7a4f', border: 'none', color: '#fff' }}>
-                Start Here
+              <button 
+                onClick={() => { setPage("portal"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                className="btn btn-primary breathe-btn" 
+                style={{ 
+                  padding: '14px 28px', 
+                  fontSize: '14.5px', 
+                  borderRadius: '30px', 
+                  fontWeight: 700, 
+                  boxShadow: '0 4px 18px rgba(0,0,0,0.35)', 
+                  background: '#2d7a4f', 
+                  border: 'none', 
+                  color: '#fff',
+                  cursor: 'pointer',
+                  minWidth: '220px'
+                }}
+              >
+                📦 Commodity Portal
+              </button>
+              <button 
+                onClick={() => { setPage("chat"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                className="btn btn-primary breathe-btn-secondary" 
+                style={{ 
+                  padding: '14px 28px', 
+                  fontSize: '14.5px', 
+                  borderRadius: '30px', 
+                  fontWeight: 700, 
+                  boxShadow: '0 4px 18px rgba(0,0,0,0.35)', 
+                  background: '#2d7a4f', 
+                  border: 'none', 
+                  color: '#fff',
+                  cursor: 'pointer',
+                  minWidth: '220px'
+                }}
+              >
+                💬 Private Chatbot
               </button>
               {installPromptEvent && (
-                <button onClick={handleInstallApp} className="btn btn-white" style={{ border: '2px solid rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', borderRadius: '30px', padding: '14px 28px' }}>
+                <button 
+                  onClick={handleInstallApp} 
+                  className="btn btn-white" 
+                  style={{ 
+                    border: '2px solid rgba(255,255,255,0.4)', 
+                    color: '#fff', 
+                    background: 'rgba(255,255,255,0.12)', 
+                    backdropFilter: 'blur(8px)', 
+                    borderRadius: '30px', 
+                    padding: '14px 28px',
+                    fontSize: '14.5px',
+                    minWidth: '200px'
+                  }}
+                >
                   📥 Install App
                 </button>
               )}

@@ -223,21 +223,21 @@ h1, h2, h3, h4, h5, h6 {
   background-position: center 30%;
   background-repeat: no-repeat;
   position: relative;
-  padding: 100px 24px 90px;
+  padding: 170px 24px 90px;
   text-align: center;
   overflow: hidden;
 }
 
-/* Dark green overlay on top of the photo */
+/* Neutral subtle dark gradient overlay, letting the realistic image shine in maximum quality */
 .hero-banner::before {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(8, 32, 18, 0.72) 0%,
-    rgba(10, 38, 22, 0.65) 60%,
-    rgba(6, 24, 14, 0.80) 100%
+    rgba(0, 0, 0, 0.28) 0%,
+    rgba(0, 0, 0, 0.12) 50%,
+    rgba(0, 0, 0, 0.42) 100%
   );
   z-index: 0;
 }
@@ -253,18 +253,19 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -1.5px;
   margin-bottom: 6px;
   color: #ffffff;
-  text-shadow: none;
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.7);
 }
 
 .hero-shona {
   font-family: var(--font-heading);
-  color: rgba(255, 255, 255, 0.60);
+  color: rgba(255, 255, 255, 0.85);
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 13px;
   letter-spacing: 2.5px;
   text-transform: uppercase;
   margin-bottom: 22px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .hero-subtitle {
@@ -272,8 +273,97 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 480px;
   margin: 0 auto 36px;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.94);
   font-weight: 400;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* Absolute Transparent Header for Home Page */
+.home-header {
+  position: absolute !important;
+  width: 100%;
+  background: rgba(8, 24, 14, 0.12) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  z-index: 1000;
+}
+
+.home-header .logo-title {
+  color: #ffffff !important;
+}
+
+.home-header .logo-sub {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.home-header .nav-button {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.home-header .nav-button:hover,
+.home-header .nav-button.active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.home-header .theme-toggle-btn {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Breathing Micro-animations for Hero CTA Buttons */
+@keyframes button-breathe-primary {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(45, 122, 79, 0.35);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 8px 26px rgba(45, 122, 79, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(45, 122, 79, 0.35);
+  }
+}
+
+@keyframes button-breathe-secondary {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(45, 122, 79, 0.22);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 8px 26px rgba(45, 122, 79, 0.45);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(45, 122, 79, 0.22);
+  }
+}
+
+.breathe-btn {
+  animation: button-breathe-primary 3s infinite ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+.breathe-btn:hover {
+  transform: scale(1.06) !important;
+  background: #348e5c !important;
+}
+
+.breathe-btn-secondary {
+  animation: button-breathe-secondary 3s infinite ease-in-out;
+  animation-delay: 1.5s;
+  transition: all 0.2s ease-in-out;
+}
+
+.breathe-btn-secondary:hover {
+  transform: scale(1.06) !important;
+  background: #348e5c !important;
 }
 
 
@@ -685,7 +775,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Responsive adjust */
 @media(max-width: 768px) {
   .hero-banner {
-    padding: 50px 16px 40px;
+    padding: 120px 16px 40px;
   }
   .hero-title {
     font-size: 34px;
