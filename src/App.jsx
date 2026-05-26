@@ -688,7 +688,7 @@ export default function Application() {
   
   // HIV Prevention Methods detail view state
   const [activeHivMethod, setActiveHivMethod] = useState(null); // null = grid, object = detail view
-  const [hivPreventionCat, setHivPreventionCat] = useState("All"); // filter: All | Before Exposure | After Exposure / Testing
+  const [hivPreventionCat, setHivPreventionCat] = useState("all"); // filter: all | Before Exposure | After Exposure
 
   // Preg Prevention Methods detail view state
   const [activePregMethod, setActivePregMethod] = useState(null);
@@ -1649,7 +1649,7 @@ export default function Application() {
                         ))}
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                        {HIV_PREVENTION_METHODS.filter(o => hivPreventionCat === 'All' || hivPreventionCat === 'all' || o.category === hivPreventionCat).map(o => (
+                        {HIV_PREVENTION_METHODS.filter(o => hivPreventionCat === 'all' || o.cat === hivPreventionCat).map(o => (
                           <div key={o.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', padding: '24px', borderTop: o.urgent ? '4px solid var(--color-primary)' : 'none', position: 'relative' }}>
                             {o.urgent && <div style={{ position: 'absolute', top: 12, right: 12, background: 'var(--color-primary)', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Time Sensitive</div>}
                             <div style={{ fontSize: '42px', marginBottom: '16px' }}>{o.icon}</div>

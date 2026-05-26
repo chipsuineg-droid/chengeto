@@ -500,11 +500,8 @@ export const HIV_PREVENTION_METHODS = [
 
 // ── CATEGORY METADATA ──
 export const HIV_PREVENTION_CATEGORIES = [
-  { id: "all", label: "All Methods", icon: "📋" },
-  { id: "PrEP", label: "PrEP", icon: "💊" },
-  { id: "Barrier", label: "Barrier Methods", icon: "🛡️" },
-  { id: "PEP", label: "PEP", icon: "🚨" },
-  { id: "VMMC", label: "VMMC", icon: "⚕️" },
-  { id: "TasP", label: "Treatment as Prevention", icon: "💊" },
-  { id: "HarmReduction", label: "Harm Reduction", icon: "🩺" },
+  { id: "all",             label: "All Methods",     icon: "📋" },
+  { id: "Before Exposure", label: "Before Exposure", icon: "🛡️" },
+  { id: "After Exposure",  label: "After Exposure",  icon: "🚨" },
 ];
+
