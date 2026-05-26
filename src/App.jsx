@@ -1206,7 +1206,7 @@ export default function Application() {
           <div className="logo-title">
             <span style={{ fontSize: '26px' }}>🛡️</span> CHENGETO
           </div>
-          <div className="logo-sub">Zimbabwe Youth Health & Self-Care Platform</div>
+          <div className="logo-sub">Youth Health & Self-Care Platform</div>
         </div>
         <div className="nav-links">
           <button onClick={() => setPage("home")} className={`nav-button ${page === "home" ? "active" : ""}`}>
@@ -1291,46 +1291,53 @@ export default function Application() {
 
           {/* Hero section */}
           <section className="hero-banner">
-            <div style={{ fontSize: '56px', marginBottom: '16px', animation: 'fadeInUp 0.6s' }}>💚</div>
+            {/* Shield SVG icon */}
+            <div style={{ marginBottom: '20px', animation: 'fadeInUp 0.5s' }}>
+              <svg width="64" height="72" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))' }}>
+                <path d="M32 2L6 13v20c0 17.6 11.2 34 26 39 14.8-5 26-21.4 26-39V13L32 2z" fill="#1a6638" />
+                <path d="M32 8L10 17.5V33c0 14.5 9.2 28 22 32.2C44.8 61 54 47.5 54 33V17.5L32 8z" fill="#2d7a4f" />
+                <path d="M25 34l-5-5 3-3 2 2 8-8 3 3-11 11z" fill="#ffffff" />
+              </svg>
+            </div>
             <h1 className="hero-title">CHENGETO</h1>
-            <div className="hero-shona">chengeto : Shona word for protection</div>
+            <div className="hero-shona">Shona word for protection</div>
             <p className="hero-subtitle">
-              Secure, private, and accurate sexual health information. Get details on prevention methods, locations, and request commodities anonymously.
+              Your safe, private space for sexual health & wellness. Explore trusted information, find local services, and access support anonymously.
             </p>
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button onClick={() => setPage("quiz")} className="btn btn-primary">
-                📝 Take Fit Quiz
+              <button onClick={() => setPage("quiz")} className="btn btn-primary" style={{ padding: '14px 36px', fontSize: '15px', borderRadius: '30px', fontWeight: 700, boxShadow: '0 4px 18px rgba(0,0,0,0.3)', background: '#2d7a4f', border: 'none', color: '#fff' }}>
+                Start Here
               </button>
               {installPromptEvent && (
-                <button onClick={handleInstallApp} className="btn btn-white" style={{ border: '2px solid var(--color-primary-mid)' }}>
-                  📥 Install PWA
+                <button onClick={handleInstallApp} className="btn btn-white" style={{ border: '2px solid rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', borderRadius: '30px', padding: '14px 28px' }}>
+                  📥 Install App
                 </button>
               )}
             </div>
           </section>
 
           {/* Quick Information Trust Anchors */}
-          <div style={{ background: 'var(--color-primary-light)', padding: '24px 0', borderBottom: '1px solid var(--color-border)' }}>
+          <div style={{ background: 'rgba(8, 30, 16, 0.96)', padding: '24px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ display: 'flex', gap: '30px', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '280px' }}>
-                <span style={{ fontSize: '28px' }}>🔒</span>
+                <span style={{ fontSize: '26px' }}>🔒</span>
                 <div>
-                  <h4 style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary)' }}>100% Private</h4>
-                  <p style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>No sign-up or profile data required. Fully anonymous.</p>
+                  <h4 style={{ fontWeight: 800, fontSize: '13px', color: '#4ade80' }}>100% Private</h4>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>No sign-up or profile data required. Fully anonymous.</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '280px' }}>
-                <span style={{ fontSize: '28px' }}>🎓</span>
+                <span style={{ fontSize: '26px' }}>🎓</span>
                 <div>
-                  <h4 style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary)' }}>Expert Verified</h4>
-                  <p style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Content aligns with CeSHHAR Zimbabwe & MASCOT study standards.</p>
+                  <h4 style={{ fontWeight: 800, fontSize: '13px', color: '#4ade80' }}>Expert Verified</h4>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Content aligns with CeSHHAR Zimbabwe &amp; MASCOT standards.</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '280px' }}>
-                <span style={{ fontSize: '28px' }}>📶</span>
+                <span style={{ fontSize: '26px' }}>📶</span>
                 <div>
-                  <h4 style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary)' }}>Offline-First</h4>
-                  <p style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Loads instantly without internet. Works anywhere.</p>
+                  <h4 style={{ fontWeight: 800, fontSize: '13px', color: '#4ade80' }}>Offline-First</h4>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Loads instantly without internet. Works anywhere.</p>
                 </div>
               </div>
             </div>
