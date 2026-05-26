@@ -299,7 +299,7 @@ export const HIV_PREVENTION_METHODS = [
     tagline: "Emergency HIV medication taken after possible exposure to HIV to prevent infection.",
     effectiveness: 99,
     dual: false,
-    cat: "After Exposure / Testing",
+    cat: "After Exposure",
     urgent: true,
     detail: {
       description: "PEP is emergency HIV medication taken after possible exposure to HIV to prevent infection.",
@@ -407,7 +407,7 @@ export const HIV_PREVENTION_METHODS = [
     tagline: "People living with HIV take ART consistently to suppress the virus and prevent transmission.",
     effectiveness: 99,
     dual: false,
-    cat: "After Exposure / Testing",
+    cat: "After Exposure",
     detail: {
       description: "Treatment as Prevention means people living with HIV take antiretroviral therapy (ART) consistently to suppress the virus and prevent HIV transmission.",
       formOfUse: "Antiretroviral therapy (ART) tablets taken consistently as prescribed by a healthcare provider.",
