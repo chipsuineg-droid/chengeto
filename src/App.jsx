@@ -734,8 +734,8 @@ export default function Application() {
   }, [podcastPlaying]);
   
   // Compare states
-  const [compareOpt1, setCompareOpt1] = useState("prep-oral");
-  const [compareOpt2, setCompareOpt2] = useState("condom-male");
+  const [compareOpt1, setCompareOpt1] = useState("");
+  const [compareOpt2, setCompareOpt2] = useState("");
   
   // Service filter states
   const [serviceSearch, setServiceSearch] = useState("");
@@ -2395,6 +2395,7 @@ export default function Application() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)' }}>Option 1</label>
               <select className="select-custom" value={compareOpt1} onChange={e => setCompareOpt1(e.target.value)}>
+                <option value="" disabled>— Select your method here —</option>
                 <optgroup label="HIV Prevention">
                   {HIV_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
@@ -2407,6 +2408,7 @@ export default function Application() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)' }}>Option 2</label>
               <select className="select-custom" value={compareOpt2} onChange={e => setCompareOpt2(e.target.value)}>
+                <option value="" disabled>— Select your method here —</option>
                 <optgroup label="HIV Prevention">
                   {HIV_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
@@ -2417,8 +2419,8 @@ export default function Application() {
             </div>
           </div>
 
-          {/* Comparison Table */}
-          {c1 && c2 ? (
+          {/* Comparison Table — only shown when both options are selected */}
+          {compareOpt1 && compareOpt2 && c1 && c2 ? (
             <div style={{ overflowX: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', boxShadow: '0 10px 30px var(--color-card-shadow)', background: 'var(--color-bg-surface)' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                 <thead>
