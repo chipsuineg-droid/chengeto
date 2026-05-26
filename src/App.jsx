@@ -4,6 +4,9 @@ import { HIV_INFO_SECTIONS } from './data/hivInfo';
 import { PREG_INFO_SECTIONS } from './data/pregInfo';
 import { hivMindMapData } from './data/hivMindMapData';
 import { pregMindMapData } from './data/pregMindMapData';
+import { HIV_PREVENTION_METHODS, HIV_PREVENTION_CATEGORIES } from './data/hivPreventionMethods';
+import { PREG_PREVENTION_METHODS, PREG_PREVENTION_CATEGORIES } from './data/pregPreventionMethods';
+
 // ── LANGUAGES ──
 const LANG_LABELS = {
   en: { label: "EN", flag: "🇬🇧", name: "English" },
@@ -162,59 +165,7 @@ const UI = {
 };
 
 // ── DATA ──
-const HIV_CATEGORIES = ["All", "Before Exposure", "After Exposure / Testing"];
-const PREG_CATEGORIES = ["All", "Short-term", "Medium-term", "Long-term", "Natural"];
 
-const HIV_OPTIONS = [
-  { id: "prep-oral", icon: "💊", name: "Daily Oral PrEP", cat: "Before Exposure",
-    desc: { en: "A pill taken daily to prevent HIV before possible exposure.", sn: "Hapwa rakunwa zuva nezuva kuzuva HIV usati wasangana nayo.", nd: "Iphilisi elithathwa nsuku zonke ukuvikela i-HIV ngaphambi kokuba ubonakale." },
-    how: { en: "Tenofovir/emtricitabine tablets taken every day create a protective barrier against HIV in your body.", sn: "Hapwa dzeTenofovir/emtricitabine dzinodyiwa zuva nezuva dzinogadzira mupanda unodzivirira HIV mumuviri wako.", nd: "Amaphilisi e-Tenofovir/emtricitabine athathwa nsuku zonke akha uthango oluvikela i-HIV emzimbeni wakho." },
-    frequency: { en: "Once daily", sn: "Kamwechete zuva nezuva", nd: "Kanye nsuku zonke" },
-    sideEffects: { en: "Nausea (settles in 2–4 weeks), headache, fatigue. Serious side effects are rare.", sn: "Kurwadza dumbu (kunopfuura mavhiki 2–4), kurwadza musoro, kutadza kuita zvose. Zvakakomba hazviitike.", nd: "Ukucanasa (kuyaphela ngeviki ezingu-2–4), ikhanda elibuhlungu, ukukhathala. Izimpawu ezikhulu azivamile." },
-    cost: "Free at government clinics. Available at most public hospitals.", availability: "UZ Health Centre, Parirenyatwa, Sally Mugabe Hospital, ZUPCO clinics.", effectiveness: 99, dual: false },
-  { id: "prep-inject", icon: "💉", name: "Injectable Cabotegravir", cat: "Before Exposure",
-    desc: { en: "A long-acting injectable PrEP given every 2 months.", sn: "Injection yePrEP inopihwa rimwe chete pamwedzi miviri.", nd: "I-PrEP ethinjwa ezingeni elide, inikezwa njalo izinyanga ezimbili." },
-    how: { en: "Cabotegravir injection into the muscle maintains protective drug levels for 8 weeks between doses.", sn: "Injection yeCabotegravir inoisa mishonga yakakwana mumusana kwemazhingaIDzi 8 pakati pekupihwa.", nd: "Ukuthinjwa kwe-Cabotegravir emisipha kugcina amazinga omuthi ovikela amaviki angu-8 phakathi kwamadozi." },
-    frequency: { en: "Every 2 months", sn: "Rimwe chete pamwedzi miviri", nd: "Njalo izinyanga ezimbili" },
-    sideEffects: { en: "Injection site reactions, headache. Generally very well tolerated.", sn: "Zviitiko panzwi yekupihwa, kurwadza musoro. Zvinoderedzerwa zvakanyatso.", nd: "Izimpendulo endaweni yokuthinjwa, ikhanda elibuhlungu. Ngokuvamile zemunye njani." },
-    cost: "Currently in rollout phase : available at select sites.", availability: "Check with your nearest public hospital HIV clinic.", effectiveness: 99, dual: false },
-  { id: "dapivirine", icon: "💍", name: "Dapivirine Vaginal Ring", cat: "Before Exposure",
-    desc: { en: "A monthly vaginal ring that slowly releases HIV-prevention medicine.", sn: "Mhete yemimba inopihwa rimwe pamwedzi inozorora mushonga weHIV zvishoma nezvishoma.", nd: "Indandatho yesitho sangasese yenyanga nenyanga, akhiphe umuthi wegwema i-HIV kancane kancane." },
-    how: { en: "The silicone ring is inserted vaginally and releases dapivirine daily, reducing HIV risk.", sn: "Mhete yesilicone inoisa nemimba yemwanasikaana uye inoburitsa dapivirine zuva nezuva, ichideredza njodzi yeHIV.", nd: "Indandatho yesilicone ifakwa ngesitho sangasese futhi ikhipha i-dapivirine nsuku zonke, yehlisa ingozi ye-HIV." },
-    frequency: { en: "Changed monthly", sn: "Kuchinjwa rimwe pamwedzi", nd: "Shintshelwa njalo ngenyanga" },
-    sideEffects: { en: "Mild vaginal discomfort, ring expulsion. Generally well tolerated.", sn: "Kushayirwa zvishoma mumo, kubudiswa kwemhete. Zvinoderedzerwa zvakanyatso.", nd: "Ukungakhululeki okunganani esithweni, ukukhishwa kwandandatho. Ngokuvamile zemunye njani." },
-    cost: "Available at select reproductive health clinics.", availability: "Ask at your nearest women's health clinic.", effectiveness: 35, dual: false },
-  { id: "condom-male", icon: "🛡️", name: "Male Condoms", cat: "Before Exposure",
-    desc: { en: "A barrier method worn on the penis during sex : protects against HIV and pregnancy.", sn: "Nzira yekudziviririka inopfekwa pamurume panguva yezvekunorara : inodzivirira HIV nemimba.", nd: "Indlela yokuvikela efakwa ephaleni ngocansi : ivikela i-HIV nokukhulelwa." },
-    how: { en: "Creates a physical barrier preventing HIV transmission and sperm from reaching the egg.", sn: "Inogadzira mupanda wemuviri unodzivirira kupararira kweHIV uye mbeu kusangana nemago.", nd: "Yakha uthango lwomzimba oluvikela ukusabalala kwe-HIV nembewu ukufinyelela kwe-ovum." },
-    frequency: { en: "Every time you have sex", sn: "Nguva yose paunorara", nd: "Njalo uma wenza ucansi" },
-    sideEffects: { en: "None. Rare latex allergy : use polyurethane if needed.", sn: "Hapana. Nyanzvi yemubhera inotarisika : shandisa polyurethane kana unoida.", nd: "Lutho. Ukuphendula okukhona kwe-latex:sebenzisa i-polyurethane uma kudingeka." },
-    cost: "Free at all government clinics, student health centres.", availability: "UZ Student Health, NUST Health, all government clinics nationwide.", effectiveness: 98, dual: true },
-  { id: "condom-female", icon: "🛡️", name: "Female Condoms", cat: "Before Exposure",
-    desc: { en: "A barrier method inserted into the vagina : protects against both HIV and pregnancy.", sn: "Nzira yekudzivirira inoisa mumimba : inodzivirira HIV nemimba zvese.", nd: "Indlela yokuvikela efakwa esithweni sangasese : ivikela kokubili i-HIV nokukhulelwa." },
-    how: { en: "Inserted before sex to line the vagina, creating a barrier against HIV and sperm.", sn: "Inoisa muweti wemimba uye inogadzira mupanda weHIV nembeu.", nd: "Ifakwa ngaphambi kocansi ukuhlobisa isitho sangasese, yakha uthango oluvikela i-HIV nembewu." },
-    frequency: { en: "Every time you have sex", sn: "Nguva yose paunorara", nd: "Njalo uma wenza ucansi" },
-    sideEffects: { en: "None. Rare discomfort initially.", sn: "Hapana. Kushayirwa zvishoma pakutanga.", nd: "Lutho. Ukungakhululeki okunganani ekuqaleni." },
-    cost: "Free at government clinics and student health centres.", availability: "Available at most public clinics and student health services.", effectiveness: 95, dual: true },
-  { id: "vmmc", icon: "⚕️", name: "Voluntary Medical Male Circumcision", cat: "Before Exposure",
-    desc: { en: "A one-time surgical procedure that reduces HIV risk by up to 60% for men.", sn: "Mhinduro yemishando imwechete inoderedza njodzi yeHIV ne60% kuvarume.", nd: "Ukusikwa okudidiyelwa okwenziwa kanye kwodwa, okunciphisa ingozi ye-HIV ngamaphesenti angu-60 kumabutho." },
-    how: { en: "Removal of the foreskin reduces the surface area where HIV can enter the body.", sn: "Kubviswa kweganda rinopfeka nhorondo kunoderedza nzvimbo ino HIV inogona kupinda mumuviri.", nd: "Ukususwa kwesikhumba esithopha kunciphisa indawo lapho i-HIV ingangena khona emzimbeni." },
-    frequency: { en: "Once (one-time procedure)", sn: "Kamwechete (mhinduro imwechete)", nd: "Kanye (inqubo kanye kwodwa)" },
-    sideEffects: { en: "Short-term: pain, swelling post-surgery. Full healing in 4–6 weeks.", sn: "Nguva pfupi: kurwadza, kukura mushure mekucheka. Kupona kwakakwana mavhiki 4–6.", nd: "Isikhathi esifushane: ubuhlungu, ukuvuvukala ngemuva kwenhlabeko. Ukuphola okuphelele amaviki angu-4–6." },
-    cost: "Free at government hospitals.", availability: "Parirenyatwa, Harare Hospital, Sally Mugabe, and district hospitals.", effectiveness: 60, dual: false },
-  { id: "pep", icon: "🚨", name: "PEP : Post-Exposure Prophylaxis", cat: "After Exposure / Testing",
-    desc: { en: "Emergency HIV medication : must be started within 72 hours of possible exposure.", sn: "Mishonga yekukurumidza yeHIV : inofanira kutangwa mumashure memamidzi 72.", nd: "Umuthi wezimo ezikhẩncayo we-HIV : kumele uqalwe phakathi kwamahora angu-72." },
-    how: { en: "28-day course of antiretroviral tablets taken twice daily stops HIV from establishing infection after exposure.", sn: "Kosi yemazuva 28 yehapwa dze-antireti dzinodyiwa kaviri pazuva inodzivirira HIV kubva ekugadzika kwechivirino mushure mekusangana nacho.", nd: "Uhlelo lwezinsuku ezingama-28 lwamaphilisi e-antiretroviral athathwa kabili nsuku zonke amisa i-HIV ekusungula ukusulelwa ngemuva kokubonakala." },
-    frequency: { en: "Twice daily for 28 days : MUST start within 72 hours", sn: "Kaviri pazuva kwemazuva 28 : INOFANIRA kutangwa mukati memamidzi 72", nd: "Kabili nsuku zonke izinsuku ezingama-28 : KUMELE kuqalwe phakathi kwamahora angu-72" },
-    sideEffects: { en: "Nausea, fatigue, headache : manageable. Must complete full course.", sn: "Kurwadza dumbu, kutadza kuita zvose, kurwadza musoro : zvinogadzirisika. Inofanira kupedza kosi yose.", nd: "Ukucanasa, ukukhathala, ikhanda elibuhlungu : kulawuleka. Kumele uphedze uhlelo oluphelele." },
-    cost: "Free at government hospitals and emergency departments.", availability: "Parirenyatwa A&E, Harare Hospital, Sally Mugabe A&E : available 24/7.", effectiveness: 92, dual: false },
-  { id: "hivst", icon: "🧪", name: "HIV Self-Testing (HIVST)", cat: "After Exposure / Testing",
-    desc: { en: "Test yourself for HIV privately at home : results in 15–20 minutes.", sn: "Zviedze wega HIV zvakavanzika pamba : mhinduro mumaminetsi 15–20.", nd: "Zihlole we-HIV ngasese ekhaya : imiphumela emizuzu engu-15–20." },
-    how: { en: "Collect an oral fluid sample using the swab provided. Dip in the testing solution and read results after 20 minutes.", sn: "Tora sampuro yemvura yemuromo uchishandisa swab yakapihwa. Nyika mudhafu rekuedza uye verenga mhinduro mushure memaminetsi 20.", nd: "Thola isampuli yamanzi omlomo usebenzisa iswab enikezwa. Cwila esixazululweni sokuhlola bese ufunda imiphumela ngemizuzu engu-20." },
-    frequency: { en: "Test every 3–6 months if sexually active", sn: "Zviedze mwedzi 3–6 kana uri mutendi", nd: "Zihlole izinyanga ezingu-3–6 uma usebenza" },
-    sideEffects: { en: "None. Ensure you access support if result is positive.", sn: "Hapana. Tarisa kuti unowana rubatsiro kana mhinduro iri nani.", nd: "Lutho. Qiniseka ukuthi uthola usekelo uma imiphumela ikhona." },
-    cost: "Free kits at student health centres and government clinics.", availability: "UZ, NUST, MSU student health services. All government clinics.", effectiveness: 99, dual: false },
-];
 
 const GAME_SCENARIOS = [
   {
@@ -246,64 +197,8 @@ const HIV_MYTHS = [
   { myth: "HIV is a death sentence.", fact: "False. With modern ART medication, people with HIV live long, healthy lives and can reach an undetectable viral load (U=U)." }
 ];
 
-const PREG_OPTIONS = [
-  { id: "ec", icon: "⏰", name: "Emergency Contraception", cat: "Short-term",
-    desc: { en: "The 'morning after pill' : prevents pregnancy after unprotected sex. Time-sensitive.", sn: "Hapwa rekumazuva mangwanani : inodzivirira mimba mushure mezvekunorara pasina mudziviriro. Inoda kukurumidza.", nd: "Iphilisi le 'ekusasa emva kocansi' : livikela ukukhulelwa ngemuva kocansi olungaphephile. Kuhamba kwesikhathi kubalulekile." },
-    how: { en: "Levonorgestrel tablet delays or prevents ovulation. Most effective within 24 hours, works up to 72 hours.", sn: "Hapwa yeLevonorgestrel inoderera kana kudzivirira kukuda kwemago. Inoshanda zvakanyanya mukati memasaa 24, inoshanda kusvika kumasaa 72.", nd: "Iphilisi le-Levonorgestrel libambe noma livikele i-ovulation. Lisebenza kakhulu phakathi kwamahora angu-24, lisebenza kuze kube samamahora angu-72." },
-    frequency: { en: "Within 72 hours of unprotected sex", sn: "Mukati memasaa 72 ezvekunorara pasina mudziviriro", nd: "Phakathi kwamahora angu-72 ngemuva kocansi olungaphephile" },
-    sideEffects: { en: "Nausea, irregular bleeding, headache. Temporary.", sn: "Kurwadza dumbu, kubuda kwemarara kunopfuura, kurwadza musoro. Kwechirimwa.", nd: "Ukucanasa, ukuphuma kwegazi okungajwayelekile, ikhanda elibuhlungu. Kwesikhashana." },
-    effectiveness: 95, cost: "Available at pharmacies (fee applies) or free at government clinics.", availability: "Parirenyatwa, Harare Hospital, Sally Mugabe, most pharmacies." },
-  { id: "condom-preg", icon: "🛡️", name: "Condoms (Male & Female)", cat: "Short-term",
-    desc: { en: "Barrier methods used every time : also protect against HIV. Only dual-protection option.", sn: "Nzira dzekudziviririka dzinoshandiswa nguva yose : dzinodzivirira HIV zvakare. Chete chete zvinopa udziviriro kaviri.", nd: "Izindlela zokuvikela ezisetshenziswa njalo : zivikela futhi i-HIV. Yindlela kuphela yokuvikeleka okubili." },
-    how: { en: "Physical barrier prevents sperm from reaching the egg. Also blocks HIV and STIs.", sn: "Mupanda wemuviri unodzivirira mbeu kusangana nemago. Unodhibidhiza HIV neSTIs zvakare.", nd: "Uthango lomzimba luvikela imbewu ukufinyelela kwe-ovum. Futhi luvimba i-HIV ne-STI." },
-    frequency: { en: "Every time you have sex", sn: "Nguva yose paunorara", nd: "Njalo uma wenza ucansi" },
-    sideEffects: { en: "None. Rare latex allergy : polyurethane alternatives available.", sn: "Hapana. Nyanzvi yemubhera inotarisika : polyurethane inowanikwa.", nd: "Lutho. Ukuphendula okukhona kwe-latex:izinketho ze-polyurethane zikhona." },
-    effectiveness: 98, cost: "Free at government clinics and student health centres.", availability: "All student health centres and government clinics nationwide." },
-  { id: "pill", icon: "💊", name: "Daily Oral Contraceptive Pill", cat: "Short-term",
-    desc: { en: "A hormone pill taken every day to prevent pregnancy.", sn: "Hapwa yehomoni inodyiwa zuva nezuva kuzuva mimba.", nd: "Iphilisi le-hormone elithathwa nsuku zonke ukuvikela ukukhulelwa." },
-    how: { en: "Prevents ovulation, thickens cervical mucus, and thins the uterine lining.", sn: "Inodzivirira kukuda kwemago, inoweda mhero yechibereko, uye inoderedza chipfuva chechibereko.", nd: "Ivikela i-ovulation, yenza amaketanga e-cervical avivile, futhi inciphise umgece wesibindi." },
-    frequency: { en: "Same time every day : consistency is key", sn: "Nguva imwe chete zuva nezuva : kuenderera mberi ndiko kunodiwa", nd: "Isikhathi esifanayo nsuku zonke : ukuqhubeka kubalulekile" },
-    sideEffects: { en: "Nausea, breast tenderness, mood changes, spotting. Settles after 2–3 months.", sn: "Kurwadza dumbu, mabere kurwadza, kuchinja kwemajonhera, marara mashoma. Kunopfuura mushure memwedzi 2–3.", nd: "Ukucanasa, ubuhlungu bezibeleko, ukushintsha kwemizwa, ukuphuma kwegazi okunganani. Kuyaphola ngemuva kwezinyanga ezingu-2–3." },
-    effectiveness: 99, cost: "Free at government clinics. Available at pharmacies.", availability: "All government health centres, UZ and NUST student health services." },
-  { id: "injectable", icon: "💉", name: "Injectable Contraceptive (Depo)", cat: "Medium-term",
-    desc: { en: "A hormone injection given every 3 months : no daily pill needed.", sn: "Injection yehomoni inopihwa mwedzi mitatu : hapana hapwa inodaira zuva nezuva.", nd: "Ukuthinjwa kwe-hormone okunikezwa njalo izinyanga ezintathu : akudingi iphilisi nsuku zonke." },
-    how: { en: "Progestin injection prevents ovulation and thickens cervical mucus for 3 months.", sn: "Injection yeProgestin inodzivirira kukuda kwemago uye inoweda mhero yechibereko kwemwedzi 3.", nd: "Ukuthinjwa kwe-Progestin kuvikela i-ovulation futhi kwenze amaketanga e-cervical avivile izinyanga ezintathu." },
-    frequency: { en: "Every 3 months", sn: "Rimwe chete kumwedzi mitatu", nd: "Njalo izinyanga ezintathu" },
-    sideEffects: { en: "Irregular bleeding, weight changes, delayed return to fertility (up to 12 months after stopping).", sn: "Kubuda kwemarara kunopfuura, kuchinja kwemuviri, kunonoka kudzoka kwekubereka (kusvika kunyezi gumi nemaviri mushure mekumisa).", nd: "Ukuphuma kwegazi okungajwayelekile, ukushintsha kwesisindo, ukuphinda kube nokuzala kulibaziseke (kuze kube sezinyangeni ezingu-12 ngemuva kokunqamuka)." },
-    effectiveness: 99, cost: "Free at all government clinics.", availability: "All government health centres and most district hospitals." },
-  { id: "patch", icon: "🩹", name: "Contraceptive Patch", cat: "Medium-term",
-    desc: { en: "A small skin patch worn for 3 weeks per month that releases hormones.", sn: "Girafu duku rezendo inopfekwa mavhiki matatu pamwedzi inozorora mahomoni.", nd: "Ibhandishi elikhudlwana elibhekwa amaviki amathathu ngenyanga ekhipha ama-hormone." },
-    how: { en: "Releases oestrogen and progestin through the skin, preventing ovulation.", sn: "Inoburitsa oestrogen neprogestin kuburikidza neganda, ichidzivirira kukuda kwemago.", nd: "Ikhipha i-oestrogen ne-progestin ngesikhumba, ivikele i-ovulation." },
-    frequency: { en: "New patch weekly for 3 weeks, then 1 week patch-free", sn: "Girafu itsva vhiki rimwe rimwe kwemavhiki matatu, wozopedza svondo rimwe usina girafu", nd: "Ibhandishi elisha ngeviki lanye amaviki amathathu, bese iviki linye ngaphandle kwebhandishi" },
-    sideEffects: { en: "Skin irritation at patch site, nausea, breast tenderness.", sn: "Ganda kurwadza panzvimbo yegirafu, kurwadza dumbu, mabere kurwadza.", nd: "Ukujunywa kwesikhumba endaweni yebhandishi, ukucanasa, ubuhlungu bezibeleko." },
-    effectiveness: 99, cost: "Available at private pharmacies and some NGO clinics.", availability: "Limited public availability : ask at your nearest women's health clinic." },
-  { id: "implant", icon: "📍", name: "Contraceptive Implant", cat: "Long-term",
-    desc: { en: "A small rod inserted under the skin of the arm : protects for up to 3 years.", sn: "Danda duku rinoisa pasi peganda reshangi : rinodzivirira kusvika makore matatu.", nd: "Uthi olukhudlwana olufakwa ngaphansi kwesikhumba sendlela : luvikela kuze kube seminyakeni emithathu." },
-    how: { en: "Releases progestin continuously, preventing ovulation. Inserted under local anaesthetic.", sn: "Inoburitsa progestin nguva dzose, ichidzivirira kukuda kwemago. Inoisa pasi pemishonga yenzvimbo.", nd: "Ikhipha i-progestin njalo, ivikele i-ovulation. Ifakwa ngaphansi kwezibulalo zendawo." },
-    frequency: { en: "One insertion, lasts 3 years", sn: "Kuisa kamwechete, kunogara makore matatu", nd: "Ukufakwa kanye, kugcina iminyaka emithathu" },
-    sideEffects: { en: "Irregular bleeding, arm bruising after insertion. Most side effects settle.", sn: "Kubuda kwemarara kunopfuura, gumbo rebendekete mushure mekuisa. Zvinokonzera zvizhinji zvinopfuura.", nd: "Ukuphuma kwegazi okungajwayelekile, ukubuhlungu kwendlela ngemuva kokufaka. Izimpawu eziningi ziyaphola." },
-    effectiveness: 99, cost: "Free at government hospitals : insertion by trained provider.", availability: "Parirenyatwa, Sally Mugabe, Harare Hospital, district hospitals." },
-  { id: "iud-copper", icon: "🔩", name: "Copper IUD", cat: "Long-term",
-    desc: { en: "A small copper device inserted into the uterus : lasts up to 10 years. Hormone-free.", sn: "Chishandiso chiduku chekopa chinoisa muchibereko : chinogara kusvika makore gumi. Pasina mahomoni.", nd: "Idivayisi elikhudlwana le-copper elifakwa esibelethweni : ligcina kuze kube seminyakeni elishumi. Lingenayo ama-hormone." },
-    how: { en: "Copper ions are toxic to sperm and prevent fertilisation. Can also be used as emergency contraception.", sn: "Zvitubu zvekopa zvinodhura mbeu uye zvinodzivirira kusangana. Zvingashandiswa zvakare sechimiro chekukurumidza.", nd: "Ama-ion e-copper ayahlaba imbewu futhi avikele ukuchanywa. Angasetshenziswa futhi njengomutho wezimo ezikhẩncayo." },
-    frequency: { en: "One insertion, lasts up to 10 years", sn: "Kuisa kamwechete, kunogara kusvika makore gumi", nd: "Ukufakwa kanye, kugcina kuze kube seminyakeni elishumi" },
-    sideEffects: { en: "Heavier periods, cramping after insertion. Settles within a few months.", sn: "Marara akatowanda, kurwadza mushure mekuisa. Kunopfuura mumwedzi mishoma.", nd: "Izinyanga ezimatasa, ukuqapheleka ngemuva kokufaka. Kuyaphela phakathi kwezinyanga ezimbalwa." },
-    effectiveness: 99, cost: "Free at government hospitals.", availability: "Parirenyatwa, Sally Mugabe, Harare Hospital, district hospitals." },
-  { id: "iud-hormonal", icon: "🌀", name: "Hormonal IUD", cat: "Long-term",
-    desc: { en: "A small hormone-releasing device inserted into the uterus : lasts 3–5 years.", sn: "Chishandiso chiduku chinoburitsa mahomoni chinoisa muchibereko : chinogara makore 3–5.", nd: "Idivayisi elikhudlwana elikhipha ama-hormone elefakwa esibelethweni : ligcina iminyaka engu-3–5." },
-    how: { en: "Releases low-dose progestin locally, thickening cervical mucus and thinning the uterine lining.", sn: "Inoburitsa progestin shoma munzvimbo, ichiwedesa mhero yechibereko uye ichideredza chipfuva chechibereko.", nd: "Ikhipha i-progestin yesigaba esiphansi endaweni, yenza amaketanga e-cervical avivile futhi inciphise umgece wesibindi." },
-    frequency: { en: "One insertion, lasts 3–5 years", sn: "Kuisa kamwechete, kunogara makore 3–5", nd: "Ukufakwa kanye, kugcina iminyaka engu-3–5" },
-    sideEffects: { en: "Lighter or absent periods (common benefit), cramping after insertion.", sn: "Marara mashoma kana asipo (zvakanaka zvinowanzoonekwa), kurwadza mushure mekuisa.", nd: "Izinyanga ezincane noma ezingekho (inzuzo evamile), ukuqapheleka ngemuva kokufaka." },
-    effectiveness: 99, cost: "Available at select private and NGO clinics.", availability: "Ask at your nearest reproductive health clinic." },
-  { id: "natural", icon: "📅", name: "Natural Family Planning", cat: "Natural",
-    desc: { en: "Tracking your menstrual cycle to identify fertile and non-fertile days.", sn: "Kutsigira mwedzi wako wemwanasikaana kuziva mazuva ekubata mimba neakusabata mimba.", nd: "Ukuqapha umjikelezo wakho wenyanga ukuphawula izinsuku zokukhulelwa nezingezange zikhulelwe." },
-    how: { en: "Monitor cycle length, basal body temperature, and cervical mucus to identify ovulation window and avoid sex on fertile days.", sn: "Tarisa hurefu hwemjikelezo, tembiricha yemuviri, uye mhero yechibereko kuziva nguva yekubata mimba uye udzivise zvekunorara pamazuva ekubata mimba.", nd: "Qapha ubude bomjikelezo, ukushisa komzimba, kanye namaketanga e-cervical ukuphawula isikhathi se-ovulation futhi ugweme ucansi ezinsukwini zokukhulelwa." },
-    frequency: { en: "Daily tracking required : disciplined approach needed", sn: "Kutsigira zuva nezuva kunodiwa : nzira yekuzvidzora inodiwa", nd: "Ukuqapha nsuku zonke kudingeka : indlela enovalelwa iyadingeka" },
-    sideEffects: { en: "None. Requires consistent tracking and partner cooperation.", sn: "Hapana. Inoda kutsigira nguva yose uye kubatana kwemwanasikana.", nd: "Lutho. Idinga ukuqapha njalo kanye nokusebenzisana komlingani." },
-    effectiveness: 76, cost: "Free : requires only a calendar or free application.", availability: "Training available at most government health centres." },
-];
 
-const ALL_OPTIONS = [...HIV_OPTIONS.map(o => ({ ...o, type: "HIV" })), ...PREG_OPTIONS.map(o => ({ ...o, type: "Pregnancy" }))];
+const ALL_OPTIONS = [...HIV_PREVENTION_METHODS.map(o => ({ ...o, type: "HIV" })), ...PREG_PREVENTION_METHODS.map(o => ({ ...o, type: "Pregnancy" }))];
 
 const SERVICES = [
   { name: "UZ Student Health Centre", institution: "University of Zimbabwe", services: ["HIVST", "PrEP", "Condoms", "Contraception", "PEP referral"], contact: "+263 242 303211", hours: "Mon-Fri 8am-4pm", city: "Harare", lat: -17.7831, lng: 31.0530 },
@@ -559,7 +454,7 @@ function ExpandableCard({ option, onCompareSelect, isCompareBtnVisible, lang = "
   const [open, setOpen] = useState(false);
   
   // Custom HSL styles for headers
-  const isHIV = option.type === "HIV" || HIV_OPTIONS.some(o => o.id === option.id);
+  const isHIV = option.type === "HIV" || HIV_PREVENTION_METHODS.some(o => o.id === option.id);
   const accentColor = isHIV ? 'var(--color-primary)' : 'var(--color-rose)';
   const lightBgColor = isHIV ? 'var(--color-primary-light)' : 'var(--color-rose-light)';
   const effRatingColor = option.effectiveness >= 95 ? '#059669' : option.effectiveness >= 85 ? '#D97706' : '#DC2626';
@@ -791,6 +686,13 @@ export default function Application() {
   const [preventionSubTab, setPreventionSubTab] = useState("methods"); // 'methods' | 'guides' | 'abcde'
   const [pregTab, setPregTab] = useState("main"); // 'main' | 'methods' | 'guides'
   
+  // HIV Prevention Methods detail view state
+  const [activeHivMethod, setActiveHivMethod] = useState(null); // null = grid, object = detail view
+  const [hivPreventionCat, setHivPreventionCat] = useState("All"); // filter: All | Before Exposure | After Exposure / Testing
+
+  // Preg Prevention Methods detail view state
+  const [activePregMethod, setActivePregMethod] = useState(null);
+
   // HIV Game states
   const [gameScenarioIdx, setGameScenarioIdx] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -988,23 +890,23 @@ export default function Application() {
       let results = [];
       if (updated.goal === "hiv") {
         if (updated.duration === "emergency") {
-          results = [HIV_OPTIONS.find(o => o.id === "pep")];
+          results = [HIV_PREVENTION_METHODS.find(o => o.id === "pep")];
         } else if (updated.routine === "daily") {
-          results = [HIV_OPTIONS.find(o => o.id === "prep-oral")];
+          results = [HIV_PREVENTION_METHODS.find(o => o.id === "prep-oral")];
         } else if (updated.routine === "occasional") {
-          results = [HIV_OPTIONS.find(o => o.id === "condom-male"), HIV_OPTIONS.find(o => o.id === "condom-female")];
+          results = [HIV_PREVENTION_METHODS.find(o => o.id === "condom-male"), HIV_PREVENTION_METHODS.find(o => o.id === "condom-female")];
         } else {
-          results = [HIV_OPTIONS.find(o => o.id === "prep-inject"), HIV_OPTIONS.find(o => o.id === "dapivirine")];
+          results = [HIV_PREVENTION_METHODS.find(o => o.id === "prep-inject"), HIV_PREVENTION_METHODS.find(o => o.id === "dapivirine")];
         }
       } else if (updated.goal === "pregnancy") {
         if (updated.duration === "emergency") {
-          results = [PREG_OPTIONS.find(o => o.id === "ec")];
+          results = [PREG_PREVENTION_METHODS.find(o => o.id === "ec-pill")];
         } else if (updated.duration === "long") {
-          results = [PREG_OPTIONS.find(o => o.id === "implant"), PREG_OPTIONS.find(o => o.id === "iud-copper")];
+          results = [PREG_PREVENTION_METHODS.find(o => o.id === "implant"), PREG_PREVENTION_METHODS.find(o => o.id === "copper-iud")];
         } else if (updated.routine === "daily") {
-          results = [PREG_OPTIONS.find(o => o.id === "pill")];
+          results = [PREG_PREVENTION_METHODS.find(o => o.id === "pop")];
         } else {
-          results = [PREG_OPTIONS.find(o => o.id === "injectable"), PREG_OPTIONS.find(o => o.id === "condom-preg")];
+          results = [PREG_PREVENTION_METHODS.find(o => o.id === "depo-provera"), PREG_PREVENTION_METHODS.find(o => o.id === "female-condom")];
         }
       } else {
         // Both
@@ -1036,14 +938,14 @@ export default function Application() {
   const c2 = ALL_OPTIONS.find(o => o.id === compareOpt2);
 
   const compareRows = [
-    { label: "Prevention Target", get: o => o.type ? o.type : (HIV_OPTIONS.some(x => x.id === o.id) ? "HIV" : "Pregnancy") },
+    { label: "Prevention Target", get: o => o.type ? o.type : (HIV_PREVENTION_METHODS.some(x => x.id === o.id) ? "HIV" : "Pregnancy") },
     { label: "Method Type", get: o => o.cat },
     { label: "Effectiveness Rate", get: o => `${o.effectiveness}%` },
     { label: "Usage Cycle", get: o => typeof o.frequency === 'object' ? o.frequency[lang] : o.frequency },
     { label: "Key Side Effects", get: o => typeof o.sideEffects === 'object' ? o.sideEffects[lang] : o.sideEffects },
     { label: "Availability cost", get: o => o.cost },
-    { label: "HIV Protection", get: o => (o.dual || o.type === "HIV" || HIV_OPTIONS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
-    { label: "Pregnancy Protection", get: o => (o.dual || o.type === "Pregnancy" || PREG_OPTIONS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
+    { label: "HIV Protection", get: o => (o.dual || o.type === "HIV" || HIV_PREVENTION_METHODS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
+    { label: "Pregnancy Protection", get: o => (o.dual || o.type === "Pregnancy" || PREG_PREVENTION_METHODS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
   ];
 
   return (
@@ -1332,9 +1234,6 @@ export default function Application() {
               <button onClick={() => setPage("quiz")} className="btn btn-primary">
                 📝 Take Fit Quiz
               </button>
-              <button onClick={() => setPage("chat")} className="btn btn-secondary" style={{ border: 'none' }}>
-                💬 Chat Privately
-              </button>
               {installPromptEvent && (
                 <button onClick={handleInstallApp} className="btn btn-white" style={{ border: '2px solid var(--color-primary-mid)' }}>
                   📥 Install PWA
@@ -1377,16 +1276,6 @@ export default function Application() {
             
             <div className="grid-container">
               {/* Card 1 */}
-              <div className="glass-card" onClick={() => setPage("quiz")} style={{ cursor: 'pointer' }}>
-                <div style={{ fontSize: '36px', marginBottom: '12px' }}>📊</div>
-                <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Find My Fit Quiz</h3>
-                <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-                  Answer a few simple questions to find the protection methods that best fit your lifestyle and preferences.
-                </p>
-                <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Start Quiz →</span>
-              </div>
-              
-              {/* Card 2 */}
               <div className="glass-card" onClick={() => setPage("portal")} style={{ cursor: 'pointer' }}>
                 <div style={{ fontSize: '36px', marginBottom: '12px' }}>🏥</div>
                 <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Commodity Code Portal</h3>
@@ -1396,7 +1285,7 @@ export default function Application() {
                 <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Get Pickup Code →</span>
               </div>
 
-              {/* Card 3 */}
+              {/* Card 2 */}
               <div className="glass-card" onClick={() => setPage("chat")} style={{ cursor: 'pointer' }}>
                 <div style={{ fontSize: '36px', marginBottom: '12px' }}>🤖</div>
                 <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Chengeto Private Chatbot</h3>
@@ -1406,7 +1295,15 @@ export default function Application() {
                 <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Chat Now →</span>
               </div>
 
-
+              {/* Card 3 */}
+              <div className="glass-card" onClick={() => setPage("quiz")} style={{ cursor: 'pointer' }}>
+                <div style={{ fontSize: '36px', marginBottom: '12px' }}>📊</div>
+                <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Find My Fit Quiz</h3>
+                <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                  Answer a few simple questions to find the protection methods that best fit your lifestyle and preferences.
+                </p>
+                <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Start Quiz →</span>
+              </div>
             </div>
           </div>
 
@@ -1421,9 +1318,9 @@ export default function Application() {
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>Explore oral/injectable options, self-testing guides, and urgent PEP directions.</p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
-                  <button onClick={() => { setPage("hiv"); setHivTab("prevention"); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🛡️ Prevention Methods</button>
-                  <button onClick={() => { setPage("hiv"); setHivTab("game"); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🎮 Interactive Scenarios</button>
-                  <button onClick={() => { setPage("hiv"); setHivTab("myths"); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🤔 Myths vs Facts</button>
+                  <button onClick={() => { setPage("hiv"); setHivTab("prevention"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🛡️ Prevention Methods</button>
+                  <button onClick={() => { setPage("hiv"); setHivTab("game"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🎮 Interactive Scenarios</button>
+                  <button onClick={() => { setPage("hiv"); setHivTab("myths"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🤔 Myths vs Facts</button>
                 </div>
               </div>
 
@@ -1434,9 +1331,9 @@ export default function Application() {
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>Check pills, implants, patches, IUD devices, and emergency contraception availability.</p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
-                  <button onClick={() => { setPage("pregnancy"); setPregTab("methods"); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>🛡️ Contraception Methods</button>
-                  <button onClick={() => { setPage("pregnancy"); setPregTab("guides"); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>📖 How-To Guides</button>
-                  <button onClick={() => setPage("tracker")} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>📅 Cycle Tracker</button>
+                  <button onClick={() => { setPage("pregnancy"); setPregTab("methods"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>🛡️ Contraception Methods</button>
+                  <button onClick={() => { setPage("pregnancy"); setPregTab("guides"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>📖 How-To Guides</button>
+                  <button onClick={() => { setPage("tracker"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>📅 Cycle Tracker</button>
                 </div>
               </div>
             </div>
@@ -1447,6 +1344,10 @@ export default function Application() {
       {/* ── HIV SECTION VIEW ── */}
       {page === "hiv" && (
         <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '1000px', margin: '0 auto' }}>
+
+          {/* ── HIV DASHBOARD OVERVIEW (only shown on main tab) ── */}
+          {hivTab === 'main' && (
+            <>
           <h2 style={{ fontSize: '28px', color: 'var(--color-primary)', marginBottom: '4px' }}>{UI[lang].hivTitle}</h2>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginBottom: '24px' }}>
             {UI[lang].hivSub}
@@ -1511,6 +1412,8 @@ export default function Application() {
               </p>
             </div>
           </div>
+            </>
+          )}
 
           {/* ── HIV DASHBOARD (MAIN) ── */}
           {hivTab === 'main' && (
@@ -1518,7 +1421,7 @@ export default function Application() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '32px' }}>
                 
                 {/* Prevention Methods Card */}
-                <div className="glass-card" onClick={() => setHivTab('prevention')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+                <div className="glass-card" onClick={() => { setHivTab('prevention'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛡️</div>
                   <h3 style={{ fontSize: '17px', color: 'var(--color-primary)', marginBottom: '8px' }}>Prevention Methods</h3>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Explore how-to guides, ABCDE framework, and practical steps to stay safe.</p>
@@ -1526,7 +1429,7 @@ export default function Application() {
                 </div>
 
                 {/* HIV Game Card */}
-                <div className="glass-card" onClick={() => { setHivTab('game'); setGameScenarioIdx(0); setGameOver(false); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+                <div className="glass-card" onClick={() => { setHivTab('game'); setGameScenarioIdx(0); setGameOver(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎮</div>
                   <h3 style={{ fontSize: '17px', color: 'var(--color-primary)', marginBottom: '8px' }}>Interactive Scenarios</h3>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Play through real-life relationship and exposure scenarios to test your knowledge.</p>
@@ -1534,7 +1437,7 @@ export default function Application() {
                 </div>
 
                 {/* Myths vs Facts Card */}
-                <div className="glass-card" onClick={() => setHivTab('myths')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+                <div className="glass-card" onClick={() => { setHivTab('myths'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🤔</div>
                   <h3 style={{ fontSize: '17px', color: 'var(--color-primary)', marginBottom: '8px' }}>Myths vs Facts</h3>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Debunk common rumors around HIV transmission and prevention.</p>
@@ -1552,7 +1455,7 @@ export default function Application() {
           {/* ── HIV GAME VIEW ── */}
           {hivTab === 'game' && (
             <div className="animate-fade-in">
-              <button onClick={() => setHivTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => { setHivTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⬅ Back to HIV Dashboard
               </button>
               
@@ -1586,7 +1489,7 @@ export default function Application() {
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
                   <h3 style={{ fontSize: '22px', color: 'var(--color-primary)', marginBottom: '12px' }}>Great Job!</h3>
                   <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginBottom: '24px' }}>You have completed all scenarios. You are well equipped to handle real-life situations!</p>
-                  <button onClick={() => setHivTab('main')} className="btn btn-primary">Return to Dashboard</button>
+                  <button onClick={() => { setHivTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-primary">Return to Dashboard</button>
                 </div>
               )}
             </div>
@@ -1595,7 +1498,7 @@ export default function Application() {
           {/* ── MYTHS VIEW ── */}
           {hivTab === 'myths' && (
             <div className="animate-fade-in">
-              <button onClick={() => setHivTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => { setHivTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⬅ Back to HIV Dashboard
               </button>
               
@@ -1619,7 +1522,7 @@ export default function Application() {
           {/* ── PREVENTION METHODS (NESTED TABS) ── */}
           {hivTab === 'prevention' && (
             <div className="animate-fade-in">
-              <button onClick={() => setHivTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => { setHivTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⬅ Back to HIV Dashboard
               </button>
 
@@ -1637,16 +1540,131 @@ export default function Application() {
               {/* ── PREVENTION METHODS TAB ── */}
               {preventionSubTab === 'methods' && (
                 <div className="animate-fade-in">
-                  <div className="tabs-container" style={{ marginBottom: '20px' }}>
-                    {HIV_CATEGORIES.map(c => (
-                      <button key={c} className={`tab-btn ${hivCat === c ? 'active-hiv' : ''}`} onClick={() => setHivCat(c)}>{c}</button>
-                    ))}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                    {HIV_OPTIONS.filter(o => hivCat === 'All' || o.cat === hivCat).map(o => (
-                      <ExpandableCard key={o.id} option={o} onCompareSelect={handleAddCompare1} isCompareBtnVisible={true} lang={lang} />
-                    ))}
-                  </div>
+                  {activeHivMethod ? (
+                    <div className="animate-fade-in">
+                      <button onClick={() => setActiveHivMethod(null)} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        ⬅ Back to Prevention Methods
+                      </button>
+
+                      <div className="glass-card" style={{ padding: '0', overflow: 'hidden', border: 'none', boxShadow: '0 8px 30px rgba(8, 145, 178, 0.12)' }}>
+                        <div style={{ background: 'linear-gradient(135deg, var(--color-primary), #0369a1)', padding: '32px 24px', color: '#fff' }}>
+                          <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activeHivMethod.icon}</div>
+                          <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                            {activeHivMethod.categoryLabel}
+                          </div>
+                          <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '8px', lineHeight: 1.2 }}>{activeHivMethod.name}</h2>
+                          <p style={{ fontSize: '15px', opacity: 0.9, lineHeight: 1.5, fontWeight: 500 }}>{activeHivMethod.tagline}</p>
+                        </div>
+
+                        <div style={{ background: '#f8fafc', padding: '16px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-main)' }}>Effectiveness</span>
+                              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-primary)' }}>{activeHivMethod.effectiveness}%</span>
+                            </div>
+                            <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                              <div style={{ width: `${activeHivMethod.effectiveness}%`, height: '100%', background: 'var(--color-primary)', borderRadius: '4px' }}></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                          <div className="glass-card" style={{ borderLeft: '4px solid var(--color-primary)' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-primary)', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>📝 Description</h4>
+                            <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activeHivMethod.detail.description}</p>
+                          </div>
+
+                          <div className="glass-card" style={{ borderLeft: '4px solid #F59E0B' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#F59E0B', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💊 Form of Use</h4>
+                            <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activeHivMethod.detail.formOfUse}</p>
+                          </div>
+
+                          <div className="glass-card" style={{ borderLeft: '4px solid #3B82F6' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#3B82F6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⚙️ How It Works</h4>
+                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                              {activeHivMethod.detail.howItWorks.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                            </ul>
+                          </div>
+
+                          <div className="glass-card" style={{ borderLeft: '4px solid #10B981' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#10B981', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>🛠️ How To Use</h4>
+                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                              {activeHivMethod.detail.howToUse.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                            </ul>
+                          </div>
+
+                          <div className="glass-card" style={{ borderLeft: '4px solid #8B5CF6' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#8B5CF6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⏱️ Frequency</h4>
+                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                              {activeHivMethod.detail.frequency.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                            </ul>
+                          </div>
+
+                          <div className="glass-card" style={{ borderLeft: '4px solid #EF4444' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#EF4444', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⚠️ Side Effects</h4>
+                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                              {activeHivMethod.detail.sideEffects.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                            </ul>
+                          </div>
+
+                          <div className="glass-card" style={{ borderLeft: '4px solid #0EA5E9' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#0EA5E9', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>📍 Where & How to Access</h4>
+                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                              {activeHivMethod.detail.access.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                            </ul>
+                          </div>
+
+                          <div className="glass-card" style={{ borderLeft: '4px solid #059669' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#059669', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💰 Cost</h4>
+                            <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7, fontWeight: 600 }}>{activeHivMethod.detail.cost}</p>
+                          </div>
+
+                          <div className="glass-card" style={{ borderLeft: '4px solid #6366F1' }}>
+                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#6366F1', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>🛡️ STI Protection</h4>
+                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                              {activeHivMethod.detail.stiProtection.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                            </ul>
+                          </div>
+
+                          {activeHivMethod.detail.misunderstandings.length > 0 && (
+                            <div className="glass-card" style={{ borderLeft: '4px solid #D97706' }}>
+                              <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#D97706', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💡 Correcting Misunderstandings</h4>
+                              <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                                {activeHivMethod.detail.misunderstandings.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>✅ {item}</li>)}
+                              </ul>
+                            </div>
+                          )}
+
+                          <button onClick={() => { setActiveHivMethod(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ width: '100%', marginTop: '8px' }}>
+                            ⬅ Back to All Prevention Methods
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="tabs-container" style={{ marginBottom: '20px' }}>
+                        {HIV_PREVENTION_CATEGORIES.map(c => (
+                          <button key={c.id} className={`tab-btn ${hivPreventionCat === c.id ? 'active-hiv' : ''}`} onClick={() => setHivPreventionCat(c.id)}>{c.label}</button>
+                        ))}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                        {HIV_PREVENTION_METHODS.filter(o => hivPreventionCat === 'All' || hivPreventionCat === 'all' || o.category === hivPreventionCat).map(o => (
+                          <div key={o.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', padding: '24px', borderTop: o.urgent ? '4px solid var(--color-primary)' : 'none', position: 'relative' }}>
+                            {o.urgent && <div style={{ position: 'absolute', top: 12, right: 12, background: 'var(--color-primary)', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Time Sensitive</div>}
+                            <div style={{ fontSize: '42px', marginBottom: '16px' }}>{o.icon}</div>
+                            <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px', fontWeight: 800, lineHeight: 1.3 }}>{o.name}</h3>
+                            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: '20px' }}>{o.tagline}</p>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                              <span style={{ fontSize: '11px', background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>{o.effectiveness}% Effective</span>
+                              {o.dual && <span style={{ fontSize: '11px', background: '#e0e7ff', color: '#4338ca', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>+ STI Protection</span>}
+                            </div>
+                            <button onClick={() => { setActiveHivMethod(o); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', padding: '10px', borderRadius: '8px', fontWeight: 600 }}>Learn More →</button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -1789,6 +1807,10 @@ export default function Application() {
       {/* ── PREGNANCY SECTION VIEW ── */}
       {page === "pregnancy" && (
         <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '1000px', margin: '0 auto' }}>
+
+          {/* ── PREGNANCY DASHBOARD OVERVIEW (only shown on main tab) ── */}
+          {pregTab === 'main' && (
+            <>
           <h2 style={{ fontSize: '28px', color: 'var(--color-rose)', marginBottom: '4px' }}>{UI[lang].pregTitle}</h2>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginBottom: '24px' }}>
             {UI[lang].pregSub}
@@ -1840,6 +1862,8 @@ export default function Application() {
               </div>
             </div>
           </div>
+            </>
+          )}
 
           {/* ── PREGNANCY MAIN DASHBOARD ── */}
           {pregTab === 'main' && (
@@ -1858,7 +1882,7 @@ export default function Application() {
           {/* ── PREGNANCY DASHBOARD TABS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '32px' }}>
             {/* Contraception Methods Card */}
-            <div className="glass-card" onClick={() => setPregTab('methods')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+            <div className="glass-card" onClick={() => { setPregTab('methods'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛡️</div>
               <h3 style={{ fontSize: '17px', color: 'var(--color-rose)', marginBottom: '8px' }}>Contraception Methods</h3>
               <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Explore pills, implants, condoms, and other safe options for you.</p>
@@ -1866,7 +1890,7 @@ export default function Application() {
             </div>
 
             {/* How-To Guides Card */}
-            <div className="glass-card" onClick={() => setPregTab('guides')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+            <div className="glass-card" onClick={() => { setPregTab('guides'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>📖</div>
               <h3 style={{ fontSize: '17px', color: 'var(--color-rose)', marginBottom: '8px' }}>How-To Guides</h3>
               <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Step-by-step visual instructions on using contraception correctly.</p>
@@ -1893,30 +1917,183 @@ export default function Application() {
           {/* ── PREVENTION METHODS TAB ── */}
           {pregTab === 'methods' && (
             <div className="animate-fade-in">
-              <button onClick={() => setPregTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                ⬅ Back to Pregnancy Dashboard
-              </button>
-              
-              <div style={{ background: 'var(--color-rose-light)', border: '1px solid var(--color-rose)', borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--color-rose)', fontWeight: 600 }}>
-                {UI[lang].pregNote}
-              </div>
-              <div className="tabs-container" style={{ marginBottom: '20px' }}>
-                {PREG_CATEGORIES.map(c => (
-                  <button key={c} className={`tab-btn ${pregCat === c ? 'active-preg' : ''}`} onClick={() => setPregCat(c)}>{c}</button>
-                ))}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                {PREG_OPTIONS.filter(o => pregCat === 'All' || o.cat === pregCat).map(o => (
-                  <ExpandableCard key={o.id} option={o} onCompareSelect={handleAddCompare2} isCompareBtnVisible={true} lang={lang} />
-                ))}
-              </div>
+              {activePregMethod ? (
+                <div className="animate-fade-in">
+                  <button onClick={() => setActivePregMethod(null)} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    ⬅ Back to Prevention Methods
+                  </button>
+
+                  <div className="glass-card" style={{ padding: '0', overflow: 'hidden', border: 'none', boxShadow: '0 8px 30px rgba(225, 29, 72, 0.12)' }}>
+                    <div style={{ background: 'linear-gradient(135deg, var(--color-rose), #be123c)', padding: '32px 24px', color: '#fff' }}>
+                      <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activePregMethod.icon}</div>
+                      <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                        {activePregMethod.categoryLabel}
+                      </div>
+                      <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '8px', lineHeight: 1.2 }}>{activePregMethod.name}</h2>
+                      <p style={{ fontSize: '15px', opacity: 0.9, lineHeight: 1.5, fontWeight: 500 }}>{activePregMethod.tagline}</p>
+                    </div>
+
+                    <div style={{ background: '#f8fafc', padding: '16px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-main)' }}>Effectiveness</span>
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-rose)' }}>{activePregMethod.effectiveness}%</span>
+                        </div>
+                        <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ width: `${activePregMethod.effectiveness}%`, height: '100%', background: 'var(--color-rose)', borderRadius: '4px' }}></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      <div className="glass-card" style={{ borderLeft: '4px solid var(--color-rose)' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-rose)', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>📝 Description</h4>
+                        <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activePregMethod.detail.description}</p>
+                      </div>
+
+                      <div className="glass-card" style={{ borderLeft: '4px solid #F59E0B' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#F59E0B', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💊 Form of Use</h4>
+                        <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activePregMethod.detail.formOfUse}</p>
+                      </div>
+
+                      <div className="glass-card" style={{ borderLeft: '4px solid #3B82F6' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#3B82F6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⚙️ How It Works</h4>
+                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                          {activePregMethod.detail.howItWorks.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                        </ul>
+                      </div>
+
+                      <div className="glass-card" style={{ borderLeft: '4px solid #10B981' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#10B981', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>🛠️ How To Use</h4>
+                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                          {activePregMethod.detail.howToUse.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                        </ul>
+                      </div>
+
+                      <div className="glass-card" style={{ borderLeft: '4px solid #8B5CF6' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#8B5CF6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⏱️ Frequency</h4>
+                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                          {activePregMethod.detail.frequency.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                        </ul>
+                      </div>
+
+                      <div className="glass-card" style={{ borderLeft: '4px solid #EC4899' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#EC4899', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>✅ Effectiveness Details</h4>
+                        <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activePregMethod.detail.effectiveness}</p>
+                      </div>
+
+                      <div className="glass-card" style={{ borderLeft: '4px solid #EF4444' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#EF4444', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⚠️ Side Effects</h4>
+                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                          {activePregMethod.detail.sideEffects.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                        </ul>
+                      </div>
+
+                      {activePregMethod.detail.access && activePregMethod.detail.access.length > 0 && (
+                        <div className="glass-card" style={{ borderLeft: '4px solid #0EA5E9' }}>
+                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#0EA5E9', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>📍 Where & How to Access</h4>
+                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                            {activePregMethod.detail.access.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                          </ul>
+                        </div>
+                      )}
+
+                      {activePregMethod.detail.cost && (
+                        <div className="glass-card" style={{ borderLeft: '4px solid #059669' }}>
+                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#059669', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💰 Cost</h4>
+                          <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7, fontWeight: 600 }}>{activePregMethod.detail.cost}</p>
+                        </div>
+                      )}
+
+                      {activePregMethod.detail.returnToFertility && activePregMethod.detail.returnToFertility.length > 0 && (
+                        <div className="glass-card" style={{ borderLeft: '4px solid #14B8A6' }}>
+                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#14B8A6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>👶 Return To Fertility</h4>
+                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                            {activePregMethod.detail.returnToFertility.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                          </ul>
+                        </div>
+                      )}
+
+                      {activePregMethod.detail.stiProtection && activePregMethod.detail.stiProtection.length > 0 && (
+                        <div className="glass-card" style={{ borderLeft: '4px solid #6366F1' }}>
+                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#6366F1', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>🛡️ STI Protection</h4>
+                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                            {activePregMethod.detail.stiProtection.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
+                          </ul>
+                        </div>
+                      )}
+
+                      {activePregMethod.detail.misunderstandings && activePregMethod.detail.misunderstandings.length > 0 && (
+                        <div className="glass-card" style={{ borderLeft: '4px solid #D97706' }}>
+                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#D97706', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💡 Correcting Misunderstandings</h4>
+                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                            {activePregMethod.detail.misunderstandings.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>✅ {item}</li>)}
+                          </ul>
+                        </div>
+                      )}
+
+                      <button onClick={() => { setActivePregMethod(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn" style={{ width: '100%', marginTop: '8px', background: 'var(--color-rose)', color: '#fff', border: 'none' }}>
+                        ⬅ Back to All Prevention Methods
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <button onClick={() => { setPregTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    ⬅ Back to Pregnancy Dashboard
+                  </button>
+                  
+                  <div style={{ background: 'var(--color-rose-light)', border: '1px solid var(--color-rose)', borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--color-rose)', fontWeight: 600 }}>
+                    {UI[lang].pregNote}
+                  </div>
+                  
+                  <div className="tabs-container" style={{ marginBottom: '20px' }}>
+                    {PREG_PREVENTION_CATEGORIES.map(c => (
+                      <button key={c.id} className={`tab-btn ${pregCat === c.id ? 'active-preg' : ''}`} onClick={() => setPregCat(c.id)}>{c.label}</button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                    {PREG_PREVENTION_METHODS.filter(o => pregCat === 'All' || pregCat === 'all' || o.category === pregCat).map(o => (
+                      <div key={o.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', padding: '24px', borderTop: o.urgent ? '4px solid var(--color-rose)' : 'none', position: 'relative' }}>
+                        {o.urgent && <div style={{ position: 'absolute', top: 12, right: 12, background: 'var(--color-rose)', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Time Sensitive</div>}
+                        <div style={{ fontSize: '42px', marginBottom: '16px' }}>{o.icon}</div>
+                        <h3 style={{ fontSize: '18px', color: 'var(--color-rose)', marginBottom: '8px', fontWeight: 800, lineHeight: 1.3 }}>{o.name}</h3>
+                        <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: '20px' }}>{o.tagline}</p>
+                        
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                          <span style={{ fontSize: '11px', background: 'var(--color-rose-light)', color: 'var(--color-rose)', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                            {o.effectiveness}% Effective
+                          </span>
+                          {o.dual && (
+                            <span style={{ fontSize: '11px', background: '#e0e7ff', color: '#4338ca', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                              + STI Protection
+                            </span>
+                          )}
+                        </div>
+                        
+                        <button 
+                          onClick={() => { setActivePregMethod(o); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                          className="btn" 
+                          style={{ marginTop: 'auto', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)', width: '100%', padding: '10px', borderRadius: '8px', fontWeight: 600, transition: 'all 0.2s' }}
+                          onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-rose)'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-rose)'; }}
+                        >
+                          Learn More →
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
           {/* ── PREGNANCY HOW-TO GUIDES TAB ── */}
           {pregTab === 'guides' && (
             <div className="animate-fade-in">
-              <button onClick={() => setPregTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => { setPregTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⬅ Back to Pregnancy Dashboard
               </button>
 
@@ -2219,10 +2396,10 @@ export default function Application() {
               <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)' }}>Option 1</label>
               <select className="select-custom" value={compareOpt1} onChange={e => setCompareOpt1(e.target.value)}>
                 <optgroup label="HIV Prevention">
-                  {HIV_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
+                  {HIV_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
                 <optgroup label="Contraception">
-                  {PREG_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
+                  {PREG_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
               </select>
             </div>
@@ -2231,10 +2408,10 @@ export default function Application() {
               <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)' }}>Option 2</label>
               <select className="select-custom" value={compareOpt2} onChange={e => setCompareOpt2(e.target.value)}>
                 <optgroup label="HIV Prevention">
-                  {HIV_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
+                  {HIV_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
                 <optgroup label="Contraception">
-                  {PREG_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
+                  {PREG_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
               </select>
             </div>
