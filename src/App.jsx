@@ -15,23 +15,61 @@ const LANG_LABELS = {
 };
 const LANG_CYCLE = ["en", "sn", "nd"];
 
-// ── UNIVERSITIES ──
-const UNIVERSITIES = [
-  { id: "uz",    name: "University of Zimbabwe",                 short: "UZ",    idFormat: "R######X" },
-  { id: "nust",  name: "National University of Science & Technology", short: "NUST",  idFormat: "N#######X" },
-  { id: "msu",   name: "Midlands State University",             short: "MSU",   idFormat: "R######X" },
-  { id: "bindura", name: "Bindura University of Science Education", short: "BUSE",  idFormat: "B######X" },
-  { id: "cut",   name: "Chinhoyi University of Technology",     short: "CUT",   idFormat: "C######X" },
-  { id: "wua",   name: "Women's University in Africa",          short: "WUA",   idFormat: "W######X" },
-  { id: "muz",   name: "Midlands State University Zvishavane",  short: "MSUZ",  idFormat: "R######X" },
-  { id: "gzu",   name: "Great Zimbabwe University",             short: "GZU",   idFormat: "G######X" },
+// ── INSTITUTIONS ──
+const INSTITUTION_TYPES = [
+  { id: "university",   label: "University" },
+  { id: "polytechnic",  label: "Polytechnic" },
+  { id: "college",      label: "College" },
+  { id: "other",        label: "Other Tertiary" },
 ];
 
-// ── AUTH UTILITIES ──
+const INSTITUTIONS = [
+  // Universities
+  { id: "uz",      name: "University of Zimbabwe",                   type: "university" },
+  { id: "nust",    name: "National University of Science & Technology", type: "university" },
+  { id: "msu",     name: "Midlands State University",                type: "university" },
+  { id: "bindura", name: "Bindura University of Science Education",   type: "university" },
+  { id: "cut",     name: "Chinhoyi University of Technology",        type: "university" },
+  { id: "wua",     name: "Women's University in Africa",             type: "university" },
+  { id: "gzu",     name: "Great Zimbabwe University",                type: "university" },
+  { id: "hit",     name: "Harare Institute of Technology",           type: "university" },
+  { id: "lsu",     name: "Lupane State University",                  type: "university" },
+  { id: "au",      name: "Africa University",                        type: "university" },
+  // Polytechnics
+  { id: "harare-poly",  name: "Harare Polytechnic",                  type: "polytechnic" },
+  { id: "byo-poly",     name: "Bulawayo Polytechnic",                type: "polytechnic" },
+  { id: "gweru-poly",   name: "Gweru Polytechnic",                   type: "polytechnic" },
+  { id: "masvingo-poly",name: "Masvingo Polytechnic",               type: "polytechnic" },
+  // Colleges
+  { id: "morgenster",   name: "Morgenster Teachers College",         type: "college" },
+  { id: "mkoba",        name: "Mkoba Teachers College",              type: "college" },
+  { id: "belvedere",    name: "Belvedere Technical Teachers College", type: "college" },
+  { id: "other-inst",   name: "Other Institution",                   type: "other" },
+];
+
+const STUDY_LEVELS = [
+  "Part 1", "Part 2", "Part 3", "Part 4",
+  "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6",
+  "Postgraduate",
+];
+
+const GENDERS = [
+  { id: "female",          label: "Female" },
+  { id: "male",            label: "Male" },
+  { id: "non-binary",      label: "Non-binary" },
+  { id: "prefer-not-say",  label: "Prefer not to say" },
+];
+
+
+// ── AUTH UTILITIES (privacy-first: no student ID, no email, no full name) ──
+// Unique account key = nickname + institution (lowercase, trimmed)
+const makeAccountKey = (nickname, institution) =>
+  `${nickname.trim().toLowerCase()}@${institution}`;
+
 const AUTH_DEMO_ACCOUNTS = [
-  { studentId: "R190001X", university: "uz",   name: "Rudo Moyo",       password: "chengeto2024", year: 2, programme: "Medicine" },
-  { studentId: "N2230045X", university: "nust", name: "Tatenda Khumalo",  password: "health123",   year: 3, programme: "Civil Engineering" },
-  { studentId: "R200067X", university: "msu",  name: "Thembi Ncube",     password: "protect123",  year: 1, programme: "Social Work" },
+  { key: "rudo@uz",    nickname: "Rudo",    institution: "uz",   level: "Year 2",  gender: "female",         password: "chengeto2024", avatarColor: '#059669' },
+  { key: "tatenda@nust", nickname: "Tatenda", institution: "nust", level: "Year 3",  gender: "male",           password: "health123",   avatarColor: '#7C3AED' },
+  { key: "thembi@msu",  nickname: "Thembi",  institution: "msu",  level: "Part 1",  gender: "female",         password: "protect123",  avatarColor: '#DB2777' },
 ];
 
 const getStoredUsers = () => {
@@ -44,41 +82,37 @@ const getSession = () => {
 const saveSession = (user) => localStorage.setItem("chengeto_session", JSON.stringify(user));
 const clearSession = () => localStorage.removeItem("chengeto_session");
 
-const validateLogin = (studentId, password) => {
-  const id = studentId.trim().toUpperCase();
-  // Check demo accounts first
-  const demo = AUTH_DEMO_ACCOUNTS.find(a => a.studentId === id && a.password === password);
-  if (demo) return { ...demo, studentId: id };
-  // Check registered users
+const validateLogin = (nickname, institution, password) => {
+  const key = makeAccountKey(nickname, institution);
+  const demo = AUTH_DEMO_ACCOUNTS.find(a => a.key === key && a.password === password);
+  if (demo) return { ...demo };
   const stored = getStoredUsers();
-  const user = stored.find(u => u.studentId === id && u.password === password);
+  const user = stored.find(u => u.key === key && u.password === password);
   return user || null;
 };
 
-const registerUser = (studentId, password, name, university, year, programme) => {
-  const id = studentId.trim().toUpperCase();
-  const all = [...AUTH_DEMO_ACCOUNTS, ...getStoredUsers()];
-  if (all.find(u => u.studentId === id)) return { error: "This Student ID is already registered." };
-  if (id.length < 5) return { error: "Student ID seems too short. Please check it." };
+const registerUser = (nickname, institution, level, gender, password) => {
+  const nick = nickname.trim();
+  const key  = makeAccountKey(nick, institution);
+  if (nick.length < 2)    return { error: "Nickname must be at least 2 characters." };
   if (password.length < 6) return { error: "Password must be at least 6 characters." };
-  if (!name.trim()) return { error: "Please enter your full name." };
-  const newUser = { studentId: id, password, name: name.trim(), university, year: parseInt(year), programme: programme.trim(), nickname: name.trim().split(' ')[0], avatarColor: '#059669', bio: '' };
+  const all = [...AUTH_DEMO_ACCOUNTS, ...getStoredUsers()];
+  if (all.find(u => u.key === key)) return { error: "This nickname is already taken at that institution. Try a different nickname." };
+  const newUser = { key, nickname: nick, institution, level, gender, password, avatarColor: '#059669' };
   const users = getStoredUsers();
   saveUsers([...users, newUser]);
   return { user: newUser };
 };
 
-const updateUserProfile = (studentId, updates) => {
-  // update demo accounts in session only (they do not live in localStorage)
+const updateUserProfile = (key, updates) => {
   const users = getStoredUsers();
-  const idx = users.findIndex(u => u.studentId === studentId);
+  const idx = users.findIndex(u => u.key === key);
   let updatedUser;
   if (idx >= 0) {
     updatedUser = { ...users[idx], ...updates };
     users[idx] = updatedUser;
     saveUsers(users);
   } else {
-    // demo account : patch session only
     updatedUser = { ...getSession(), ...updates };
   }
   saveSession(updatedUser);
@@ -579,34 +613,32 @@ export default function Application() {
   const [currentUser, setCurrentUser] = useState(() => getSession());
   const [authView, setAuthView] = useState("login"); // 'login' | 'register'
   // Login form
-  const [loginId, setLoginId] = useState("");
-  const [loginPw, setLoginPw] = useState("");
-  const [loginUni, setLoginUni] = useState("uz");
+  const [loginNick, setLoginNick] = useState("");
+  const [loginInst, setLoginInst] = useState("uz");
+  const [loginPw,   setLoginPw]   = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   // Register form
-  const [regId, setRegId] = useState("");
-  const [regPw, setRegPw] = useState("");
-  const [regPw2, setRegPw2] = useState("");
-  const [regName, setRegName] = useState("");
-  const [regUni, setRegUni] = useState("uz");
-  const [regYear, setRegYear] = useState("1");
-  const [regProgramme, setRegProgramme] = useState("");
-  const [regError, setRegError] = useState("");
-  const [regSuccess, setRegSuccess] = useState(false);
-  const [showPw, setShowPw] = useState(false);
+  const [regNick,    setRegNick]    = useState("");
+  const [regInst,    setRegInst]    = useState("uz");
+  const [regLevel,   setRegLevel]   = useState("Year 1");
+  const [regGender,  setRegGender]  = useState("prefer-not-say");
+  const [regPw,      setRegPw]      = useState("");
+  const [regPw2,     setRegPw2]     = useState("");
+  const [regError,   setRegError]   = useState("");
+  const [showPw,     setShowPw]     = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
     setLoginError("");
     setLoginLoading(true);
     setTimeout(() => {
-      const user = validateLogin(loginId, loginPw);
+      const user = validateLogin(loginNick, loginInst, loginPw);
       if (user) {
         saveSession(user);
         setCurrentUser(user);
       } else {
-        setLoginError("Incorrect Student ID or password. Please try again.");
+        setLoginError("Nickname, institution, or password is incorrect. Please try again.");
       }
       setLoginLoading(false);
     }, 800);
@@ -616,7 +648,7 @@ export default function Application() {
     e.preventDefault();
     setRegError("");
     if (regPw !== regPw2) { setRegError("Passwords do not match."); return; }
-    const result = registerUser(regId, regPw, regName, regUni, regYear, regProgramme);
+    const result = registerUser(regNick, regInst, regLevel, regGender, regPw);
     if (result.error) { setRegError(result.error); return; }
     saveSession(result.user);
     setCurrentUser(result.user);
@@ -625,30 +657,28 @@ export default function Application() {
   const handleLogout = () => {
     clearSession();
     setCurrentUser(null);
-    setLoginId(""); setLoginPw(""); setLoginError("");
+    setLoginNick(""); setLoginPw(""); setLoginError("");
     setPage("home");
   };
 
   // ── PROFILE EDIT STATE ──
   const [profNickname, setProfNickname] = useState("");
-  const [profName, setProfName] = useState("");
-  const [profBio, setProfBio] = useState("");
-  const [profColor, setProfColor] = useState("#059669");
-  const [profYear, setProfYear] = useState("1");
-  const [profProgramme, setProfProgramme] = useState("");
+  const [profInst,     setProfInst]     = useState("uz");
+  const [profLevel,    setProfLevel]    = useState("Year 1");
+  const [profGender,   setProfGender]   = useState("prefer-not-say");
+  const [profColor,    setProfColor]    = useState("#059669");
   const [profPwCurrent, setProfPwCurrent] = useState("");
-  const [profPwNew, setProfPwNew] = useState("");
-  const [profPwErr, setProfPwErr] = useState("");
-  const [profSaved, setProfSaved] = useState(false);
+  const [profPwNew,    setProfPwNew]    = useState("");
+  const [profPwErr,    setProfPwErr]    = useState("");
+  const [profSaved,    setProfSaved]    = useState(false);
 
   const openProfilePage = () => {
     if (currentUser) {
-      setProfNickname(currentUser.nickname || currentUser.name?.split(' ')[0] || "");
-      setProfName(currentUser.name || "");
-      setProfBio(currentUser.bio || "");
+      setProfNickname(currentUser.nickname || "");
+      setProfInst(currentUser.institution || "uz");
+      setProfLevel(currentUser.level || "Year 1");
+      setProfGender(currentUser.gender || "prefer-not-say");
       setProfColor(currentUser.avatarColor || '#059669');
-      setProfYear(String(currentUser.year || "1"));
-      setProfProgramme(currentUser.programme || "");
       setProfPwCurrent(""); setProfPwNew(""); setProfPwErr(""); setProfSaved(false);
     }
     setPage("profile");
@@ -657,15 +687,21 @@ export default function Application() {
   const handleSaveProfile = (e) => {
     e.preventDefault();
     setProfPwErr(""); setProfSaved(false);
-    const updates = { nickname: profNickname.trim() || profName.split(' ')[0], name: profName.trim(), bio: profBio.trim(), avatarColor: profColor, year: parseInt(profYear), programme: profProgramme.trim() };
+    const updates = {
+      nickname:    profNickname.trim() || currentUser.nickname,
+      institution: profInst,
+      level:       profLevel,
+      gender:      profGender,
+      avatarColor: profColor,
+    };
     if (profPwNew) {
       if (!profPwCurrent) { setProfPwErr("Enter your current password to change it."); return; }
-      const valid = validateLogin(currentUser.studentId, profPwCurrent);
+      const valid = validateLogin(currentUser.nickname, currentUser.institution, profPwCurrent);
       if (!valid) { setProfPwErr("Current password is incorrect."); return; }
       if (profPwNew.length < 6) { setProfPwErr("New password must be at least 6 characters."); return; }
       updates.password = profPwNew;
     }
-    const updated = updateUserProfile(currentUser.studentId, updates);
+    const updated = updateUserProfile(currentUser.key, updates);
     setCurrentUser(updated);
     setProfSaved(true);
     setTimeout(() => setProfSaved(false), 3000);
@@ -996,28 +1032,42 @@ export default function Application() {
               {/* ── LOGIN FORM ── */}
               {authView === 'login' && (
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>University</label>
-                    <select value={loginUni} onChange={e => setLoginUni(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                      {UNIVERSITIES.map(u => <option key={u.id} value={u.id} style={{ background: '#1a2a1a', color: '#fff' }}>{u.name}</option>)}
-                    </select>
+
+                  {/* Privacy badge */}
+                  <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '16px' }}>🔒</span>
+                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.4 }}>No email or student ID required. Your identity stays private.</p>
                   </div>
+
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Student ID Number</label>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname</label>
                     <input
-                      type="text" value={loginId} onChange={e => setLoginId(e.target.value)}
-                      placeholder={`e.g. ${UNIVERSITIES.find(u=>u.id===loginUni)?.idFormat || 'R######X'}`}
-                      required
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box', letterSpacing: '0.5px', fontWeight: 700 }}
+                      type="text" value={loginNick} onChange={e => setLoginNick(e.target.value)}
+                      placeholder="e.g. Rudo" required autoComplete="username"
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontWeight: 700 }}
                     />
                   </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Institution</label>
+                    <select value={loginInst} onChange={e => setLoginInst(e.target.value)}
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
+                      {INSTITUTION_TYPES.map(t => (
+                        <optgroup key={t.id} label={t.label} style={{ background: '#1a2a1a' }}>
+                          {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
+                            <option key={i.id} value={i.id} style={{ background: '#1a2a1a', color: '#fff' }}>{i.name}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </div>
+
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Password</label>
                     <div style={{ position: 'relative' }}>
                       <input
                         type={showPw ? 'text' : 'password'} value={loginPw} onChange={e => setLoginPw(e.target.value)}
-                        placeholder="Enter your password" required
+                        placeholder="Enter your password" required autoComplete="current-password"
                         style={{ width: '100%', padding: '12px 44px 12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                       />
                       <button type="button" onClick={() => setShowPw(p => !p)}
@@ -1040,12 +1090,12 @@ export default function Application() {
 
                   {/* Demo credentials */}
                   <div style={{ marginTop: '8px', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px', border: '1px dashed rgba(255,255,255,0.12)' }}>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>🎯 Hackathon Demo Credentials</p>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>🎯 Demo Accounts</p>
                     {AUTH_DEMO_ACCOUNTS.map(a => (
-                      <button key={a.studentId} type="button"
-                        onClick={() => { setLoginId(a.studentId); setLoginPw(a.password); setLoginUni(a.university); }}
+                      <button key={a.key} type="button"
+                        onClick={() => { setLoginNick(a.nickname); setLoginInst(a.institution); setLoginPw(a.password); }}
                         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '7px 10px', marginBottom: '5px', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>
-                        <strong style={{ color: 'hsl(152,60%,72%)' }}>{a.studentId}</strong> · pw: <code style={{ color: 'hsl(50,100%,72%)' }}>{a.password}</code> · {a.name}
+                        <strong style={{ color: 'hsl(152,60%,72%)' }}>{a.nickname}</strong> · {INSTITUTIONS.find(i => i.id === a.institution)?.name} · pw: <code style={{ color: 'hsl(50,100%,72%)' }}>{a.password}</code>
                       </button>
                     ))}
                   </div>
@@ -1055,49 +1105,66 @@ export default function Application() {
               {/* ── REGISTER FORM ── */}
               {authView === 'register' && (
                 <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Full Name</label>
-                      <input type="text" value={regName} onChange={e => setRegName(e.target.value)} placeholder="Your full name" required
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Student ID</label>
-                      <input type="text" value={regId} onChange={e => setRegId(e.target.value)} placeholder="e.g. R190045X" required
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', fontWeight: 700, outline: 'none', boxSizing: 'border-box', letterSpacing: '0.5px' }} />
-                    </div>
+
+                  {/* Privacy promise */}
+                  <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <span style={{ fontSize: '16px', marginTop: '1px' }}>🛡️</span>
+                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>We do <strong style={{ color: 'rgba(255,255,255,0.85)' }}>not</strong> collect your name, student ID, or email. Only your nickname and institution are used to identify your account.</p>
                   </div>
+
+                  {/* Nickname */}
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>University</label>
-                    <select value={regUni} onChange={e => setRegUni(e.target.value)}
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Nickname <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
+                    <input type="text" value={regNick} onChange={e => setRegNick(e.target.value)} placeholder="e.g. Genius, Aisling, TK..." required autoComplete="username"
+                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
+                    <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>This is how Chengeto will greet you. No real name needed.</p>
+                  </div>
+
+                  {/* Institution */}
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Institution <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
+                    <select value={regInst} onChange={e => setRegInst(e.target.value)}
                       style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
-                      {UNIVERSITIES.map(u => <option key={u.id} value={u.id} style={{ background: '#1a2a1a' }}>{u.name}</option>)}
+                      {INSTITUTION_TYPES.map(t => (
+                        <optgroup key={t.id} label={t.label} style={{ background: '#1a2a1a' }}>
+                          {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
+                            <option key={i.id} value={i.id} style={{ background: '#1a2a1a', color: '#fff' }}>{i.name}</option>
+                          ))}
+                        </optgroup>
+                      ))}
                     </select>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+
+                  {/* Level + Gender side by side */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Year</label>
-                      <select value={regYear} onChange={e => setRegYear(e.target.value)}
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Level / Year <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
+                      <select value={regLevel} onChange={e => setRegLevel(e.target.value)}
                         style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
-                        {['1','2','3','4','5','6'].map(y => <option key={y} value={y} style={{ background: '#1a2a1a' }}>Year {y}</option>)}
+                        {STUDY_LEVELS.map(l => <option key={l} value={l} style={{ background: '#1a2a1a' }}>{l}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Programme</label>
-                      <input type="text" value={regProgramme} onChange={e => setRegProgramme(e.target.value)} placeholder="e.g. Medicine, Law..." required
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Gender</label>
+                      <select value={regGender} onChange={e => setRegGender(e.target.value)}
+                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
+                        {GENDERS.map(g => <option key={g.id} value={g.id} style={{ background: '#1a2a1a' }}>{g.label}</option>)}
+                      </select>
                     </div>
                   </div>
+
+                  {/* Password */}
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Password</label>
-                    <input type={showPw ? 'text' : 'password'} value={regPw} onChange={e => setRegPw(e.target.value)} placeholder="Min 6 characters" required
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Password <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
+                    <input type={showPw ? 'text' : 'password'} value={regPw} onChange={e => setRegPw(e.target.value)} placeholder="Min 6 characters" required autoComplete="new-password"
                       style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Confirm Password</label>
-                    <input type={showPw ? 'text' : 'password'} value={regPw2} onChange={e => setRegPw2(e.target.value)} placeholder="Re-enter password" required
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Confirm Password <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
+                    <input type={showPw ? 'text' : 'password'} value={regPw2} onChange={e => setRegPw2(e.target.value)} placeholder="Re-enter password" required autoComplete="new-password"
                       style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
+
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
                     <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)} />
                     Show passwords
@@ -1114,7 +1181,7 @@ export default function Application() {
                     ✅ Create My Account
                   </button>
                   <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>
-                    Your data stays on this device. Chengeto does not share personal information.
+                    Your data stays on this device. Chengeto does not collect or share personal information.
                   </p>
                 </form>
               )}
@@ -2281,16 +2348,17 @@ export default function Application() {
         <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h2 style={{ fontSize: '28px', color: 'var(--color-primary)', marginBottom: '8px' }}>Your Profile</h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Customize your Chengeto experience.</p>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Your identity stays private — only your nickname is visible.</p>
           </div>
 
           <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
             {/* Avatar & Colors */}
             <div className="glass-card">
               <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '16px', fontWeight: 800 }}>Avatar Color</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: profColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '32px', flexShrink: 0, boxShadow: `0 8px 24px ${profColor}50`, transition: 'background 0.3s' }}>
-                  {(profNickname || profName || '?').charAt(0).toUpperCase()}
+                  {(profNickname || '?').charAt(0).toUpperCase()}
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
                   {AVATAR_COLORS.map(c => (
@@ -2302,46 +2370,47 @@ export default function Application() {
               </div>
             </div>
 
-            {/* Personal Information */}
+            {/* Profile Information */}
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Personal Information</h3>
-              
+              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Profile Information</h3>
+
+              {/* Nickname */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname</label>
+                <input type="text" value={profNickname} onChange={e => setProfNickname(e.target.value)} placeholder="e.g. Genius" required
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Institution */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Institution</label>
+                <select value={profInst} onChange={e => setProfInst(e.target.value)}
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
+                  {INSTITUTION_TYPES.map(t => (
+                    <optgroup key={t.id} label={t.label}>
+                      {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
+                        <option key={i.id} value={i.id}>{i.name}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              {/* Level + Gender */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname (Greeting)</label>
-                  <input type="text" value={profNickname} onChange={e => setProfNickname(e.target.value)} placeholder="e.g. Genius"
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Full Name</label>
-                  <input type="text" value={profName} onChange={e => setProfName(e.target.value)} placeholder="Your full name" required
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Bio / Status</label>
-                <input type="text" value={profBio} onChange={e => setProfBio(e.target.value)} placeholder="e.g. Health advocate! 🩺"
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-            </div>
-
-            {/* Academic Information */}
-            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Academic Information</h3>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Year</label>
-                  <select value={profYear} onChange={e => setProfYear(e.target.value)}
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Level / Year</label>
+                  <select value={profLevel} onChange={e => setProfLevel(e.target.value)}
                     style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                    {['1','2','3','4','5','6'].map(y => <option key={y} value={y}>Year {y}</option>)}
+                    {STUDY_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Programme</label>
-                  <input type="text" value={profProgramme} onChange={e => setProfProgramme(e.target.value)} required
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Gender</label>
+                  <select value={profGender} onChange={e => setProfGender(e.target.value)}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
+                    {GENDERS.map(g => <option key={g.id} value={g.id}>{g.label}</option>)}
+                  </select>
                 </div>
               </div>
             </div>
@@ -2350,7 +2419,6 @@ export default function Application() {
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Change Password</h3>
               <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '-8px' }}>Leave blank to keep your current password.</p>
-              
               <div>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Current Password</label>
                 <input type="password" value={profPwCurrent} onChange={e => setProfPwCurrent(e.target.value)} placeholder="Required to change password"
@@ -2368,7 +2436,6 @@ export default function Application() {
                 ⚠️ {profPwErr}
               </div>
             )}
-
             {profSaved && (
               <div className="animate-fade-in" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#15803d', textAlign: 'center', fontWeight: 700 }}>
                 ✅ Profile updated successfully!
