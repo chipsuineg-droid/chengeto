@@ -12,6 +12,7 @@ export const PREG_PREVENTION_METHODS = [
   // ── SHORT-ACTING METHODS ──
   {
     id: "pop",
+    bannerImg: "/banners/preg-pop-pill.png",
     name: "Progestin-only Birth Control Pill",
     category: "short-acting",
     categoryLabel: "Short-Acting Method",
@@ -69,6 +70,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "combined-pill",
+    bannerImg: "/banners/preg-combined-pill.png",
     name: "The Combined Pill",
     category: "short-acting",
     categoryLabel: "Short-Acting Method",
@@ -129,6 +131,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "depo-provera",
+    bannerImg: "/banners/preg-injectable.png",
     name: "Injectable – Depo Provera",
     category: "short-acting",
     categoryLabel: "Short-Acting Method",
@@ -181,6 +184,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "sayana-press",
+    bannerImg: "/banners/preg-injectable.png",
     name: "Injectable – Sayana Press",
     category: "short-acting",
     categoryLabel: "Short-Acting Method",
@@ -232,6 +236,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "male-condom",
+    bannerImg: "/banners/preg-male-condom.png",
     name: "Male Condom",
     category: "short-acting",
     categoryLabel: "Short-Acting Method",
@@ -285,6 +290,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "female-condom",
+    bannerImg: "/banners/preg-female-condom.png",
     name: "Female Condom",
     category: "short-acting",
     categoryLabel: "Short-Acting Method",
@@ -333,6 +339,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "ec-pill",
+    bannerImg: "/banners/preg-emergency.png",
     name: "Emergency Contraception",
     category: "short-acting",
     categoryLabel: "Short-Acting Method",
@@ -382,6 +389,7 @@ export const PREG_PREVENTION_METHODS = [
   // ── LONG-ACTING REVERSIBLE METHODS ──
   {
     id: "implant",
+    bannerImg: "/banners/preg-implant.png",
     name: "Implant",
     category: "long-acting",
     categoryLabel: "Long-Acting Reversible Method",
@@ -438,6 +446,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "copper-iud",
+    bannerImg: "/banners/preg-hormonal-iud.png",
     name: "Non-Hormonal or Copper IUD",
     category: "long-acting",
     categoryLabel: "Long-Acting Reversible Method",
@@ -495,6 +504,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "hormonal-iud",
+    bannerImg: "/banners/preg-hormonal-iud.png",
     name: "Hormonal IUD",
     category: "long-acting",
     categoryLabel: "Long-Acting Reversible Method",
@@ -549,6 +559,7 @@ export const PREG_PREVENTION_METHODS = [
   // ── PERMANENT METHODS ──
   {
     id: "tubal-ligation",
+    bannerImg: "/banners/preg-implant.png",
     name: "Tubal Ligation (Female Sterilization)",
     category: "permanent",
     categoryLabel: "Permanent Method",
@@ -594,6 +605,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "vasectomy",
+    bannerImg: "/banners/preg-implant.png",
     name: "Vasectomy",
     category: "permanent",
     categoryLabel: "Permanent Method",
@@ -642,13 +654,14 @@ export const PREG_PREVENTION_METHODS = [
   // ── NATURAL METHODS ──
   {
     id: "withdrawal",
+    bannerImg: "/banners/preg-male-condom.png",
     name: "Withdrawal / Pull Out Method",
     category: "natural",
     categoryLabel: "Natural Method",
     icon: "⏱️",
     urgent: false,
     tagline: "The penis is removed from the vagina before ejaculation to reduce the chance of pregnancy.",
-    effectiveness: 78, // Approximate effectiveness for common use since exact number wasn't provided, I'll just put a lower number and rely on the text
+    effectiveness: 78,
     detail: {
       description: "Withdrawal or pull out is a method where the penis is removed from the vagina before ejaculation to reduce the chance of pregnancy.",
       formOfUse: "Penis withdrawn before ejaculation.",
@@ -683,6 +696,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "lam",
+    bannerImg: "/banners/preg-pop-pill.png",
     name: "Lactational Amenorrhea Method (LAM)",
     category: "natural",
     categoryLabel: "Natural Method",

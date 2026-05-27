@@ -7,6 +7,7 @@ export const HIV_PREVENTION_METHODS = [
   // ════════════════════════════════════════════════════
   {
     id: "prep-oral",
+    bannerImg: "/banners/hiv-prep.png",
     category: "PrEP",
     categoryLabel: "Pre-Exposure Prophylaxis (PrEP)",
     icon: "💊",
@@ -62,6 +63,7 @@ export const HIV_PREVENTION_METHODS = [
 
   {
     id: "cab-la",
+    bannerImg: "/banners/hiv-cabla.png",
     category: "PrEP",
     categoryLabel: "Pre-Exposure Prophylaxis (PrEP)",
     icon: "💉",
@@ -112,6 +114,7 @@ export const HIV_PREVENTION_METHODS = [
 
   {
     id: "lenacapavir",
+    bannerImg: "/banners/hiv-cabla.png",
     category: "PrEP",
     categoryLabel: "Pre-Exposure Prophylaxis (PrEP)",
     icon: "🔬",
@@ -153,6 +156,7 @@ export const HIV_PREVENTION_METHODS = [
 
   {
     id: "dapivirine",
+    bannerImg: "/banners/hiv-dapivirine.png",
     category: "PrEP",
     categoryLabel: "Pre-Exposure Prophylaxis (PrEP)",
     icon: "💍",
@@ -200,6 +204,7 @@ export const HIV_PREVENTION_METHODS = [
   // ════════════════════════════════════════════════════
   {
     id: "condom-male",
+    bannerImg: "/banners/hiv-male-condom.png",
     category: "Barrier",
     categoryLabel: "Barrier Methods",
     icon: "🛡️",
@@ -249,6 +254,7 @@ export const HIV_PREVENTION_METHODS = [
 
   {
     id: "condom-female",
+    bannerImg: "/banners/hiv-female-condom.png",
     category: "Barrier",
     categoryLabel: "Barrier Methods",
     icon: "💜",
@@ -292,6 +298,7 @@ export const HIV_PREVENTION_METHODS = [
   // ════════════════════════════════════════════════════
   {
     id: "pep",
+    bannerImg: "/banners/hiv-pep.png",
     category: "PEP",
     categoryLabel: "Post-Exposure Prophylaxis (PEP)",
     icon: "🚨",
@@ -347,6 +354,7 @@ export const HIV_PREVENTION_METHODS = [
   // ════════════════════════════════════════════════════
   {
     id: "vmmc",
+    bannerImg: "/banners/hiv-vmmc.png",
     category: "VMMC",
     categoryLabel: "Voluntary Medical Male Circumcision (VMMC)",
     icon: "⚕️",
@@ -400,6 +408,7 @@ export const HIV_PREVENTION_METHODS = [
   // ════════════════════════════════════════════════════
   {
     id: "tasp",
+    bannerImg: "/banners/hiv-tasp.png",
     category: "TasP",
     categoryLabel: "Treatment as Prevention (TasP)",
     icon: "💊",
@@ -454,6 +463,7 @@ export const HIV_PREVENTION_METHODS = [
   // ════════════════════════════════════════════════════
   {
     id: "harm-reduction",
+    bannerImg: "/banners/hiv-harm-reduction.png",
     category: "HarmReduction",
     categoryLabel: "Harm Reduction (For People Who Inject Drugs)",
     icon: "🩺",

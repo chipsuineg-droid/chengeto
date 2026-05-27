@@ -1650,14 +1650,34 @@ export default function Application() {
                       </button>
 
                       <div className="glass-card" style={{ padding: '0', overflow: 'hidden', border: 'none', boxShadow: '0 8px 30px rgba(8, 145, 178, 0.12)' }}>
-                        <div style={{ background: 'linear-gradient(135deg, var(--color-primary), #0369a1)', padding: '32px 24px', color: '#fff' }}>
-                          <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activeHivMethod.icon}</div>
-                          <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
-                            {activeHivMethod.categoryLabel}
+                        {/* ── HIV Detail Banner with image integration ── */}
+                        <div style={{ background: 'linear-gradient(135deg, var(--color-primary), #0369a1)', padding: '32px 24px', color: '#fff', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
+                          {/* Blended banner image on the right */}
+                          {activeHivMethod.bannerImg && (
+                            <div style={{
+                              position: 'absolute', top: 0, right: 0, bottom: 0,
+                              width: '55%',
+                              backgroundImage: `url(${activeHivMethod.bannerImg})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center right',
+                              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%)',
+                              maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%)',
+                              opacity: 0.55,
+                            }} />
+                          )}
+                          {/* Dark overlay for depth */}
+                          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,78,120,0.92) 0%, rgba(2,78,120,0.55) 45%, rgba(2,78,120,0.0) 100%)', pointerEvents: 'none' }} />
+                          {/* Content */}
+                          <div style={{ position: 'relative', zIndex: 2, maxWidth: '60%' }}>
+                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activeHivMethod.icon}</div>
+                            <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                              {activeHivMethod.categoryLabel}
+                            </div>
+                            <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '8px', lineHeight: 1.2 }}>{activeHivMethod.name}</h2>
+                            <p style={{ fontSize: '15px', opacity: 0.9, lineHeight: 1.5, fontWeight: 500 }}>{activeHivMethod.tagline}</p>
                           </div>
-                          <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '8px', lineHeight: 1.2 }}>{activeHivMethod.name}</h2>
-                          <p style={{ fontSize: '15px', opacity: 0.9, lineHeight: 1.5, fontWeight: 500 }}>{activeHivMethod.tagline}</p>
                         </div>
+
 
                         <div style={{ background: '#f8fafc', padding: '16px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
                           <div style={{ flex: 1 }}>
@@ -2027,14 +2047,34 @@ export default function Application() {
                   </button>
 
                   <div className="glass-card" style={{ padding: '0', overflow: 'hidden', border: 'none', boxShadow: '0 8px 30px rgba(225, 29, 72, 0.12)' }}>
-                    <div style={{ background: 'linear-gradient(135deg, var(--color-rose), #be123c)', padding: '32px 24px', color: '#fff' }}>
-                      <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activePregMethod.icon}</div>
-                      <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
-                        {activePregMethod.categoryLabel}
+                    {/* ── Pregnancy Detail Banner with image integration ── */}
+                    <div style={{ background: 'linear-gradient(135deg, var(--color-rose), #be123c)', padding: '32px 24px', color: '#fff', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
+                      {/* Blended banner image on the right */}
+                      {activePregMethod.bannerImg && (
+                        <div style={{
+                          position: 'absolute', top: 0, right: 0, bottom: 0,
+                          width: '55%',
+                          backgroundImage: `url(${activePregMethod.bannerImg})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center right',
+                          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%)',
+                          maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%)',
+                          opacity: 0.55,
+                        }} />
+                      )}
+                      {/* Dark overlay for depth */}
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(190,18,60,0.92) 0%, rgba(190,18,60,0.55) 45%, rgba(190,18,60,0.0) 100%)', pointerEvents: 'none' }} />
+                      {/* Content */}
+                      <div style={{ position: 'relative', zIndex: 2, maxWidth: '60%' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activePregMethod.icon}</div>
+                        <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                          {activePregMethod.categoryLabel}
+                        </div>
+                        <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '8px', lineHeight: 1.2 }}>{activePregMethod.name}</h2>
+                        <p style={{ fontSize: '15px', opacity: 0.9, lineHeight: 1.5, fontWeight: 500 }}>{activePregMethod.tagline}</p>
                       </div>
-                      <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '8px', lineHeight: 1.2 }}>{activePregMethod.name}</h2>
-                      <p style={{ fontSize: '15px', opacity: 0.9, lineHeight: 1.5, fontWeight: 500 }}>{activePregMethod.tagline}</p>
                     </div>
+
 
                     <div style={{ background: '#f8fafc', padding: '16px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ flex: 1 }}>
