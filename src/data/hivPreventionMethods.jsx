@@ -114,7 +114,7 @@ export const HIV_PREVENTION_METHODS = [
 
   {
     id: "lenacapavir",
-    bannerImg: "/banners/hiv-cabla.png",
+    bannerImg: "/banners/hiv-lenacapavir.png",
     category: "PrEP",
     categoryLabel: "Pre-Exposure Prophylaxis (PrEP)",
     icon: "🔬",
