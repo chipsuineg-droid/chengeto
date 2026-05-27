@@ -605,7 +605,7 @@ export const PREG_PREVENTION_METHODS = [
   },
   {
     id: "vasectomy",
-    bannerImg: "/banners/preg-implant.png",
+    bannerImg: "/banners/preg-vasectomy.png",
     name: "Vasectomy",
     category: "permanent",
     categoryLabel: "Permanent Method",
