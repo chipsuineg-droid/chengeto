@@ -559,7 +559,7 @@ export const PREG_PREVENTION_METHODS = [
   // ── PERMANENT METHODS ──
   {
     id: "tubal-ligation",
-    bannerImg: "/banners/preg-implant.png",
+    bannerImg: "/banners/preg-tubal-ligation.png",
     name: "Tubal Ligation (Female Sterilization)",
     category: "permanent",
     categoryLabel: "Permanent Method",
