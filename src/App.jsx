@@ -1000,7 +1000,19 @@ export default function Application() {
 
             {/* Brand */}
             <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-              <div style={{ fontSize: '56px', marginBottom: '8px', filter: 'drop-shadow(0 4px 16px rgba(34,197,94,0.4))' }}>🛡️</div>
+              <img
+                src="/chengeto-shield.png"
+                alt="Chengeto Shield"
+                style={{
+                  width: '72px',
+                  height: '80px',
+                  objectFit: 'contain',
+                  marginBottom: '8px',
+                  filter: 'drop-shadow(0 4px 16px rgba(34,197,94,0.25))',
+                  display: 'block',
+                  margin: '0 auto 8px',
+                }}
+              />
               <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', margin: 0 }}>CHENGETO</h1>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginTop: '4px', fontStyle: 'italic' }}>chengeto : Shona for protection</p>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginTop: '8px', lineHeight: 1.5, maxWidth: '320px', margin: '8px auto 0' }}>
@@ -1204,11 +1216,13 @@ export default function Application() {
       <header className={`nav-header ${page === "home" ? "home-header" : ""}`}>
         <div className="logo-group">
           <div className="logo-icon-wrap">
-            <svg width="32" height="36" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>
-              <path d="M32 2L6 13v20c0 17.6 11.2 34 26 39 14.8-5 26-21.4 26-39V13L32 2z" fill="#1a6638" />
-              <path d="M32 8L10 17.5V33c0 14.5 9.2 28 22 32.2C44.8 61 54 47.5 54 33V17.5L32 8z" fill="#2d7a4f" />
-              <path d="M25 34l-5-5 3-3 2 2 8-8 3 3-11 11z" fill="#ffffff" />
-            </svg>
+            <img
+              src="/chengeto-shield.png"
+              alt="Chengeto Shield"
+              width="32"
+              height="36"
+              style={{ objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}
+            />
           </div>
           <div className="logo-text-wrap">
             <span className="logo-title-text">
