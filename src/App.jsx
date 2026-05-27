@@ -1659,14 +1659,14 @@ export default function Application() {
                               width: '55%',
                               backgroundImage: `url(${activeHivMethod.bannerImg})`,
                               backgroundSize: 'cover',
-                              backgroundPosition: 'center right',
-                              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%)',
-                              maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%)',
-                              opacity: 0.55,
+                              backgroundPosition: 'center',
+                              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 100%)',
+                              maskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 100%)',
+                              opacity: 1,
                             }} />
                           )}
-                          {/* Dark overlay for depth */}
-                          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,78,120,0.92) 0%, rgba(2,78,120,0.55) 45%, rgba(2,78,120,0.0) 100%)', pointerEvents: 'none' }} />
+                          {/* Overlay: solid left half fading to transparent at 50% */}
+                          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,78,120,1) 0%, rgba(2,78,120,0.95) 35%, rgba(2,78,120,0.5) 50%, rgba(2,78,120,0.0) 55%)', pointerEvents: 'none' }} />
                           {/* Content */}
                           <div style={{ position: 'relative', zIndex: 2, maxWidth: '60%' }}>
                             <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activeHivMethod.icon}</div>
@@ -2056,14 +2056,14 @@ export default function Application() {
                           width: '55%',
                           backgroundImage: `url(${activePregMethod.bannerImg})`,
                           backgroundSize: 'cover',
-                          backgroundPosition: 'center right',
-                          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%)',
-                          maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%)',
-                          opacity: 0.55,
+                          backgroundPosition: 'center',
+                          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 100%)',
+                          maskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 100%)',
+                          opacity: 1,
                         }} />
                       )}
-                      {/* Dark overlay for depth */}
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(190,18,60,0.92) 0%, rgba(190,18,60,0.55) 45%, rgba(190,18,60,0.0) 100%)', pointerEvents: 'none' }} />
+                      {/* Overlay: solid left half fading to transparent at 50% */}
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(190,18,60,1) 0%, rgba(190,18,60,0.95) 35%, rgba(190,18,60,0.5) 50%, rgba(190,18,60,0.0) 55%)', pointerEvents: 'none' }} />
                       {/* Content */}
                       <div style={{ position: 'relative', zIndex: 2, maxWidth: '60%' }}>
                         <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activePregMethod.icon}</div>
