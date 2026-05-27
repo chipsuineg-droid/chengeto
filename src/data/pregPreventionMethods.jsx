@@ -654,7 +654,7 @@ export const PREG_PREVENTION_METHODS = [
   // ── NATURAL METHODS ──
   {
     id: "withdrawal",
-    bannerImg: "/banners/preg-male-condom.png",
+    bannerImg: "/banners/preg-withdrawal.png",
     name: "Withdrawal / Pull Out Method",
     category: "natural",
     categoryLabel: "Natural Method",
