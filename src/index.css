@@ -928,3 +928,175 @@ h1, h2, h3, h4, h5, h6 {
   min-width: 60px;
   padding: 12px 16px;
 }
+
+
+/* ── Testimonials Carousel ── */
+.testimonials-section {
+  padding: 60px 24px;
+  background-color: var(--color-bg-base);
+  border-top: 1px solid var(--color-border);
+}
+
+.testimonials-container {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.testimonials-track-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.testimonials-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  width: 100%;
+}
+
+.testimonials-track::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.testimonial-card-wrapper {
+  flex: 0 0 100%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 16px;
+  scroll-snap-align: center;
+}
+
+.testimonial-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px var(--color-card-shadow);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  transition: var(--transition-normal);
+}
+
+.testimonial-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary-mid);
+}
+
+.testimonial-quote {
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--color-text-base);
+}
+
+.testimonial-rating {
+  color: #facc15;
+  font-size: 18px;
+  display: flex;
+  gap: 4px;
+}
+
+.testimonial-identifier {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-primary);
+}
+
+.testimonial-nav-btn {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px var(--color-card-shadow);
+  transition: var(--transition-normal);
+  z-index: 10;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.testimonial-nav-btn:hover {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.testimonial-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.testimonial-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.testimonial-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.testimonial-dot.active {
+  background-color: var(--color-primary);
+  transform: scale(1.25);
+  width: 18px;
+  border-radius: 4px;
+}
+
+.hackathon-badge {
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px dashed rgba(74, 222, 128, 0.35);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+
+.hackathon-badge-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.hackathon-badge-text {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .testimonial-nav-btn {
+    display: none; /* Swipe natively on mobile */
+  }
+  .testimonial-card {
+    padding: 24px 16px;
+  }
+  .testimonial-quote {
+    font-size: 14.5px;
+  }
+}

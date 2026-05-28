@@ -614,8 +614,171 @@ function ExpandableCard({ option, onCompareSelect, isCompareBtnVisible, lang = "
   );
 }
 
+
+// ── TESTIMONIALS DATA ──
+const TESTIMONIALS = [
+  {
+    rating: 4,
+    identifier: {
+      en: "T. · Harare(UZ)",
+      sn: "T. · Harare(UZ)",
+      nd: "T. · Harare(UZ)"
+    },
+    quote: {
+      en: "I did not know what PrEP was until I found Chengeto. I read everything in private, on my phone, without telling anyone. Three days later I walked into the clinic. That was six months ago. I have not looked back.",
+      sn: "Ndakanga ndisingazivi kuti PrEP chii kusvikira ndawana Chengeto. Ndakaverenga zvese pachivande, parunhare rwangu, ndisingaudzi chero munhu. Mazuva matatu gare gare ndakapinda mukiriniki. Ndakazviita mwedzi mitanhatu yadarika. Handina kuzombozvidemba.",
+      nd: "Bengingazi ukuthi iyini i-PrEP ngize ngithole uChengeto. Ngabala konke ngasese, kufoni yami, ngaphandle kokutshela muntu. Emva kwezinsuku ezintathu ngaya ekiliniki. Lokho kwakuyizinyanga ezithupha ezidlulileyo. Angizange ngibheke emuva."
+    }
+  },
+  {
+    rating: 5,
+    identifier: {
+      en: "K. · Bulawayo(Polytech)",
+      sn: "K. · Bulawayo(Polytech)",
+      nd: "K. · Bulawayo(Polytech)"
+    },
+    quote: {
+      en: "I had unprotected sex and panicked. I searched everywhere and could not understand what I was reading. Then someone sent me the Chengeto link. Within five minutes I knew about PEP, I knew the 72-hour window, and I knew exactly which clinic to go to. Chengeto moved faster than my fear did.",
+      sn: "Ndakaita bonde risina kudzivirirwa ndikavhunduka. Ndakatsvaga kwese kwese asi ndakatadza kunzwisisa zvandaverenga. Mumwe munhu akazonditumira link yeChengeto. Mukati memaminitsi mashanu ndakanga ndava kuziva nezve PEP, ndava kuziva nguva ye 72-hour window, uye ndakanga ndava kuziva chaizvo kiriniki yekuenda. Chengeto yakamhanya kudarika kutya kwangu.",
+      nd: "Ngenza ubonde olungakhuselekanga ngathuthumela. Ngadinga yonke indawo kodwa ngahluleka ukuzwisisa ebengikubala. Omunye umuntu wasengithumelela i-link yeChengeto. Ngemva kwemizuzu emihlanu besengiyazi nge-PEP, sengiyazi ngethuba lama-hora angu-72, njalo sengiyazi kahle ukuthi ngiyiphi ikiliniki okumele ngiye kuyo. UChengeto waphangisa ukudlula ukwesaba kwami."
+    }
+  },
+  {
+    rating: 5,
+    identifier: {
+      en: "F. · Gweru(MSU)",
+      sn: "F. · Gweru(MSU)",
+      nd: "F. · Gweru(MSU)"
+    },
+    quote: {
+      en: "I always thought contraception would make me infertile. I believed it for three years. Chengeto showed me the truth with evidence, not just words. I wish I had found this in my first year.",
+      sn: "Ndaigara ndichifunga kuti kudzivirira kubata pamimba kunoita kuti ndive netsvo / ndive asingabereki. Ndakazvitenda kwemakore matatu. Chengeto yakandiratidza chokwadi nehumbowo, kwete nemashoko chete. Dai ndakawana izvi mugore rangu rekutanga.",
+      nd: "Bengilokhu ngicabanga ukuthi ukuvikela ukuzithwala kuzangenza ngibe yinyumba. Ngakukholwa lokhu okweminyaka emithathu. UChengeto wangitshengisa iqiniso ngobufakazi, hatshi ngamazwi kuphela. Sengathi ngabe ngakuthola lokhu ngomnyaka wami wokuqala."
+    }
+  },
+  {
+    rating: 4,
+    identifier: {
+      en: "S. · Masvingo(GZU)",
+      sn: "S. · Masvingo(GZU)",
+      nd: "S. · Masvingo(GZU)"
+    },
+    quote: {
+      en: "I found pregnancy prevention information here on Chengeto. Everything was written in the language I know, clearly and without shame. I went to the campus clinic knowing exactly what I needed. Thank you.",
+      sn: "Ndakawana ruzivo rwekudzivirira pamimba pano pa Chengeto. Zvese zvakanyorwa mumutauro wandinoziva, zvakajeka uye pasina kunyara. Ndakaenda kuchikoro chesvikiro ndichiziva zvandaida. Ndinokutendai.",
+      nd: "Ngathola ulwazi lokuvikela ukuzithwala lapha kuChengeto. Konke kwakubhalwe ngolimi lwami, kucacile njalo kungela mahloni. Ngaya ekiliniki yasekhampasi ngisazi kahle ukuthi ngadingani. Ngiyabonga."
+    }
+  },
+  {
+    rating: 5,
+    identifier: {
+      en: "C. · Chinhoyi(CUT)",
+      sn: "C. · Chinhoyi(CUT)",
+      nd: "C. · Chinhoyi(CUT)"
+    },
+    quote: {
+      en: "I used to think condoms did not work at all. Chengeto showed me the truth with evidence. Now I know all the HIV prevention options and I use them. I am at peace.",
+      sn: "Ini ndaifunga kuti kondomu haina kubatsira zvachose. Chengeto yakandiratidza chokwadi nemhaka. Iye zvino ndinoziva nzira dzekudzivirira HIV dzose uye ndinozishandisa. Ndirikugarisika.",
+      nd: "Mina bengicabanga ukuthi amakhondomu kawasizi ngalutho. UChengeto wangitshengisa iqiniso ngobufakazi. Manje sengiyazi zonke izindlela zokuzivikela ku-HIV njalo ngiyazisebenzisa. Ngilokuthula."
+    }
+  },
+  {
+    rating: 4,
+    identifier: {
+      en: "T. · Bulawayo(POLYTECH)",
+      sn: "T. · Bulawayo(POLYTECH)",
+      nd: "T. · Bulawayo(POLYTECH)"
+    },
+    quote: {
+      en: "I knew nothing about PrEP. I opened Chengeto in my Ndebele language, read everything quietly and privately. Afterwards I went straight to the university clinic. Chengeto helped me in a way I did not expect.",
+      sn: "Ndakanga ndisingazivi chero chinhu nezvePrEP. Ndakavhura Chengeto nemutauro wangu wechiShona, ndikaverenga zvese ndiri ndega pachivande. Ndakabva ndananga kukiriniki yeyunivhesiti. Chengeto yakandibatsira nenzira yandakanga ndisingatarisiri.",
+      nd: "Bengingazi lutho mayelana nePrEP. Ngavula uChengeto ngolimi lwami lwesiNdebele, ngafunda konke ngokuthe cwaka. Ngehla nje, ngaya emtholampilo wasenyuvesi. UChengeto wangisiza ngendlela engangikulindele."
+    }
+  }
+];
+
+
 export default function Application() {
   const [page, setPage] = useState("home");
+
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const testimonialScrollRef = useRef(null);
+  const testimonialAutoplayActive = useRef(true);
+
+  useEffect(() => {
+    if (page !== "home") return;
+    const interval = setInterval(() => {
+      if (testimonialAutoplayActive.current && testimonialScrollRef.current) {
+        setActiveTestimonial(prev => {
+          const next = (prev + 1) % TESTIMONIALS.length;
+          const container = testimonialScrollRef.current;
+          if (container) {
+            const cardWidth = container.offsetWidth;
+            container.scrollTo({
+              left: next * cardWidth,
+              behavior: 'smooth'
+            });
+          }
+          return next;
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [page]);
+
+  const handleTestimonialScroll = () => {
+    const container = testimonialScrollRef.current;
+    if (container) {
+      const scrollPosition = container.scrollLeft;
+      const cardWidth = container.offsetWidth;
+      if (cardWidth > 0) {
+        const newIndex = Math.round(scrollPosition / cardWidth);
+        if (newIndex !== activeTestimonial && newIndex >= 0 && newIndex < TESTIMONIALS.length) {
+          setActiveTestimonial(newIndex);
+        }
+      }
+    }
+  };
+
+  const slideTestimonial = (direction) => {
+    testimonialAutoplayActive.current = false;
+    let nextIndex = activeTestimonial;
+    if (direction === 'prev') {
+      nextIndex = activeTestimonial === 0 ? TESTIMONIALS.length - 1 : activeTestimonial - 1;
+    } else {
+      nextIndex = activeTestimonial === TESTIMONIALS.length - 1 ? 0 : activeTestimonial + 1;
+    }
+    setActiveTestimonial(nextIndex);
+    const container = testimonialScrollRef.current;
+    if (container) {
+      const cardWidth = container.offsetWidth;
+      container.scrollTo({
+        left: nextIndex * cardWidth,
+        behavior: 'smooth'
+      });
+    }
+    setTimeout(() => {
+      testimonialAutoplayActive.current = true;
+    }, 10000);
+  };
+
+  const jumpToTestimonial = (index) => {
+    testimonialAutoplayActive.current = false;
+    setActiveTestimonial(index);
+    const container = testimonialScrollRef.current;
+    if (container) {
+      const cardWidth = container.offsetWidth;
+      container.scrollTo({
+        left: index * cardWidth,
+        behavior: 'smooth'
+      });
+    }
+    setTimeout(() => {
+      testimonialAutoplayActive.current = true;
+    }, 10000);
+  };
+
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [lang, setLang] = useState(() => localStorage.getItem("lang") || "en");
   
@@ -1843,6 +2006,96 @@ export default function Application() {
               </div>
             </div>
           </div>
+
+
+          {/* ── TESTIMONIALS SECTION ── */}
+          <section className="testimonials-section">
+            <div className="testimonials-container">
+              <h2 style={{ textAlign: 'center', fontSize: '24px', color: 'var(--color-primary)', marginBottom: '6px', fontWeight: 800 }}>
+                {lang === 'sn' ? 'Zvinotaurwa nevadzidzi' : lang === 'nd' ? 'Okutshiwo ngabafundi' : 'What students are saying'}
+              </h2>
+              <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', marginBottom: '32px', fontStyle: 'italic' }}>
+                {lang === 'sn' 
+                  ? 'Uchapupu hwese ndehwevanhu vasingazivikanwe mazita avo. Mazita ane mavara ekutanga chete.' 
+                  : lang === 'nd' 
+                    ? 'Ubufakazi bonke kabuvezi amagama abantu. Amagama alandela izinhlamvu zokuqala kuphela.' 
+                    : 'All testimonials are anonymous. Names are initials only.'}
+              </p>
+
+              <div className="testimonials-track-wrapper">
+                <button 
+                  className="testimonial-nav-btn" 
+                  onClick={() => slideTestimonial('prev')}
+                  aria-label="Previous testimonial"
+                >
+                  ◀
+                </button>
+
+                <div 
+                  className="testimonials-track"
+                  ref={testimonialScrollRef}
+                  onScroll={handleTestimonialScroll}
+                  onMouseEnter={() => { testimonialAutoplayActive.current = false; }}
+                  onMouseLeave={() => { testimonialAutoplayActive.current = true; }}
+                  onTouchStart={() => { testimonialAutoplayActive.current = false; }}
+                  onTouchEnd={() => { testimonialAutoplayActive.current = true; }}
+                >
+                  {TESTIMONIALS.map((t, idx) => (
+                    <div key={idx} className="testimonial-card-wrapper">
+                      <div className="testimonial-card">
+                        <span className="testimonial-quote">
+                          "{t.quote[lang] || t.quote.en}"
+                        </span>
+                        
+                        <div className="testimonial-rating">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <span key={i} style={{ opacity: i < t.rating ? 1 : 0.2 }}>★</span>
+                          ))}
+                        </div>
+
+                        <span className="testimonial-identifier">
+                          — {t.identifier[lang] || t.identifier.en}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  className="testimonial-nav-btn" 
+                  onClick={() => slideTestimonial('next')}
+                  aria-label="Next testimonial"
+                >
+                  ▶
+                </button>
+              </div>
+
+              {/* Dots navigation */}
+              <div className="testimonial-dots">
+                {TESTIMONIALS.map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`testimonial-dot ${idx === activeTestimonial ? 'active' : ''}`}
+                    onClick={() => jumpToTestimonial(idx)}
+                    aria-label={`Go to testimonial ${idx + 1}`}
+                  />
+                ))}
+              </div>
+
+              {/* Hackathon Disclaimer Badge */}
+              <div className="hackathon-badge">
+                <span className="hackathon-badge-icon">ℹ️</span>
+                <span className="hackathon-badge-text">
+                  {lang === 'sn' 
+                    ? 'Uchapupu hwekurudziro ye hackathon. Uchapupu chairwo huchatorwa pachishandiswa chirongwa cheMASCOT platform yatanga kushanda.' 
+                    : lang === 'nd' 
+                      ? 'Ubufakazi bokuzama nje kombukiso we-hackathon. Ubufakazi beqiniso buzadingwa ngaphansi kohlelo lwe-MASCOT platform isiqalile ukusebenza.' 
+                      : 'These are prototype testimonials for the hackathon demonstration. Real testimonials will be collected through the MASCOT usability testing process after the platform launches.'}
+                </span>
+              </div>
+            </div>
+          </section>
+
         </div>
       )}
 
