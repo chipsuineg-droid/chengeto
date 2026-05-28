@@ -613,6 +613,7 @@ export default function Application() {
   const [currentUser, setCurrentUser] = useState(() => getSession());
   const [authView, setAuthView] = useState("login"); // 'login' | 'register'
   const [showAuthModal, setShowAuthModal] = useState(false); // auth modal open/close
+  const [showChatComingSoon, setShowChatComingSoon] = useState(false); // chatbot coming soon modal
   // ── PORTAL GATE STATE ──
   const [showPortalGate, setShowPortalGate]         = useState(false); // not-logged-in gate
   const [showPortalPassword, setShowPortalPassword] = useState(false); // secondary password modal
@@ -1382,7 +1383,7 @@ export default function Application() {
                 📦 Commodity Portal
               </button>
               <button 
-                onClick={() => { setPage("chat"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                onClick={() => setShowChatComingSoon(true)} 
                 className="breathe-btn-secondary"
               >
                 💬 Private Chatbot
@@ -1453,7 +1454,7 @@ export default function Application() {
               </div>
 
               {/* Card 2 */}
-              <div className="glass-card" onClick={() => setPage("chat")} style={{ cursor: 'pointer' }}>
+              <div className="glass-card" onClick={() => setShowChatComingSoon(true)} style={{ cursor: 'pointer' }}>
                 <div style={{ fontSize: '36px', marginBottom: '12px' }}>🤖</div>
                 <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Chengeto Private Chatbot</h3>
                 <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
@@ -1613,7 +1614,7 @@ export default function Application() {
               </div>
 
               {/* Bottom Chat Button */}
-              <button className="btn" onClick={() => setPage('chat')} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-primary)', boxShadow: '0 4px 12px var(--color-card-shadow)' }}>
+              <button className="btn" onClick={() => setShowChatComingSoon(true)} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-primary)', boxShadow: '0 4px 12px var(--color-card-shadow)' }}>
                 Have More Questions? Talk to Chengeto
               </button>
             </div>
@@ -2094,7 +2095,7 @@ export default function Application() {
             </div>
 
             {/* Bottom Chat Button */}
-            <button className="btn" onClick={() => setPage('chat')} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-rose)', boxShadow: '0 4px 12px var(--color-card-shadow)', marginTop: '20px' }}>
+            <button className="btn" onClick={() => setShowChatComingSoon(true)} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-rose)', boxShadow: '0 4px 12px var(--color-card-shadow)', marginTop: '20px' }}>
               Have More Questions? Talk to Chengeto
             </button>
           </div>
@@ -3074,7 +3075,7 @@ export default function Application() {
           </div>
 
           {/* Bottom Chat Button */}
-          <button className="btn" onClick={() => setPage('chat')} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-rose)', boxShadow: '0 4px 12px var(--color-card-shadow)', marginTop: '20px' }}>
+          <button className="btn" onClick={() => setShowChatComingSoon(true)} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-rose)', boxShadow: '0 4px 12px var(--color-card-shadow)', marginTop: '20px' }}>
             Have More Questions? Talk to Chengeto
           </button>
         </div>
@@ -3419,6 +3420,177 @@ export default function Application() {
                 </p>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+          AI CHATBOT COMING SOON MODAL
+      \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */}
+      {showChatComingSoon && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowChatComingSoon(false); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px',
+            animation: 'fadeIn 0.3s ease',
+          }}
+        >
+          <div style={{
+            width: '100%', maxWidth: '400px',
+            background: 'linear-gradient(160deg, rgba(6,20,12,0.98) 0%, rgba(10,28,16,0.98) 60%, rgba(5,15,22,0.98) 100%)',
+            border: '1px solid rgba(34,197,94,0.3)',
+            borderRadius: '28px',
+            padding: '44px 32px 36px',
+            boxShadow: '0 40px 120px rgba(0,0,0,0.8), 0 0 80px rgba(34,197,94,0.08)',
+            animation: 'slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+            position: 'relative',
+            textAlign: 'center',
+            overflow: 'hidden',
+          }}>
+
+            {/* Subtle background glow blobs */}
+            <div style={{
+              position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)',
+              width: '200px', height: '200px', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+            <div style={{
+              position: 'absolute', bottom: '-30px', right: '-30px',
+              width: '150px', height: '150px', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+
+            {/* Close button */}
+            <button onClick={() => setShowChatComingSoon(false)} style={{
+              position: 'absolute', top: '16px', right: '16px',
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '50%', width: '32px', height: '32px',
+              color: 'rgba(255,255,255,0.4)', fontSize: '15px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>✕</button>
+
+            {/* Animated robot icon */}
+            <div style={{ position: 'relative', display: 'inline-block', marginBottom: '28px' }}>
+              {/* Outer glow ring 1 */}
+              <div style={{
+                position: 'absolute', inset: '-18px', borderRadius: '50%',
+                border: '1px solid rgba(34,197,94,0.2)',
+                animation: 'ripple1 2.4s ease-out infinite',
+              }} />
+              {/* Outer glow ring 2 */}
+              <div style={{
+                position: 'absolute', inset: '-8px', borderRadius: '50%',
+                border: '1px solid rgba(34,197,94,0.35)',
+                animation: 'ripple2 2.4s ease-out infinite 0.5s',
+              }} />
+              {/* Robot circle */}
+              <div style={{
+                width: '100px', height: '100px', borderRadius: '50%',
+                background: 'radial-gradient(circle at 38% 35%, hsl(152,65%,32%), hsl(152,55%,16%))',
+                border: '2px solid hsl(152,60%,45%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 40px rgba(34,197,94,0.35), inset 0 1px 0 rgba(255,255,255,0.1)',
+                animation: 'robotFloat 3s ease-in-out infinite',
+                position: 'relative', zIndex: 1,
+              }}>
+                {/* Inline green robot SVG */}
+                <svg width="54" height="54" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Antenna */}
+                  <line x1="32" y1="6" x2="32" y2="14" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round"/>
+                  <circle cx="32" cy="5" r="3" fill="#4ade80"/>
+                  {/* Head */}
+                  <rect x="14" y="14" width="36" height="26" rx="7" fill="#16a34a" stroke="#4ade80" strokeWidth="1.5"/>
+                  {/* Eyes */}
+                  <circle cx="24" cy="25" r="5" fill="#0f172a"/>
+                  <circle cx="40" cy="25" r="5" fill="#0f172a"/>
+                  <circle cx="24" cy="25" r="2.5" fill="#4ade80"/>
+                  <circle cx="40" cy="25" r="2.5" fill="#4ade80"/>
+                  {/* Mouth */}
+                  <rect x="22" y="33" width="20" height="3.5" rx="1.75" fill="#4ade80" opacity="0.7"/>
+                  {/* Body */}
+                  <rect x="20" y="42" width="24" height="16" rx="5" fill="#15803d" stroke="#4ade80" strokeWidth="1.2"/>
+                  {/* Body panel dots */}
+                  <circle cx="27" cy="50" r="2" fill="#4ade80" opacity="0.6"/>
+                  <circle cx="37" cy="50" r="2" fill="#4ade80" opacity="0.6"/>
+                  {/* Arms */}
+                  <rect x="8" y="43" width="10" height="4" rx="2" fill="#15803d" stroke="#4ade80" strokeWidth="1"/>
+                  <rect x="46" y="43" width="10" height="4" rx="2" fill="#15803d" stroke="#4ade80" strokeWidth="1"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* Heading */}
+            <h2 style={{
+              fontSize: '24px', fontWeight: 900, color: '#fff',
+              letterSpacing: '-0.5px', margin: '0 0 8px',
+              lineHeight: 1.2,
+            }}>
+              AI ChatBot
+            </h2>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
+              borderRadius: '20px', padding: '4px 14px', marginBottom: '20px',
+            }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, color: 'hsl(152,70%,60%)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>
+                Coming Soon
+              </span>
+              <span style={{ animation: 'blink 1.2s step-start infinite', color: 'hsl(152,70%,60%)', fontSize: '12px' }}>●</span>
+            </div>
+
+            {/* Message */}
+            <p style={{
+              fontSize: '15px', color: 'rgba(255,255,255,0.65)',
+              lineHeight: 1.7, margin: '0 0 8px',
+            }}>
+              We're building something incredible.
+            </p>
+            <p style={{
+              fontSize: '14px', color: 'rgba(255,255,255,0.4)',
+              lineHeight: 1.6, margin: '0 0 32px',
+            }}>
+              Chengeto's private AI health assistant is almost here — ask anything about HIV, contraception &amp; more, completely anonymously.
+            </p>
+
+            {/* Animated dots loader */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '32px' }}>
+              {[0, 1, 2, 3, 4].map(i => (
+                <div key={i} style={{
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  background: 'hsl(152,60%,45%)',
+                  animation: `dotBounce 1.4s ease-in-out infinite`,
+                  animationDelay: `${i * 0.18}s`,
+                  opacity: 0.8,
+                }} />
+              ))}
+            </div>
+
+            {/* CTA button */}
+            <button
+              onClick={() => setShowChatComingSoon(false)}
+              style={{
+                width: '100%', padding: '14px',
+                borderRadius: '14px', border: 'none',
+                background: 'hsl(152,60%,38%)',
+                color: '#fff', fontWeight: 800, fontSize: '14px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(34,197,94,0.3)',
+                transition: 'all 0.2s',
+                letterSpacing: '0.2px',
+              }}
+            >
+              Got it — Stay Tuned! 🚀
+            </button>
+
+            <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.2)', marginTop: '16px' }}>
+              Powered by CHENGETO · Built for Zimbabwe Students
+            </p>
           </div>
         </div>
       )}
