@@ -1000,20 +1000,20 @@ export default function Application() {
 
             {/* Brand */}
             <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-              <img
-                src="/chengeto-shield.png"
-                alt="Chengeto Shield"
-                style={{
-                  width: '88px',
-                  height: '96px',
-                  objectFit: 'contain',
-                  display: 'block',
-                  margin: '0 auto 12px',
-                  WebkitMaskImage: 'radial-gradient(ellipse 78% 85% at 50% 48%, black 55%, transparent 100%)',
-                  maskImage: 'radial-gradient(ellipse 78% 85% at 50% 48%, black 55%, transparent 100%)',
-                  filter: 'drop-shadow(0 6px 24px rgba(34,197,94,0.4)) brightness(1.05)',
-                }}
-              />
+              <div style={{ display: 'inline-block', filter: 'drop-shadow(0 6px 24px rgba(34,197,94,0.5))', margin: '0 auto 12px', lineHeight: 0 }}>
+                <img
+                  src="/chengeto-shield.png"
+                  alt="Chengeto Shield"
+                  style={{
+                    width: '88px',
+                    height: '96px',
+                    objectFit: 'contain',
+                    display: 'block',
+                    clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
+                    WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
+                  }}
+                />
+              </div>
               <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', margin: 0 }}>CHENGETO</h1>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginTop: '4px', fontStyle: 'italic' }}>chengeto : Shona for protection</p>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginTop: '8px', lineHeight: 1.5, maxWidth: '320px', margin: '8px auto 0' }}>
@@ -1217,19 +1217,20 @@ export default function Application() {
       <header className={`nav-header ${page === "home" ? "home-header" : ""}`}>
         <div className="logo-group">
           <div className="logo-icon-wrap">
-            <img
-              src="/chengeto-shield.png"
-              alt="Chengeto Shield"
-              style={{
-                width: '48px',
-                height: '54px',
-                objectFit: 'contain',
-                display: 'block',
-                WebkitMaskImage: 'radial-gradient(ellipse 78% 85% at 50% 48%, black 55%, transparent 100%)',
-                maskImage: 'radial-gradient(ellipse 78% 85% at 50% 48%, black 55%, transparent 100%)',
-                filter: 'drop-shadow(0 2px 8px rgba(34,197,94,0.4)) brightness(1.05)',
-              }}
-            />
+            <div style={{ filter: 'drop-shadow(0 2px 8px rgba(34,197,94,0.45))', lineHeight: 0 }}>
+              <img
+                src="/chengeto-shield.png"
+                alt="Chengeto Shield"
+                style={{
+                  width: '48px',
+                  height: '54px',
+                  objectFit: 'contain',
+                  display: 'block',
+                  clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
+                  WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
+                }}
+              />
+            </div>
           </div>
           <div className="logo-text-wrap">
             <span className="logo-title-text">
@@ -1319,20 +1320,21 @@ export default function Application() {
             })()}
 
             <div style={{ marginBottom: '24px', animation: 'fadeInUp 0.5s' }}>
-              <img
-                src="/chengeto-shield.png"
-                alt="Chengeto Shield"
-                style={{
-                  width: '88px',
-                  height: '96px',
-                  objectFit: 'contain',
-                  display: 'block',
-                  margin: '0 auto',
-                  WebkitMaskImage: 'radial-gradient(ellipse 76% 84% at 50% 47%, black 52%, transparent 100%)',
-                  maskImage: 'radial-gradient(ellipse 76% 84% at 50% 47%, black 52%, transparent 100%)',
-                  filter: 'drop-shadow(0 4px 20px rgba(34,197,94,0.45)) brightness(1.08)',
-                }}
-              />
+              <div style={{ display: 'inline-block', filter: 'drop-shadow(0 4px 24px rgba(34,197,94,0.55))', lineHeight: 0 }}>
+                <img
+                  src="/chengeto-shield.png"
+                  alt="Chengeto Shield"
+                  style={{
+                    width: '88px',
+                    height: '96px',
+                    objectFit: 'contain',
+                    display: 'block',
+                    margin: '0 auto',
+                    clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
+                    WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
+                  }}
+                />
+              </div>
             </div>
             <h1 className="hero-title">CHENGETO</h1>
             <div className="hero-shona">Shona word for protection</div>
