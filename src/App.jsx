@@ -1004,13 +1004,14 @@ export default function Application() {
                 src="/chengeto-shield.png"
                 alt="Chengeto Shield"
                 style={{
-                  width: '72px',
-                  height: '80px',
+                  width: '88px',
+                  height: '96px',
                   objectFit: 'contain',
-                  marginBottom: '8px',
-                  filter: 'drop-shadow(0 4px 16px rgba(34,197,94,0.25))',
                   display: 'block',
-                  margin: '0 auto 8px',
+                  margin: '0 auto 12px',
+                  WebkitMaskImage: 'radial-gradient(ellipse 78% 85% at 50% 48%, black 55%, transparent 100%)',
+                  maskImage: 'radial-gradient(ellipse 78% 85% at 50% 48%, black 55%, transparent 100%)',
+                  filter: 'drop-shadow(0 6px 24px rgba(34,197,94,0.4)) brightness(1.05)',
                 }}
               />
               <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', margin: 0 }}>CHENGETO</h1>
@@ -1219,9 +1220,15 @@ export default function Application() {
             <img
               src="/chengeto-shield.png"
               alt="Chengeto Shield"
-              width="32"
-              height="36"
-              style={{ objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}
+              style={{
+                width: '48px',
+                height: '54px',
+                objectFit: 'contain',
+                display: 'block',
+                WebkitMaskImage: 'radial-gradient(ellipse 78% 85% at 50% 48%, black 55%, transparent 100%)',
+                maskImage: 'radial-gradient(ellipse 78% 85% at 50% 48%, black 55%, transparent 100%)',
+                filter: 'drop-shadow(0 2px 8px rgba(34,197,94,0.4)) brightness(1.05)',
+              }}
             />
           </div>
           <div className="logo-text-wrap">
