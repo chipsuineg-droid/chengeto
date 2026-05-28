@@ -616,6 +616,7 @@ export default function Application() {
   const [page, setPage] = useState("home");
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [lang, setLang] = useState(() => localStorage.getItem("lang") || "en");
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   
   const [userLocation, setUserLocation] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -1454,25 +1455,9 @@ export default function Application() {
                     ✅ Create My Account
                   </button>
                   <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>
-                    Your data stays on this device. Chengeto does not collect or share personal information.
-                  </p>
-                </form>
-              )}
-            </div>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: '16px' }}>
-              🔒 Private &amp; Secure · Works Offline · Made for Zimbabwe Students
-            </p>
-          </div>
-        </div>
-      )}
-
-
-      {/* ══════════════════════════════════════════════
-          MAIN APP : always visible
-      ══════════════════════════════════════════════ */}
-      <div>
-      {/* ── HEADER ── */}
+                    Your data       {/* ══ HEADER ══ */}
       <header className={`nav-header ${page === "home" ? "home-header" : ""}`}>
+        {/* Logo group — always visible */}
         <div className="logo-group">
           <div className="logo-icon-wrap">
             <div style={{ filter: 'drop-shadow(0 2px 8px rgba(34,197,94,0.45))', lineHeight: 0 }}>
@@ -1480,10 +1465,7 @@ export default function Application() {
                 src="/chengeto-shield.png"
                 alt="Chengeto Shield"
                 style={{
-                  width: '48px',
-                  height: '54px',
-                  objectFit: 'contain',
-                  display: 'block',
+                  width: '48px', height: '54px', objectFit: 'contain', display: 'block',
                   clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
                   WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
                 }}
@@ -1491,15 +1473,13 @@ export default function Application() {
             </div>
           </div>
           <div className="logo-text-wrap">
-            <span className="logo-title-text">
-              CHENGETO
-            </span>
-            <span className="logo-sub-text">
-              Youth Health & Self-Care Platform
-            </span>
+            <span className="logo-title-text">CHENGETO</span>
+            <span className="logo-sub-text">Youth Health &amp; Self-Care Platform</span>
           </div>
         </div>
-        <div className="nav-links">
+
+        {/* ── DESKTOP NAV (hidden on mobile) ── */}
+        <div className="nav-links desktop-nav">
           <button onClick={() => setPage("home")} className={`nav-button ${page === "home" ? "active" : ""}`}>
             🏠 <span>Home</span>
           </button>
@@ -1521,44 +1501,129 @@ export default function Application() {
           <button onClick={toggleTheme} className="theme-toggle-btn" aria-label="Toggle theme">
             {theme === "light" ? "🌙" : "☀️"}
           </button>
-          <button
-            onClick={toggleLang}
-            className="nav-button"
-            aria-label="Switch language"
-            title={`Switch language : current: ${LANG_LABELS[lang].name}`}
-            style={{ fontWeight: 800, letterSpacing: '0.5px', minWidth: '52px', textAlign: 'center' }}
-          >
+          <button onClick={toggleLang} className="nav-button" aria-label="Switch language"
+            style={{ fontWeight: 800, letterSpacing: '0.5px', minWidth: '52px', textAlign: 'center' }}>
             {LANG_LABELS[lang].flag} {LANG_LABELS[lang].label}
           </button>
-          {/* ── Header right: Log In / Sign Up OR minimal avatar ── */}
           {currentUser ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
-              <div
-                title={`Signed in as ${currentUser.nickname}`}
-                style={{ width: '32px', height: '32px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '14px', flexShrink: 0, cursor: 'default', border: '2px solid rgba(255,255,255,0.15)' }}
-              >
+              <div title={`Signed in as ${currentUser.nickname}`}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '14px', flexShrink: 0, cursor: 'default', border: '2px solid rgba(255,255,255,0.15)' }}>
                 {(currentUser?.nickname || '?').charAt(0).toUpperCase()}
               </div>
-              <button
-                onClick={handleLogout}
-                title="Sign out"
-                style={{ background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '7px 9px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', transition: 'all 0.15s' }}
-              >🚪</button>
+              <button onClick={handleLogout} title="Sign out"
+                style={{ background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '7px 9px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', transition: 'all 0.15s' }}>🚪</button>
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
-              <button
-                onClick={() => { setAuthView('login'); setLoginError(''); setShowAuthModal(true); }}
-                style={{ padding: '8px 18px', borderRadius: '20px', border: '2px solid hsl(152,60%,38%)', background: 'transparent', color: 'hsl(152,65%,32%)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.2px' }}
-              >Log In</button>
-              <button
-                onClick={() => { setAuthView('register'); setRegError(''); setShowAuthModal(true); }}
-                style={{ padding: '8px 18px', borderRadius: '20px', border: 'none', background: 'hsl(152,60%,42%)', color: '#fff', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 10px rgba(34,197,94,0.35)', letterSpacing: '0.2px' }}
-              >Sign Up</button>
+              <button onClick={() => { setAuthView('login'); setLoginError(''); setShowAuthModal(true); }}
+                style={{ padding: '8px 18px', borderRadius: '20px', border: '2px solid hsl(152,60%,38%)', background: 'transparent', color: 'hsl(152,65%,32%)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s' }}>Log In</button>
+              <button onClick={() => { setAuthView('register'); setRegError(''); setShowAuthModal(true); }}
+                style={{ padding: '8px 18px', borderRadius: '20px', border: 'none', background: 'hsl(152,60%,42%)', color: '#fff', fontWeight: 700, fontSize: '13px', cursor: 'pointer', boxShadow: '0 2px 10px rgba(34,197,94,0.35)' }}>Sign Up</button>
             </div>
           )}
         </div>
+
+        {/* ── MOBILE RIGHT CONTROLS (hidden on desktop) ── */}
+        <div className="mobile-header-right">
+          <button onClick={toggleTheme} className="mob-icon-btn" aria-label="Toggle theme">
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
+          <button onClick={() => setMobileDrawerOpen(true)} className="mob-hamburger" aria-label="Open menu">
+            <span /><span /><span />
+          </button>
+        </div>
       </header>
+
+      {/* ══ MOBILE DRAWER OVERLAY ══ */}
+      {mobileDrawerOpen && (
+        <div className="mob-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}>
+          <div className="mob-drawer" onClick={e => e.stopPropagation()}>
+            {/* Drawer header */}
+            <div className="mob-drawer-head">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img src="/chengeto-shield.png" alt="Shield"
+                  style={{ width: '36px', height: '40px', objectFit: 'contain',
+                    clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
+                    WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
+                    filter: 'drop-shadow(0 2px 8px rgba(34,197,94,0.45))' }} />
+                <div>
+                  <div style={{ fontWeight: 900, fontSize: '17px', color: 'var(--color-primary)', letterSpacing: '-0.3px' }}>CHENGETO</div>
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', lineHeight: 1.2 }}>Youth Health &amp; Self-Care Platform</div>
+                </div>
+              </div>
+              <button className="mob-drawer-close" onClick={() => setMobileDrawerOpen(false)}>✕</button>
+            </div>
+
+            {/* Nav items */}
+            <nav className="mob-drawer-nav">
+              {[
+                { id: 'home',      emoji: '🏠', label: 'Home' },
+                { id: 'hiv',       emoji: '🛡️', label: 'HIV' },
+                { id: 'pregnancy', emoji: '🌸', label: 'Pregnancy' },
+                { id: 'compare',   emoji: '⚖️', label: 'Compare' },
+                { id: 'directory', emoji: '📍', label: 'Services' },
+                { id: 'podcast',   emoji: '🎙️', label: 'Podcast' },
+              ].map(item => (
+                <button key={item.id}
+                  className={`mob-drawer-item ${page === item.id ? 'mob-drawer-item--active' : ''}`}
+                  onClick={() => { setPage(item.id); setMobileDrawerOpen(false); }}>
+                  <span className="mob-drawer-item-icon">{item.emoji}</span>
+                  <span className="mob-drawer-item-label">{item.label}</span>
+                  {page === item.id && <span className="mob-drawer-item-dot" />}
+                </button>
+              ))}
+            </nav>
+
+            {/* Auth buttons in drawer */}
+            <div className="mob-drawer-auth">
+              {currentUser ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: 'var(--color-primary-light)', borderRadius: '12px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '16px' }}>
+                      {(currentUser?.nickname || '?').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--color-primary)' }}>{currentUser.nickname}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Signed in</div>
+                    </div>
+                  </div>
+                  <button onClick={() => { handleLogout(); setMobileDrawerOpen(false); }}
+                    style={{ width: '100%', padding: '13px', borderRadius: '12px', border: '1.5px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-muted)', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}>🚪 Sign Out</button>
+                </div>
+                ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button onClick={() => { setAuthView('login'); setLoginError(''); setShowAuthModal(true); setMobileDrawerOpen(false); }}
+                    style={{ width: '100%', padding: '14px', borderRadius: '14px', border: '2px solid hsl(152,60%,38%)', background: 'transparent', color: 'hsl(152,55%,32%)', fontWeight: 800, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    🔑 Log In
+                  </button>
+                  <button onClick={() => { setAuthView('register'); setRegError(''); setShowAuthModal(true); setMobileDrawerOpen(false); }}
+                    style={{ width: '100%', padding: '14px', borderRadius: '14px', border: 'none', background: 'hsl(152,60%,38%)', color: '#fff', fontWeight: 800, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
+                    👤 Sign Up
+                  </button>
+                </div>
+              )}
+              <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '14px', opacity: 0.7 }}>🛡️ Your privacy matters. You're always anonymous.</p>
+            </div>
+      )}
+
+      {/* ── MOBILE BOTTOM TAB BAR ── */}
+      <nav className="mob-bottom-nav">
+        {[
+          { id: 'home',      emoji: '🏠', label: 'Home' },
+          { id: 'hiv',       emoji: '🛡️', label: 'HIV' },
+          { id: 'pregnancy', emoji: '🌸', label: 'Pregnancy' },
+          { id: 'compare',   emoji: '⚖️', label: 'Compare' },
+          { id: 'podcast',   emoji: '🎙️', label: 'Podcast' },
+        ].map(item => (
+          <button key={item.id}
+            className={`mob-tab-btn ${page === item.id ? 'mob-tab-btn--active' : ''}`}
+            onClick={() => setPage(item.id)}>
+            <span className="mob-tab-icon">{item.emoji}</span>
+            <span className="mob-tab-label">{item.label}</span>
+          </button>
+        ))}
+      </nav>
 
       {/* ── HOME VIEW ── */}
       {page === "home" && (
@@ -1635,6 +1700,27 @@ export default function Application() {
               )}
             </div>
           </section>
+
+          {/* ══ MOBILE-ONLY: Explore Topics ══ */}
+          <div className="mobile-explore-section">
+            <h2 className="mobile-explore-title">Explore Topics</h2>
+            <div className="mobile-explore-grid">
+              {[
+                { id: 'hiv',       emoji: '🛡️', label: 'HIV',       sub: 'Prevention, treatment & support', color: '#059669', bg: '#D1FAE5' },
+                { id: 'pregnancy', emoji: '🌸', label: 'Pregnancy', sub: 'Contraception, family planning',  color: '#DB2777', bg: '#FCE7F3' },
+                { id: 'compare',   emoji: '⚖️', label: 'Compare',   sub: 'Methods & options',               color: '#D97706', bg: '#FEF3C7' },
+                { id: 'directory', emoji: '📍', label: 'Services',  sub: 'Find youth-friendly health services', color: '#0891B2', bg: '#E0F2FE' },
+                { id: 'podcast',   emoji: '🎙️', label: 'Podcast',   sub: 'Real stories. Real facts. Real Zimbabwe.', color: '#7C3AED', bg: '#EDE9FE' },
+              ].map(item => (
+                <button key={item.id} className="mobile-explore-card" onClick={() => setPage(item.id)}
+                  style={{ '--card-color': item.color, '--card-bg': item.bg }}>
+                  <div className="mobile-explore-card-icon" style={{ background: item.bg, color: item.color }}>{item.emoji}</div>
+                  <div className="mobile-explore-card-label" style={{ color: 'var(--color-text-main)' }}>{item.label}</div>
+                  <div className="mobile-explore-card-sub" style={{ color: 'var(--color-text-muted)' }}>{item.sub}</div>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Quick Information Trust Anchors */}
           <div style={{ background: 'rgba(8, 30, 16, 0.96)', padding: '24px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
