@@ -1,13 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import MindMap from './components/MindMap';
 import { HIV_INFO_SECTIONS } from './data/hivInfo';
 import { PREG_INFO_SECTIONS } from './data/pregInfo';
 import { hivMindMapData } from './data/hivMindMapData';
 import { pregMindMapData } from './data/pregMindMapData';
-import { getBotResponse } from './data/botEngine';
-import { HIV_PREVENTION_METHODS, HIV_PREVENTION_CATEGORIES } from './data/hivPreventionMethods';
-import { PREG_PREVENTION_METHODS, PREG_PREVENTION_CATEGORIES } from './data/pregPreventionMethods';
-
 // ── LANGUAGES ──
 const LANG_LABELS = {
   en: { label: "EN", flag: "🇬🇧", name: "English" },
@@ -16,61 +12,23 @@ const LANG_LABELS = {
 };
 const LANG_CYCLE = ["en", "sn", "nd"];
 
-// ── INSTITUTIONS ──
-const INSTITUTION_TYPES = [
-  { id: "university",   label: "University" },
-  { id: "polytechnic",  label: "Polytechnic" },
-  { id: "college",      label: "College" },
-  { id: "other",        label: "Other Tertiary" },
+// ── UNIVERSITIES ──
+const UNIVERSITIES = [
+  { id: "uz",    name: "University of Zimbabwe",                 short: "UZ",    idFormat: "R######X" },
+  { id: "nust",  name: "National University of Science & Technology", short: "NUST",  idFormat: "N#######X" },
+  { id: "msu",   name: "Midlands State University",             short: "MSU",   idFormat: "R######X" },
+  { id: "bindura", name: "Bindura University of Science Education", short: "BUSE",  idFormat: "B######X" },
+  { id: "cut",   name: "Chinhoyi University of Technology",     short: "CUT",   idFormat: "C######X" },
+  { id: "wua",   name: "Women's University in Africa",          short: "WUA",   idFormat: "W######X" },
+  { id: "muz",   name: "Midlands State University Zvishavane",  short: "MSUZ",  idFormat: "R######X" },
+  { id: "gzu",   name: "Great Zimbabwe University",             short: "GZU",   idFormat: "G######X" },
 ];
 
-const INSTITUTIONS = [
-  // Universities
-  { id: "uz",      name: "University of Zimbabwe",                   type: "university" },
-  { id: "nust",    name: "National University of Science & Technology", type: "university" },
-  { id: "msu",     name: "Midlands State University",                type: "university" },
-  { id: "bindura", name: "Bindura University of Science Education",   type: "university" },
-  { id: "cut",     name: "Chinhoyi University of Technology",        type: "university" },
-  { id: "wua",     name: "Women's University in Africa",             type: "university" },
-  { id: "gzu",     name: "Great Zimbabwe University",                type: "university" },
-  { id: "hit",     name: "Harare Institute of Technology",           type: "university" },
-  { id: "lsu",     name: "Lupane State University",                  type: "university" },
-  { id: "au",      name: "Africa University",                        type: "university" },
-  // Polytechnics
-  { id: "harare-poly",  name: "Harare Polytechnic",                  type: "polytechnic" },
-  { id: "byo-poly",     name: "Bulawayo Polytechnic",                type: "polytechnic" },
-  { id: "gweru-poly",   name: "Gweru Polytechnic",                   type: "polytechnic" },
-  { id: "masvingo-poly",name: "Masvingo Polytechnic",               type: "polytechnic" },
-  // Colleges
-  { id: "morgenster",   name: "Morgenster Teachers College",         type: "college" },
-  { id: "mkoba",        name: "Mkoba Teachers College",              type: "college" },
-  { id: "belvedere",    name: "Belvedere Technical Teachers College", type: "college" },
-  { id: "other-inst",   name: "Other Institution",                   type: "other" },
-];
-
-const STUDY_LEVELS = [
-  "Part 1", "Part 2", "Part 3", "Part 4",
-  "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6",
-  "Postgraduate",
-];
-
-const GENDERS = [
-  { id: "female",          label: "Female" },
-  { id: "male",            label: "Male" },
-  { id: "non-binary",      label: "Non-binary" },
-  { id: "prefer-not-say",  label: "Prefer not to say" },
-];
-
-
-// ── AUTH UTILITIES (privacy-first: no student ID, no email, no full name) ──
-// Unique account key = nickname + institution (lowercase, trimmed)
-const makeAccountKey = (nickname, institution) =>
-  `${nickname.trim().toLowerCase()}@${institution}`;
-
+// ── AUTH UTILITIES ──
 const AUTH_DEMO_ACCOUNTS = [
-  { key: "rudo@uz",    nickname: "Rudo",    institution: "uz",   level: "Year 2",  gender: "female",         password: "chengeto2024", avatarColor: '#059669' },
-  { key: "tatenda@nust", nickname: "Tatenda", institution: "nust", level: "Year 3",  gender: "male",           password: "health123",   avatarColor: '#7C3AED' },
-  { key: "thembi@msu",  nickname: "Thembi",  institution: "msu",  level: "Part 1",  gender: "female",         password: "protect123",  avatarColor: '#DB2777' },
+  { studentId: "R190001X", university: "uz",   name: "Rudo Moyo",       password: "chengeto2024", year: 2, programme: "Medicine" },
+  { studentId: "N2230045X", university: "nust", name: "Tatenda Khumalo",  password: "health123",   year: 3, programme: "Civil Engineering" },
+  { studentId: "R200067X", university: "msu",  name: "Thembi Ncube",     password: "protect123",  year: 1, programme: "Social Work" },
 ];
 
 const getStoredUsers = () => {
@@ -83,37 +41,41 @@ const getSession = () => {
 const saveSession = (user) => localStorage.setItem("chengeto_session", JSON.stringify(user));
 const clearSession = () => localStorage.removeItem("chengeto_session");
 
-const validateLogin = (nickname, institution, password) => {
-  const key = makeAccountKey(nickname, institution);
-  const demo = AUTH_DEMO_ACCOUNTS.find(a => a.key === key && a.password === password);
-  if (demo) return { ...demo };
+const validateLogin = (studentId, password) => {
+  const id = studentId.trim().toUpperCase();
+  // Check demo accounts first
+  const demo = AUTH_DEMO_ACCOUNTS.find(a => a.studentId === id && a.password === password);
+  if (demo) return { ...demo, studentId: id };
+  // Check registered users
   const stored = getStoredUsers();
-  const user = stored.find(u => u.key === key && u.password === password);
+  const user = stored.find(u => u.studentId === id && u.password === password);
   return user || null;
 };
 
-const registerUser = (nickname, institution, level, gender, password) => {
-  const nick = nickname.trim();
-  const key  = makeAccountKey(nick, institution);
-  if (nick.length < 2)    return { error: "Nickname must be at least 2 characters." };
-  if (password.length < 6) return { error: "Password must be at least 6 characters." };
+const registerUser = (studentId, password, name, university, year, programme) => {
+  const id = studentId.trim().toUpperCase();
   const all = [...AUTH_DEMO_ACCOUNTS, ...getStoredUsers()];
-  if (all.find(u => u.key === key)) return { error: "This nickname is already taken at that institution. Try a different nickname." };
-  const newUser = { key, nickname: nick, institution, level, gender, password, avatarColor: '#059669' };
+  if (all.find(u => u.studentId === id)) return { error: "This Student ID is already registered." };
+  if (id.length < 5) return { error: "Student ID seems too short. Please check it." };
+  if (password.length < 6) return { error: "Password must be at least 6 characters." };
+  if (!name.trim()) return { error: "Please enter your full name." };
+  const newUser = { studentId: id, password, name: name.trim(), university, year: parseInt(year), programme: programme.trim(), nickname: name.trim().split(' ')[0], avatarColor: '#059669', bio: '' };
   const users = getStoredUsers();
   saveUsers([...users, newUser]);
   return { user: newUser };
 };
 
-const updateUserProfile = (key, updates) => {
+const updateUserProfile = (studentId, updates) => {
+  // update demo accounts in session only (they do not live in localStorage)
   const users = getStoredUsers();
-  const idx = users.findIndex(u => u.key === key);
+  const idx = users.findIndex(u => u.studentId === studentId);
   let updatedUser;
   if (idx >= 0) {
     updatedUser = { ...users[idx], ...updates };
     users[idx] = updatedUser;
     saveUsers(users);
   } else {
+    // demo account : patch session only
     updatedUser = { ...getSession(), ...updates };
   }
   saveSession(updatedUser);
@@ -200,7 +162,59 @@ const UI = {
 };
 
 // ── DATA ──
+const HIV_CATEGORIES = ["All", "Before Exposure", "After Exposure / Testing"];
+const PREG_CATEGORIES = ["All", "Short-term", "Medium-term", "Long-term", "Natural"];
 
+const HIV_OPTIONS = [
+  { id: "prep-oral", icon: "💊", name: "Daily Oral PrEP", cat: "Before Exposure",
+    desc: { en: "A pill taken daily to prevent HIV before possible exposure.", sn: "Hapwa rakunwa zuva nezuva kuzuva HIV usati wasangana nayo.", nd: "Iphilisi elithathwa nsuku zonke ukuvikela i-HIV ngaphambi kokuba ubonakale." },
+    how: { en: "Tenofovir/emtricitabine tablets taken every day create a protective barrier against HIV in your body.", sn: "Hapwa dzeTenofovir/emtricitabine dzinodyiwa zuva nezuva dzinogadzira mupanda unodzivirira HIV mumuviri wako.", nd: "Amaphilisi e-Tenofovir/emtricitabine athathwa nsuku zonke akha uthango oluvikela i-HIV emzimbeni wakho." },
+    frequency: { en: "Once daily", sn: "Kamwechete zuva nezuva", nd: "Kanye nsuku zonke" },
+    sideEffects: { en: "Nausea (settles in 2–4 weeks), headache, fatigue. Serious side effects are rare.", sn: "Kurwadza dumbu (kunopfuura mavhiki 2–4), kurwadza musoro, kutadza kuita zvose. Zvakakomba hazviitike.", nd: "Ukucanasa (kuyaphela ngeviki ezingu-2–4), ikhanda elibuhlungu, ukukhathala. Izimpawu ezikhulu azivamile." },
+    cost: "Free at government clinics. Available at most public hospitals.", availability: "UZ Health Centre, Parirenyatwa, Sally Mugabe Hospital, ZUPCO clinics.", effectiveness: 99, dual: false },
+  { id: "prep-inject", icon: "💉", name: "Injectable Cabotegravir", cat: "Before Exposure",
+    desc: { en: "A long-acting injectable PrEP given every 2 months.", sn: "Injection yePrEP inopihwa rimwe chete pamwedzi miviri.", nd: "I-PrEP ethinjwa ezingeni elide, inikezwa njalo izinyanga ezimbili." },
+    how: { en: "Cabotegravir injection into the muscle maintains protective drug levels for 8 weeks between doses.", sn: "Injection yeCabotegravir inoisa mishonga yakakwana mumusana kwemazhingaIDzi 8 pakati pekupihwa.", nd: "Ukuthinjwa kwe-Cabotegravir emisipha kugcina amazinga omuthi ovikela amaviki angu-8 phakathi kwamadozi." },
+    frequency: { en: "Every 2 months", sn: "Rimwe chete pamwedzi miviri", nd: "Njalo izinyanga ezimbili" },
+    sideEffects: { en: "Injection site reactions, headache. Generally very well tolerated.", sn: "Zviitiko panzwi yekupihwa, kurwadza musoro. Zvinoderedzerwa zvakanyatso.", nd: "Izimpendulo endaweni yokuthinjwa, ikhanda elibuhlungu. Ngokuvamile zemunye njani." },
+    cost: "Currently in rollout phase : available at select sites.", availability: "Check with your nearest public hospital HIV clinic.", effectiveness: 99, dual: false },
+  { id: "dapivirine", icon: "💍", name: "Dapivirine Vaginal Ring", cat: "Before Exposure",
+    desc: { en: "A monthly vaginal ring that slowly releases HIV-prevention medicine.", sn: "Mhete yemimba inopihwa rimwe pamwedzi inozorora mushonga weHIV zvishoma nezvishoma.", nd: "Indandatho yesitho sangasese yenyanga nenyanga, akhiphe umuthi wegwema i-HIV kancane kancane." },
+    how: { en: "The silicone ring is inserted vaginally and releases dapivirine daily, reducing HIV risk.", sn: "Mhete yesilicone inoisa nemimba yemwanasikaana uye inoburitsa dapivirine zuva nezuva, ichideredza njodzi yeHIV.", nd: "Indandatho yesilicone ifakwa ngesitho sangasese futhi ikhipha i-dapivirine nsuku zonke, yehlisa ingozi ye-HIV." },
+    frequency: { en: "Changed monthly", sn: "Kuchinjwa rimwe pamwedzi", nd: "Shintshelwa njalo ngenyanga" },
+    sideEffects: { en: "Mild vaginal discomfort, ring expulsion. Generally well tolerated.", sn: "Kushayirwa zvishoma mumo, kubudiswa kwemhete. Zvinoderedzerwa zvakanyatso.", nd: "Ukungakhululeki okunganani esithweni, ukukhishwa kwandandatho. Ngokuvamile zemunye njani." },
+    cost: "Available at select reproductive health clinics.", availability: "Ask at your nearest women's health clinic.", effectiveness: 35, dual: false },
+  { id: "condom-male", icon: "🛡️", name: "Male Condoms", cat: "Before Exposure",
+    desc: { en: "A barrier method worn on the penis during sex : protects against HIV and pregnancy.", sn: "Nzira yekudziviririka inopfekwa pamurume panguva yezvekunorara : inodzivirira HIV nemimba.", nd: "Indlela yokuvikela efakwa ephaleni ngocansi : ivikela i-HIV nokukhulelwa." },
+    how: { en: "Creates a physical barrier preventing HIV transmission and sperm from reaching the egg.", sn: "Inogadzira mupanda wemuviri unodzivirira kupararira kweHIV uye mbeu kusangana nemago.", nd: "Yakha uthango lwomzimba oluvikela ukusabalala kwe-HIV nembewu ukufinyelela kwe-ovum." },
+    frequency: { en: "Every time you have sex", sn: "Nguva yose paunorara", nd: "Njalo uma wenza ucansi" },
+    sideEffects: { en: "None. Rare latex allergy : use polyurethane if needed.", sn: "Hapana. Nyanzvi yemubhera inotarisika : shandisa polyurethane kana unoida.", nd: "Lutho. Ukuphendula okukhona kwe-latex:sebenzisa i-polyurethane uma kudingeka." },
+    cost: "Free at all government clinics, student health centres.", availability: "UZ Student Health, NUST Health, all government clinics nationwide.", effectiveness: 98, dual: true },
+  { id: "condom-female", icon: "🛡️", name: "Female Condoms", cat: "Before Exposure",
+    desc: { en: "A barrier method inserted into the vagina : protects against both HIV and pregnancy.", sn: "Nzira yekudzivirira inoisa mumimba : inodzivirira HIV nemimba zvese.", nd: "Indlela yokuvikela efakwa esithweni sangasese : ivikela kokubili i-HIV nokukhulelwa." },
+    how: { en: "Inserted before sex to line the vagina, creating a barrier against HIV and sperm.", sn: "Inoisa muweti wemimba uye inogadzira mupanda weHIV nembeu.", nd: "Ifakwa ngaphambi kocansi ukuhlobisa isitho sangasese, yakha uthango oluvikela i-HIV nembewu." },
+    frequency: { en: "Every time you have sex", sn: "Nguva yose paunorara", nd: "Njalo uma wenza ucansi" },
+    sideEffects: { en: "None. Rare discomfort initially.", sn: "Hapana. Kushayirwa zvishoma pakutanga.", nd: "Lutho. Ukungakhululeki okunganani ekuqaleni." },
+    cost: "Free at government clinics and student health centres.", availability: "Available at most public clinics and student health services.", effectiveness: 95, dual: true },
+  { id: "vmmc", icon: "⚕️", name: "Voluntary Medical Male Circumcision", cat: "Before Exposure",
+    desc: { en: "A one-time surgical procedure that reduces HIV risk by up to 60% for men.", sn: "Mhinduro yemishando imwechete inoderedza njodzi yeHIV ne60% kuvarume.", nd: "Ukusikwa okudidiyelwa okwenziwa kanye kwodwa, okunciphisa ingozi ye-HIV ngamaphesenti angu-60 kumabutho." },
+    how: { en: "Removal of the foreskin reduces the surface area where HIV can enter the body.", sn: "Kubviswa kweganda rinopfeka nhorondo kunoderedza nzvimbo ino HIV inogona kupinda mumuviri.", nd: "Ukususwa kwesikhumba esithopha kunciphisa indawo lapho i-HIV ingangena khona emzimbeni." },
+    frequency: { en: "Once (one-time procedure)", sn: "Kamwechete (mhinduro imwechete)", nd: "Kanye (inqubo kanye kwodwa)" },
+    sideEffects: { en: "Short-term: pain, swelling post-surgery. Full healing in 4–6 weeks.", sn: "Nguva pfupi: kurwadza, kukura mushure mekucheka. Kupona kwakakwana mavhiki 4–6.", nd: "Isikhathi esifushane: ubuhlungu, ukuvuvukala ngemuva kwenhlabeko. Ukuphola okuphelele amaviki angu-4–6." },
+    cost: "Free at government hospitals.", availability: "Parirenyatwa, Harare Hospital, Sally Mugabe, and district hospitals.", effectiveness: 60, dual: false },
+  { id: "pep", icon: "🚨", name: "PEP : Post-Exposure Prophylaxis", cat: "After Exposure / Testing",
+    desc: { en: "Emergency HIV medication : must be started within 72 hours of possible exposure.", sn: "Mishonga yekukurumidza yeHIV : inofanira kutangwa mumashure memamidzi 72.", nd: "Umuthi wezimo ezikhẩncayo we-HIV : kumele uqalwe phakathi kwamahora angu-72." },
+    how: { en: "28-day course of antiretroviral tablets taken twice daily stops HIV from establishing infection after exposure.", sn: "Kosi yemazuva 28 yehapwa dze-antireti dzinodyiwa kaviri pazuva inodzivirira HIV kubva ekugadzika kwechivirino mushure mekusangana nacho.", nd: "Uhlelo lwezinsuku ezingama-28 lwamaphilisi e-antiretroviral athathwa kabili nsuku zonke amisa i-HIV ekusungula ukusulelwa ngemuva kokubonakala." },
+    frequency: { en: "Twice daily for 28 days : MUST start within 72 hours", sn: "Kaviri pazuva kwemazuva 28 : INOFANIRA kutangwa mukati memamidzi 72", nd: "Kabili nsuku zonke izinsuku ezingama-28 : KUMELE kuqalwe phakathi kwamahora angu-72" },
+    sideEffects: { en: "Nausea, fatigue, headache : manageable. Must complete full course.", sn: "Kurwadza dumbu, kutadza kuita zvose, kurwadza musoro : zvinogadzirisika. Inofanira kupedza kosi yose.", nd: "Ukucanasa, ukukhathala, ikhanda elibuhlungu : kulawuleka. Kumele uphedze uhlelo oluphelele." },
+    cost: "Free at government hospitals and emergency departments.", availability: "Parirenyatwa A&E, Harare Hospital, Sally Mugabe A&E : available 24/7.", effectiveness: 92, dual: false },
+  { id: "hivst", icon: "🧪", name: "HIV Self-Testing (HIVST)", cat: "After Exposure / Testing",
+    desc: { en: "Test yourself for HIV privately at home : results in 15–20 minutes.", sn: "Zviedze wega HIV zvakavanzika pamba : mhinduro mumaminetsi 15–20.", nd: "Zihlole we-HIV ngasese ekhaya : imiphumela emizuzu engu-15–20." },
+    how: { en: "Collect an oral fluid sample using the swab provided. Dip in the testing solution and read results after 20 minutes.", sn: "Tora sampuro yemvura yemuromo uchishandisa swab yakapihwa. Nyika mudhafu rekuedza uye verenga mhinduro mushure memaminetsi 20.", nd: "Thola isampuli yamanzi omlomo usebenzisa iswab enikezwa. Cwila esixazululweni sokuhlola bese ufunda imiphumela ngemizuzu engu-20." },
+    frequency: { en: "Test every 3–6 months if sexually active", sn: "Zviedze mwedzi 3–6 kana uri mutendi", nd: "Zihlole izinyanga ezingu-3–6 uma usebenza" },
+    sideEffects: { en: "None. Ensure you access support if result is positive.", sn: "Hapana. Tarisa kuti unowana rubatsiro kana mhinduro iri nani.", nd: "Lutho. Qiniseka ukuthi uthola usekelo uma imiphumela ikhona." },
+    cost: "Free kits at student health centres and government clinics.", availability: "UZ, NUST, MSU student health services. All government clinics.", effectiveness: 99, dual: false },
+];
 
 const GAME_SCENARIOS = [
   {
@@ -232,8 +246,64 @@ const HIV_MYTHS = [
   { myth: "HIV is a death sentence.", fact: "False. With modern ART medication, people with HIV live long, healthy lives and can reach an undetectable viral load (U=U)." }
 ];
 
+const PREG_OPTIONS = [
+  { id: "ec", icon: "⏰", name: "Emergency Contraception", cat: "Short-term",
+    desc: { en: "The 'morning after pill' : prevents pregnancy after unprotected sex. Time-sensitive.", sn: "Hapwa rekumazuva mangwanani : inodzivirira mimba mushure mezvekunorara pasina mudziviriro. Inoda kukurumidza.", nd: "Iphilisi le 'ekusasa emva kocansi' : livikela ukukhulelwa ngemuva kocansi olungaphephile. Kuhamba kwesikhathi kubalulekile." },
+    how: { en: "Levonorgestrel tablet delays or prevents ovulation. Most effective within 24 hours, works up to 72 hours.", sn: "Hapwa yeLevonorgestrel inoderera kana kudzivirira kukuda kwemago. Inoshanda zvakanyanya mukati memasaa 24, inoshanda kusvika kumasaa 72.", nd: "Iphilisi le-Levonorgestrel libambe noma livikele i-ovulation. Lisebenza kakhulu phakathi kwamahora angu-24, lisebenza kuze kube samamahora angu-72." },
+    frequency: { en: "Within 72 hours of unprotected sex", sn: "Mukati memasaa 72 ezvekunorara pasina mudziviriro", nd: "Phakathi kwamahora angu-72 ngemuva kocansi olungaphephile" },
+    sideEffects: { en: "Nausea, irregular bleeding, headache. Temporary.", sn: "Kurwadza dumbu, kubuda kwemarara kunopfuura, kurwadza musoro. Kwechirimwa.", nd: "Ukucanasa, ukuphuma kwegazi okungajwayelekile, ikhanda elibuhlungu. Kwesikhashana." },
+    effectiveness: 95, cost: "Available at pharmacies (fee applies) or free at government clinics.", availability: "Parirenyatwa, Harare Hospital, Sally Mugabe, most pharmacies." },
+  { id: "condom-preg", icon: "🛡️", name: "Condoms (Male & Female)", cat: "Short-term",
+    desc: { en: "Barrier methods used every time : also protect against HIV. Only dual-protection option.", sn: "Nzira dzekudziviririka dzinoshandiswa nguva yose : dzinodzivirira HIV zvakare. Chete chete zvinopa udziviriro kaviri.", nd: "Izindlela zokuvikela ezisetshenziswa njalo : zivikela futhi i-HIV. Yindlela kuphela yokuvikeleka okubili." },
+    how: { en: "Physical barrier prevents sperm from reaching the egg. Also blocks HIV and STIs.", sn: "Mupanda wemuviri unodzivirira mbeu kusangana nemago. Unodhibidhiza HIV neSTIs zvakare.", nd: "Uthango lomzimba luvikela imbewu ukufinyelela kwe-ovum. Futhi luvimba i-HIV ne-STI." },
+    frequency: { en: "Every time you have sex", sn: "Nguva yose paunorara", nd: "Njalo uma wenza ucansi" },
+    sideEffects: { en: "None. Rare latex allergy : polyurethane alternatives available.", sn: "Hapana. Nyanzvi yemubhera inotarisika : polyurethane inowanikwa.", nd: "Lutho. Ukuphendula okukhona kwe-latex:izinketho ze-polyurethane zikhona." },
+    effectiveness: 98, cost: "Free at government clinics and student health centres.", availability: "All student health centres and government clinics nationwide." },
+  { id: "pill", icon: "💊", name: "Daily Oral Contraceptive Pill", cat: "Short-term",
+    desc: { en: "A hormone pill taken every day to prevent pregnancy.", sn: "Hapwa yehomoni inodyiwa zuva nezuva kuzuva mimba.", nd: "Iphilisi le-hormone elithathwa nsuku zonke ukuvikela ukukhulelwa." },
+    how: { en: "Prevents ovulation, thickens cervical mucus, and thins the uterine lining.", sn: "Inodzivirira kukuda kwemago, inoweda mhero yechibereko, uye inoderedza chipfuva chechibereko.", nd: "Ivikela i-ovulation, yenza amaketanga e-cervical avivile, futhi inciphise umgece wesibindi." },
+    frequency: { en: "Same time every day : consistency is key", sn: "Nguva imwe chete zuva nezuva : kuenderera mberi ndiko kunodiwa", nd: "Isikhathi esifanayo nsuku zonke : ukuqhubeka kubalulekile" },
+    sideEffects: { en: "Nausea, breast tenderness, mood changes, spotting. Settles after 2–3 months.", sn: "Kurwadza dumbu, mabere kurwadza, kuchinja kwemajonhera, marara mashoma. Kunopfuura mushure memwedzi 2–3.", nd: "Ukucanasa, ubuhlungu bezibeleko, ukushintsha kwemizwa, ukuphuma kwegazi okunganani. Kuyaphola ngemuva kwezinyanga ezingu-2–3." },
+    effectiveness: 99, cost: "Free at government clinics. Available at pharmacies.", availability: "All government health centres, UZ and NUST student health services." },
+  { id: "injectable", icon: "💉", name: "Injectable Contraceptive (Depo)", cat: "Medium-term",
+    desc: { en: "A hormone injection given every 3 months : no daily pill needed.", sn: "Injection yehomoni inopihwa mwedzi mitatu : hapana hapwa inodaira zuva nezuva.", nd: "Ukuthinjwa kwe-hormone okunikezwa njalo izinyanga ezintathu : akudingi iphilisi nsuku zonke." },
+    how: { en: "Progestin injection prevents ovulation and thickens cervical mucus for 3 months.", sn: "Injection yeProgestin inodzivirira kukuda kwemago uye inoweda mhero yechibereko kwemwedzi 3.", nd: "Ukuthinjwa kwe-Progestin kuvikela i-ovulation futhi kwenze amaketanga e-cervical avivile izinyanga ezintathu." },
+    frequency: { en: "Every 3 months", sn: "Rimwe chete kumwedzi mitatu", nd: "Njalo izinyanga ezintathu" },
+    sideEffects: { en: "Irregular bleeding, weight changes, delayed return to fertility (up to 12 months after stopping).", sn: "Kubuda kwemarara kunopfuura, kuchinja kwemuviri, kunonoka kudzoka kwekubereka (kusvika kunyezi gumi nemaviri mushure mekumisa).", nd: "Ukuphuma kwegazi okungajwayelekile, ukushintsha kwesisindo, ukuphinda kube nokuzala kulibaziseke (kuze kube sezinyangeni ezingu-12 ngemuva kokunqamuka)." },
+    effectiveness: 99, cost: "Free at all government clinics.", availability: "All government health centres and most district hospitals." },
+  { id: "patch", icon: "🩹", name: "Contraceptive Patch", cat: "Medium-term",
+    desc: { en: "A small skin patch worn for 3 weeks per month that releases hormones.", sn: "Girafu duku rezendo inopfekwa mavhiki matatu pamwedzi inozorora mahomoni.", nd: "Ibhandishi elikhudlwana elibhekwa amaviki amathathu ngenyanga ekhipha ama-hormone." },
+    how: { en: "Releases oestrogen and progestin through the skin, preventing ovulation.", sn: "Inoburitsa oestrogen neprogestin kuburikidza neganda, ichidzivirira kukuda kwemago.", nd: "Ikhipha i-oestrogen ne-progestin ngesikhumba, ivikele i-ovulation." },
+    frequency: { en: "New patch weekly for 3 weeks, then 1 week patch-free", sn: "Girafu itsva vhiki rimwe rimwe kwemavhiki matatu, wozopedza svondo rimwe usina girafu", nd: "Ibhandishi elisha ngeviki lanye amaviki amathathu, bese iviki linye ngaphandle kwebhandishi" },
+    sideEffects: { en: "Skin irritation at patch site, nausea, breast tenderness.", sn: "Ganda kurwadza panzvimbo yegirafu, kurwadza dumbu, mabere kurwadza.", nd: "Ukujunywa kwesikhumba endaweni yebhandishi, ukucanasa, ubuhlungu bezibeleko." },
+    effectiveness: 99, cost: "Available at private pharmacies and some NGO clinics.", availability: "Limited public availability : ask at your nearest women's health clinic." },
+  { id: "implant", icon: "📍", name: "Contraceptive Implant", cat: "Long-term",
+    desc: { en: "A small rod inserted under the skin of the arm : protects for up to 3 years.", sn: "Danda duku rinoisa pasi peganda reshangi : rinodzivirira kusvika makore matatu.", nd: "Uthi olukhudlwana olufakwa ngaphansi kwesikhumba sendlela : luvikela kuze kube seminyakeni emithathu." },
+    how: { en: "Releases progestin continuously, preventing ovulation. Inserted under local anaesthetic.", sn: "Inoburitsa progestin nguva dzose, ichidzivirira kukuda kwemago. Inoisa pasi pemishonga yenzvimbo.", nd: "Ikhipha i-progestin njalo, ivikele i-ovulation. Ifakwa ngaphansi kwezibulalo zendawo." },
+    frequency: { en: "One insertion, lasts 3 years", sn: "Kuisa kamwechete, kunogara makore matatu", nd: "Ukufakwa kanye, kugcina iminyaka emithathu" },
+    sideEffects: { en: "Irregular bleeding, arm bruising after insertion. Most side effects settle.", sn: "Kubuda kwemarara kunopfuura, gumbo rebendekete mushure mekuisa. Zvinokonzera zvizhinji zvinopfuura.", nd: "Ukuphuma kwegazi okungajwayelekile, ukubuhlungu kwendlela ngemuva kokufaka. Izimpawu eziningi ziyaphola." },
+    effectiveness: 99, cost: "Free at government hospitals : insertion by trained provider.", availability: "Parirenyatwa, Sally Mugabe, Harare Hospital, district hospitals." },
+  { id: "iud-copper", icon: "🔩", name: "Copper IUD", cat: "Long-term",
+    desc: { en: "A small copper device inserted into the uterus : lasts up to 10 years. Hormone-free.", sn: "Chishandiso chiduku chekopa chinoisa muchibereko : chinogara kusvika makore gumi. Pasina mahomoni.", nd: "Idivayisi elikhudlwana le-copper elifakwa esibelethweni : ligcina kuze kube seminyakeni elishumi. Lingenayo ama-hormone." },
+    how: { en: "Copper ions are toxic to sperm and prevent fertilisation. Can also be used as emergency contraception.", sn: "Zvitubu zvekopa zvinodhura mbeu uye zvinodzivirira kusangana. Zvingashandiswa zvakare sechimiro chekukurumidza.", nd: "Ama-ion e-copper ayahlaba imbewu futhi avikele ukuchanywa. Angasetshenziswa futhi njengomutho wezimo ezikhẩncayo." },
+    frequency: { en: "One insertion, lasts up to 10 years", sn: "Kuisa kamwechete, kunogara kusvika makore gumi", nd: "Ukufakwa kanye, kugcina kuze kube seminyakeni elishumi" },
+    sideEffects: { en: "Heavier periods, cramping after insertion. Settles within a few months.", sn: "Marara akatowanda, kurwadza mushure mekuisa. Kunopfuura mumwedzi mishoma.", nd: "Izinyanga ezimatasa, ukuqapheleka ngemuva kokufaka. Kuyaphela phakathi kwezinyanga ezimbalwa." },
+    effectiveness: 99, cost: "Free at government hospitals.", availability: "Parirenyatwa, Sally Mugabe, Harare Hospital, district hospitals." },
+  { id: "iud-hormonal", icon: "🌀", name: "Hormonal IUD", cat: "Long-term",
+    desc: { en: "A small hormone-releasing device inserted into the uterus : lasts 3–5 years.", sn: "Chishandiso chiduku chinoburitsa mahomoni chinoisa muchibereko : chinogara makore 3–5.", nd: "Idivayisi elikhudlwana elikhipha ama-hormone elefakwa esibelethweni : ligcina iminyaka engu-3–5." },
+    how: { en: "Releases low-dose progestin locally, thickening cervical mucus and thinning the uterine lining.", sn: "Inoburitsa progestin shoma munzvimbo, ichiwedesa mhero yechibereko uye ichideredza chipfuva chechibereko.", nd: "Ikhipha i-progestin yesigaba esiphansi endaweni, yenza amaketanga e-cervical avivile futhi inciphise umgece wesibindi." },
+    frequency: { en: "One insertion, lasts 3–5 years", sn: "Kuisa kamwechete, kunogara makore 3–5", nd: "Ukufakwa kanye, kugcina iminyaka engu-3–5" },
+    sideEffects: { en: "Lighter or absent periods (common benefit), cramping after insertion.", sn: "Marara mashoma kana asipo (zvakanaka zvinowanzoonekwa), kurwadza mushure mekuisa.", nd: "Izinyanga ezincane noma ezingekho (inzuzo evamile), ukuqapheleka ngemuva kokufaka." },
+    effectiveness: 99, cost: "Available at select private and NGO clinics.", availability: "Ask at your nearest reproductive health clinic." },
+  { id: "natural", icon: "📅", name: "Natural Family Planning", cat: "Natural",
+    desc: { en: "Tracking your menstrual cycle to identify fertile and non-fertile days.", sn: "Kutsigira mwedzi wako wemwanasikaana kuziva mazuva ekubata mimba neakusabata mimba.", nd: "Ukuqapha umjikelezo wakho wenyanga ukuphawula izinsuku zokukhulelwa nezingezange zikhulelwe." },
+    how: { en: "Monitor cycle length, basal body temperature, and cervical mucus to identify ovulation window and avoid sex on fertile days.", sn: "Tarisa hurefu hwemjikelezo, tembiricha yemuviri, uye mhero yechibereko kuziva nguva yekubata mimba uye udzivise zvekunorara pamazuva ekubata mimba.", nd: "Qapha ubude bomjikelezo, ukushisa komzimba, kanye namaketanga e-cervical ukuphawula isikhathi se-ovulation futhi ugweme ucansi ezinsukwini zokukhulelwa." },
+    frequency: { en: "Daily tracking required : disciplined approach needed", sn: "Kutsigira zuva nezuva kunodiwa : nzira yekuzvidzora inodiwa", nd: "Ukuqapha nsuku zonke kudingeka : indlela enovalelwa iyadingeka" },
+    sideEffects: { en: "None. Requires consistent tracking and partner cooperation.", sn: "Hapana. Inoda kutsigira nguva yose uye kubatana kwemwanasikana.", nd: "Lutho. Idinga ukuqapha njalo kanye nokusebenzisana komlingani." },
+    effectiveness: 76, cost: "Free : requires only a calendar or free application.", availability: "Training available at most government health centres." },
+];
 
-const ALL_OPTIONS = [...HIV_PREVENTION_METHODS.map(o => ({ ...o, type: "HIV" })), ...PREG_PREVENTION_METHODS.map(o => ({ ...o, type: "Pregnancy" }))];
+const ALL_OPTIONS = [...HIV_OPTIONS.map(o => ({ ...o, type: "HIV" })), ...PREG_OPTIONS.map(o => ({ ...o, type: "Pregnancy" }))];
 
 const SERVICES = [
   { name: "UZ Student Health Centre", institution: "University of Zimbabwe", services: ["HIVST", "PrEP", "Condoms", "Contraception", "PEP referral"], contact: "+263 242 303211", hours: "Mon-Fri 8am-4pm", city: "Harare", lat: -17.7831, lng: 31.0530 },
@@ -261,7 +331,17 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // Distance in km
 };
 
-// BOT_KNOWLEDGE replaced by src/data/botEngine.js — clinical scenario engine
+const BOT_KNOWLEDGE = {
+  prep: "Daily Oral PrEP is a highly effective pill (99% prevention rate) to protect against HIV before exposure. It is 100% FREE at UZ Health Centre, Parirenyatwa, and public clinics. Common side effects are mild nausea which fades in 2 weeks.",
+  pep: "PEP (Post-Exposure Prophylaxis) is emergency HIV medication. You MUST start it within 72 hours of possible exposure. It is a 28-day course of pills. Go to Parirenyatwa A&E or Harare Hospital A&E immediately : it is free and available 24/7.",
+  condom: "Condoms (male & female) are the ONLY dual-protection method, meaning they prevent BOTH HIV and pregnancy at the same time. You can pick up free packs anonymously using our commodity simulator at student clinics.",
+  cost: "Most HIV and pregnancy prevention methods (like condoms, PrEP, implants, and injections) are 100% FREE at government clinics and university student health clinics in Zimbabwe.",
+  side_effects: "Most methods have minor side effects. Oral pills/PrEP might cause mild nausea for the first 2 weeks. Implants and injections might cause irregular bleeding or spotting. Speak to a doctor if side effects persist.",
+  shona: "Mhoro! Chengeto ndiyo nzira yako yekudzivirira HIV pamwe nekudzivisa kubata pamuviri pasina kurongeka. Kuti uzive zvakawanda, nyora mazwi akadai sekuti: 'prep', 'pep', 'condom', kana 'clinic'.",
+  pamuviri: "Kudzivirira kubata pamuviri (contraception) kune nzira dzakawanda dzemahara: short-term (pill, condoms), medium-term (injectable Depo every 3 months), and long-term (implants kwemakore 3, Copper IUD kwemakore 10). Mhanya muende ku clinic yepedyo kunoziva yakakukwanirai.",
+  dziviriro: "Chengeto inokubatsira kudzivirira HIV. Pane nzira dzinoti PrEP (kudzivirira usati wasangana nehutachiwana), PEP (kudzivirira kana uchinge wasangana nehutachiwana usingafungiri mukati memaawa 72), nema condoms (anodzivirira HIV nemimba panguva imwe chete).",
+  clinic: "Unogona kuwana rubatsiro rwakazara pa UZ Student Health Centre, NUST Student Clinic, MSU Health Services, kana Parirenyatwa Hospital. Tarisa tab yedu inoti '📍 Services' kutiona dziri pedyo newe."
+};
 
 // ── ABCDE OF HIV PREVENTION ──
 const ABCDE = [
@@ -382,49 +462,17 @@ const HOW_TO_GUIDES = [
 ];
 
 // ── PODCAST EPISODES ──
-// Audio files live in /public/audio/ — place MP3s there and update audioSrc fields
-function formatEpisodeTitle(filename) {
-  return filename
-    .replace(/\.m4a$/i, '')
-    .replace(/[_-]+/g, ' ')
-    .replace(/\b(\w)/g, c => c.toUpperCase())
-    .replace(/\bAt\b/g, 'at')
-    .replace(/\bOf\b/g, 'of')
-    .replace(/\bThe\b/g, 'the')
-    .replace(/^(\w)/, c => c.toUpperCase()); // always capitalise first letter
-}
-
 const PODCAST_EPISODES = [
   {
     id: "ep1",
     episode: "EP 01",
-    audioSrc: "/audio/Nyaya Yangu Yekuridza MaRecords.m4a",
-    title: "Nyaya Yangu Yekuridza MaRecords",
-    guest: "Chengeto Feature",
-    guestRole: "Shona Health Story · Zimbabwe",
-    coverEmoji: "🎙️",
-    coverColor: "#059669",
-    coverLight: "#D1FAE5",
-    tags: ["Shona", "Health Story", "Zimbabwe", "Awareness"],
-    summary: "Nyaya Yangu Yekuridza MaRecords — a powerful Shona-language health story from the heart of Zimbabwe. This episode brings the Chengeto message to life through authentic storytelling in our mother tongue, connecting young Zimbabweans to critical health information in the language they know best.",
-    chapters: [
-      { time: "00:00", title: "Kutanga / Introduction" },
-      { time: "02:00", title: "Nyaya Yekutanga / The Story Begins" },
-      { time: "05:00", title: "Matambudziko / The Challenges" },
-      { time: "08:00", title: "Tariro / Hope & Message" },
-    ],
-    quote: "\"Nyaya yako inokosha. Taurirai vanhu vako chokwadi.\"",
-  },
-  {
-    id: "ep2",
-    episode: "EP 02",
-    audioSrc: "/audio/I_Found_Out_at_19_—_Rudo_M.m4a",
+    duration: "28:14",
     title: "I Found Out at 19",
     guest: "Rudo M.",
     guestRole: "HIV+ Young Woman, Harare",
     coverEmoji: "💚",
-    coverColor: "#7C3AED",
-    coverLight: "#EDE9FE",
+    coverColor: "#059669",
+    coverLight: "#D1FAE5",
     tags: ["HIV", "ART", "Stigma", "Hope"],
     summary: "Rudo was diagnosed with HIV at 19 while studying at the University of Zimbabwe. In this raw and powerful episode, she shares the fear of her first positive result, how she told her family, navigating relationships, and how she now advocates for young people to know their status. She has been on ART for 3 years and describes herself as 'undetectable and unstoppable.'",
     chapters: [
@@ -438,9 +486,9 @@ const PODCAST_EPISODES = [
     quote: "\"The test result wasn't a death sentence. It was the beginning of me taking my life seriously.\"",
   },
   {
-    id: "ep3",
-    episode: "EP 03",
-    audioSrc: "/audio/She_Chose_to_Keep_Going_—_Thembi_N.m4a",
+    id: "ep2",
+    episode: "EP 02",
+    duration: "31:07",
     title: "She Chose to Keep Going",
     guest: "Thembi N.",
     guestRole: "Young Mother, Bulawayo",
@@ -460,15 +508,15 @@ const PODCAST_EPISODES = [
     quote: "\"I walked into the clinic thinking I had no options. I walked out knowing I had all of them.\"",
   },
   {
-    id: "ep4",
-    episode: "EP 04",
-    audioSrc: "/audio/My_Brother_s_Keeper_—_Tatenda_K.m4a",
+    id: "ep3",
+    episode: "EP 03",
+    duration: "24:50",
     title: "My Brother's Keeper",
     guest: "Tatenda K.",
     guestRole: "Male HIV Advocate, Gweru",
     coverEmoji: "💪",
-    coverColor: "#0891B2",
-    coverLight: "#E0F2FE",
+    coverColor: "#7C3AED",
+    coverLight: "#EDE9FE",
     tags: ["Male Perspective", "HIV Disclosure", "Masculinity"],
     summary: "Tatenda is HIV-positive and decided to go public at MSU to challenge the silence around men and HIV. He speaks candidly about toxic masculinity in Zimbabwe's sexual culture, why men avoid testing, and how he learned to protect his partners. He now speaks in secondary schools across Midlands Province.",
     chapters: [
@@ -479,19 +527,19 @@ const PODCAST_EPISODES = [
       { time: "19:00", title: "Speaking in schools" },
       { time: "22:40", title: "What I wish I'd known" },
     ],
-    quote: "\"Being a real man means protecting the people you love — and that starts with testing.\"",
+    quote: "\"Being a real man means protecting the people you love : and that starts with testing.\"",
   },
   {
-    id: "ep5",
-    episode: "EP 05",
-    audioSrc: "/audio/The_Nurse_Who_Changed_Everything_—_Sr._Grace_C.m4a",
+    id: "ep4",
+    episode: "EP 04",
+    duration: "35:22",
     title: "The Nurse Who Changed Everything",
     guest: "Sr. Grace C.",
     guestRole: "Registered Nurse, Parirenyatwa Hospital",
     coverEmoji: "🏥",
-    coverColor: "#D97706",
-    coverLight: "#FEF3C7",
-    tags: ["Healthcare", "Prevention", "PrEP", "Education"],
+    coverColor: "#0891B2",
+    coverLight: "#E0F2FE",
+    tags: ["Healthcare", "Prevention", "Education"],
     summary: "Sister Grace has worked at Parirenyatwa's HIV clinic for 14 years. She has seen thousands of young patients and shares what she wishes every university student knew: the moment you walk through those doors, there is no judgement. She discusses PEP, PrEP, misconceptions she hears daily, and the power of showing up for your own health.",
     chapters: [
       { time: "00:00", title: "Introduction" },
@@ -511,7 +559,7 @@ function ExpandableCard({ option, onCompareSelect, isCompareBtnVisible, lang = "
   const [open, setOpen] = useState(false);
   
   // Custom HSL styles for headers
-  const isHIV = option.type === "HIV" || HIV_PREVENTION_METHODS.some(o => o.id === option.id);
+  const isHIV = option.type === "HIV" || HIV_OPTIONS.some(o => o.id === option.id);
   const accentColor = isHIV ? 'var(--color-primary)' : 'var(--color-rose)';
   const lightBgColor = isHIV ? 'var(--color-primary-light)' : 'var(--color-rose-light)';
   const effRatingColor = option.effectiveness >= 95 ? '#059669' : option.effectiveness >= 85 ? '#D97706' : '#DC2626';
@@ -635,83 +683,35 @@ export default function Application() {
   // ── AUTH STATE ──
   const [currentUser, setCurrentUser] = useState(() => getSession());
   const [authView, setAuthView] = useState("login"); // 'login' | 'register'
-  const [showAuthModal, setShowAuthModal] = useState(false); // auth modal open/close
-  const [showChatComingSoon, setShowChatComingSoon] = useState(false); // chatbot coming soon modal
-  // ── PORTAL GATE STATE ──
-  const [showPortalGate, setShowPortalGate]         = useState(false); // not-logged-in gate
-  const [showPortalPassword, setShowPortalPassword] = useState(false); // secondary password modal
-  const [portalPw, setPortalPw]                     = useState('');
-  const [portalPwVisible, setPortalPwVisible]       = useState(false);
-  const [portalPwError, setPortalPwError]           = useState('');
-  const [portalPwLoading, setPortalPwLoading]       = useState(false);
-  const [portalSuccess, setPortalSuccess]           = useState(false);
-  const PORTAL_PASSWORD = 'chengeto2025'; // portal-level access password
   // Login form
-  const [loginNick, setLoginNick] = useState("");
-  const [loginInst, setLoginInst] = useState("uz");
-  const [loginPw,   setLoginPw]   = useState("");
+  const [loginId, setLoginId] = useState("");
+  const [loginPw, setLoginPw] = useState("");
+  const [loginUni, setLoginUni] = useState("uz");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   // Register form
-  const [regNick,    setRegNick]    = useState("");
-  const [regInst,    setRegInst]    = useState("uz");
-  const [regLevel,   setRegLevel]   = useState("Year 1");
-  const [regGender,  setRegGender]  = useState("prefer-not-say");
-  const [regPw,      setRegPw]      = useState("");
-  const [regPw2,     setRegPw2]     = useState("");
-  const [regError,   setRegError]   = useState("");
-  const [showPw,     setShowPw]     = useState(false);
-
-  // ── PORTAL ACCESS HANDLER ──
-  const handlePortalAccess = () => {
-    if (!currentUser) {
-      setShowPortalGate(true);
-    } else {
-      setPortalPw('');
-      setPortalPwError('');
-      setPortalPwVisible(false);
-      setPortalSuccess(false);
-      setShowPortalPassword(true);
-    }
-  };
-
-  const handlePortalPasswordSubmit = (e) => {
-    e.preventDefault();
-    const entered = portalPw.trim();
-    setPortalPwError('');
-    if (!entered) { setPortalPwError('Please enter your account password.'); return; }
-    setPortalPwLoading(true);
-    // Verify against the user's own account password
-    const correct = entered === (currentUser?.password || '');
-    setTimeout(() => {
-      setPortalPwLoading(false);
-      if (correct) {
-        setPortalSuccess(true);
-        setTimeout(() => {
-          setShowPortalPassword(false);
-          setPortalSuccess(false);
-          setPortalPw('');
-          setPage('portal');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 850);
-      } else {
-        setPortalPwError('Incorrect password. Please enter the password you used to sign in.');
-      }
-    }, 600);
-  };
+  const [regId, setRegId] = useState("");
+  const [regPw, setRegPw] = useState("");
+  const [regPw2, setRegPw2] = useState("");
+  const [regName, setRegName] = useState("");
+  const [regUni, setRegUni] = useState("uz");
+  const [regYear, setRegYear] = useState("1");
+  const [regProgramme, setRegProgramme] = useState("");
+  const [regError, setRegError] = useState("");
+  const [regSuccess, setRegSuccess] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
     setLoginError("");
     setLoginLoading(true);
     setTimeout(() => {
-      const user = validateLogin(loginNick, loginInst, loginPw);
+      const user = validateLogin(loginId, loginPw);
       if (user) {
         saveSession(user);
         setCurrentUser(user);
-        setShowAuthModal(false);
       } else {
-        setLoginError("Nickname, institution, or password is incorrect. Please try again.");
+        setLoginError("Incorrect Student ID or password. Please try again.");
       }
       setLoginLoading(false);
     }, 800);
@@ -721,38 +721,39 @@ export default function Application() {
     e.preventDefault();
     setRegError("");
     if (regPw !== regPw2) { setRegError("Passwords do not match."); return; }
-    const result = registerUser(regNick, regInst, regLevel, regGender, regPw);
+    const result = registerUser(regId, regPw, regName, regUni, regYear, regProgramme);
     if (result.error) { setRegError(result.error); return; }
     saveSession(result.user);
     setCurrentUser(result.user);
-    setShowAuthModal(false);
   };
 
   const handleLogout = () => {
     clearSession();
     setCurrentUser(null);
-    setLoginNick(""); setLoginPw(""); setLoginError("");
+    setLoginId(""); setLoginPw(""); setLoginError("");
     setPage("home");
   };
 
   // ── PROFILE EDIT STATE ──
   const [profNickname, setProfNickname] = useState("");
-  const [profInst,     setProfInst]     = useState("uz");
-  const [profLevel,    setProfLevel]    = useState("Year 1");
-  const [profGender,   setProfGender]   = useState("prefer-not-say");
-  const [profColor,    setProfColor]    = useState("#059669");
+  const [profName, setProfName] = useState("");
+  const [profBio, setProfBio] = useState("");
+  const [profColor, setProfColor] = useState("#059669");
+  const [profYear, setProfYear] = useState("1");
+  const [profProgramme, setProfProgramme] = useState("");
   const [profPwCurrent, setProfPwCurrent] = useState("");
-  const [profPwNew,    setProfPwNew]    = useState("");
-  const [profPwErr,    setProfPwErr]    = useState("");
-  const [profSaved,    setProfSaved]    = useState(false);
+  const [profPwNew, setProfPwNew] = useState("");
+  const [profPwErr, setProfPwErr] = useState("");
+  const [profSaved, setProfSaved] = useState(false);
 
   const openProfilePage = () => {
     if (currentUser) {
-      setProfNickname(currentUser.nickname || "");
-      setProfInst(currentUser.institution || "uz");
-      setProfLevel(currentUser.level || "Year 1");
-      setProfGender(currentUser.gender || "prefer-not-say");
+      setProfNickname(currentUser.nickname || currentUser.name?.split(' ')[0] || "");
+      setProfName(currentUser.name || "");
+      setProfBio(currentUser.bio || "");
       setProfColor(currentUser.avatarColor || '#059669');
+      setProfYear(String(currentUser.year || "1"));
+      setProfProgramme(currentUser.programme || "");
       setProfPwCurrent(""); setProfPwNew(""); setProfPwErr(""); setProfSaved(false);
     }
     setPage("profile");
@@ -761,21 +762,15 @@ export default function Application() {
   const handleSaveProfile = (e) => {
     e.preventDefault();
     setProfPwErr(""); setProfSaved(false);
-    const updates = {
-      nickname:    profNickname.trim() || currentUser.nickname,
-      institution: profInst,
-      level:       profLevel,
-      gender:      profGender,
-      avatarColor: profColor,
-    };
+    const updates = { nickname: profNickname.trim() || profName.split(' ')[0], name: profName.trim(), bio: profBio.trim(), avatarColor: profColor, year: parseInt(profYear), programme: profProgramme.trim() };
     if (profPwNew) {
       if (!profPwCurrent) { setProfPwErr("Enter your current password to change it."); return; }
-      const valid = validateLogin(currentUser.nickname, currentUser.institution, profPwCurrent);
+      const valid = validateLogin(currentUser.studentId, profPwCurrent);
       if (!valid) { setProfPwErr("Current password is incorrect."); return; }
       if (profPwNew.length < 6) { setProfPwErr("New password must be at least 6 characters."); return; }
       updates.password = profPwNew;
     }
-    const updated = updateUserProfile(currentUser.key, updates);
+    const updated = updateUserProfile(currentUser.studentId, updates);
     setCurrentUser(updated);
     setProfSaved(true);
     setTimeout(() => setProfSaved(false), 3000);
@@ -796,251 +791,49 @@ export default function Application() {
   const [preventionSubTab, setPreventionSubTab] = useState("methods"); // 'methods' | 'guides' | 'abcde'
   const [pregTab, setPregTab] = useState("main"); // 'main' | 'methods' | 'guides'
   
-  // HIV Prevention Methods detail view state
-  const [activeHivMethod, setActiveHivMethod] = useState(null); // null = grid, object = detail view
-  const [hivPreventionCat, setHivPreventionCat] = useState("all"); // filter: all | Before Exposure | After Exposure
-
-  // Preg Prevention Methods detail view state
-  const [activePregMethod, setActivePregMethod] = useState(null);
-
   // HIV Game states
   const [gameScenarioIdx, setGameScenarioIdx] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [showMindMap, setShowMindMap] = useState(false);
   const [activeHivInfoTab, setActiveHivInfoTab] = useState("transmission");
   const [activePregInfoTab, setActivePregInfoTab] = useState("fertility");
-  const [guideModal, setGuideModal] = useState(null); // { section } or null
 
   // ABCDE & Guide states
   const [expandedAbcde, setExpandedAbcde] = useState(null);
   const [expandedGuide, setExpandedGuide] = useState(null);
 
-  // ── PODCAST — Real HTML5 Audio Player ──
+  // Podcast states
   const [podcastPlaying, setPodcastPlaying] = useState(false);
   const [currentEpisode, setCurrentEpisode] = useState(PODCAST_EPISODES[0]);
-  const [podcastProgress, setPodcastProgress] = useState(0);   // 0–100
-  const [podcastCurrentTime, setPodcastCurrentTime] = useState(0); // seconds
-  const [podcastDuration, setPodcastDuration]       = useState(0); // seconds
-  const [podcastLoading, setPodcastLoading]         = useState(false);
-  const [podcastSpeed, setPodcastSpeed]             = useState(1);
-  const [expandedEpisode, setExpandedEpisode]       = useState(null);
-  const audioRef       = useRef(null); // single <audio> element
-  const audioCtxRef    = useRef(null); // Web Audio API context
-  const analyserRef    = useRef(null); // AnalyserNode for frequency data
-  const sourceRef      = useRef(null); // MediaElementSourceNode
-  const canvasRef      = useRef(null); // visualizer canvas
-  const animFrameRef   = useRef(null); // requestAnimationFrame id
+  const [podcastProgress, setPodcastProgress] = useState(0);
+  const [expandedEpisode, setExpandedEpisode] = useState(null);
+  const podcastTimerRef = useRef(null);
 
-  // Initialise / swap audio source when episode changes
-  useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
-      audioRef.current.preload = 'metadata';
-    }
-    const audio = audioRef.current;
-    const wasPlaying = !audio.paused;
-    audio.src = currentEpisode.audioSrc;
-    audio.playbackRate = podcastSpeed;
-    setPodcastCurrentTime(0);
-    setPodcastProgress(0);
-    setPodcastDuration(0);
-    setPodcastLoading(true);
-
-    const onLoaded   = () => { setPodcastDuration(audio.duration || 0); setPodcastLoading(false); };
-    const onTime     = () => {
-      setPodcastCurrentTime(audio.currentTime);
-      if (audio.duration > 0) setPodcastProgress((audio.currentTime / audio.duration) * 100);
-    };
-    const onEnded    = () => {
-      setPodcastPlaying(false);
-      setPodcastProgress(100);
-      // Auto-advance to next episode
-      const idx = PODCAST_EPISODES.findIndex(e => e.id === currentEpisode.id);
-      if (idx < PODCAST_EPISODES.length - 1) {
-        setTimeout(() => setCurrentEpisode(PODCAST_EPISODES[idx + 1]), 800);
-      }
-    };
-    const onError    = () => { setPodcastLoading(false); };
-    audio.addEventListener('loadedmetadata', onLoaded);
-    audio.addEventListener('timeupdate',     onTime);
-    audio.addEventListener('ended',          onEnded);
-    audio.addEventListener('error',          onError);
-    if (wasPlaying) { audio.play().catch(() => {}); }
-    return () => {
-      audio.removeEventListener('loadedmetadata', onLoaded);
-      audio.removeEventListener('timeupdate',     onTime);
-      audio.removeEventListener('ended',          onEnded);
-      audio.removeEventListener('error',          onError);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentEpisode.id]);
-
-  // Sync playing state → audio
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (podcastPlaying) { audio.play().catch(() => setPodcastPlaying(false)); }
-    else                { audio.pause(); }
-  }, [podcastPlaying]);
-
-  // Sync speed
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.playbackRate = podcastSpeed;
-  }, [podcastSpeed]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-      if (audioRef.current)  { audioRef.current.pause(); audioRef.current.src = ''; }
-      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') audioCtxRef.current.close();
-    };
-  }, []);
-
-  // ── WEB AUDIO VISUALIZER ──
-  // Connects the audio element to an AnalyserNode and draws frequency bars on canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const audio  = audioRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    const BAR_COUNT = 60;
-    let frameId;
-
-    const drawBars = (dataArray, bufferLength, accentColor) => {
-      const W = canvas.width;
-      const H = canvas.height;
-      ctx.clearRect(0, 0, W, H);
-
-      const barW = (W / BAR_COUNT) - 1.2;
-      for (let i = 0; i < BAR_COUNT; i++) {
-        // Map BAR_COUNT bars across the lower half of frequency spectrum (more musical)
-        const dataIdx = Math.floor((i / BAR_COUNT) * (bufferLength * 0.6));
-        const rawVal  = dataArray ? dataArray[dataIdx] : 0;
-        // Normalise 0-255 → 0-1, apply slight curve for visual pop
-        const norm    = Math.pow(rawVal / 255, 0.8);
-        const barH    = Math.max(2, norm * H * 0.92);
-        const x       = i * (barW + 1.2);
-        const y       = H - barH;
-
-        // Gradient per bar: bottom = solid accent, top = semi-transparent white
-        const grad = ctx.createLinearGradient(x, y, x, H);
-        grad.addColorStop(0,   'rgba(255,255,255,0.85)');
-        grad.addColorStop(0.4, accentColor + 'DD');
-        grad.addColorStop(1,   accentColor + '55');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
-        ctx.fill();
-      }
-    };
-
-    const drawIdleBars = (accentColor, t) => {
-      const W = canvas.width;
-      const H = canvas.height;
-      ctx.clearRect(0, 0, W, H);
-      const barW = (W / BAR_COUNT) - 1.2;
-      for (let i = 0; i < BAR_COUNT; i++) {
-        const phase = (i / BAR_COUNT) * Math.PI * 3 + t * 1.4;
-        const norm  = (Math.sin(phase) * 0.12 + 0.14);
-        const barH  = Math.max(2, norm * H);
-        const x = i * (barW + 1.2);
-        const y = H - barH;
-        ctx.fillStyle = accentColor + '55';
-        ctx.beginPath();
-        ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
-        ctx.fill();
-      }
-    };
-
-    let t = 0;
-    const tick = () => {
-      frameId = requestAnimationFrame(tick);
-      t += 0.016;
-      const epColor = currentEpisode.coverColor || '#059669';
-
-      if (analyserRef.current && podcastPlaying) {
-        const bufLen = analyserRef.current.frequencyBinCount;
-        const data   = new Uint8Array(bufLen);
-        analyserRef.current.getByteFrequencyData(data);
-        drawBars(data, bufLen, epColor);
-      } else {
-        drawIdleBars(epColor, t);
-      }
-    };
-
-    // Make canvas DPR-sharp
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width  = rect.width  * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    canvas.style.width  = rect.width  + 'px';
-    canvas.style.height = rect.height + 'px';
-
-    frameId = requestAnimationFrame(tick);
-    animFrameRef.current = frameId;
-
-    return () => { cancelAnimationFrame(frameId); };
-  // re-run when playing state or episode changes so colors update
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [podcastPlaying, currentEpisode.id]);
-
-  // Connect HTML Audio element to Web Audio API analyser (once, on first play)
-  const connectAnalyser = () => {
-    if (analyserRef.current) return; // already connected
-    const audio = audioRef.current;
-    if (!audio) return;
-    try {
-      const ac  = new (window.AudioContext || window.webkitAudioContext)();
-      const src = ac.createMediaElementSource(audio);
-      const an  = ac.createAnalyser();
-      an.fftSize            = 256;
-      an.smoothingTimeConstant = 0.78;
-      src.connect(an);
-      an.connect(ac.destination);
-      audioCtxRef.current = ac;
-      analyserRef.current = an;
-      sourceRef.current   = src;
-    } catch(e) { /* AudioContext not available in this environment */ }
-  };
-
+  // Podcast simulated playback
   const handlePodcastPlay = (ep) => {
-    connectAnalyser(); // wire up Web Audio on first interaction
     if (currentEpisode.id !== ep.id) {
       setCurrentEpisode(ep);
-      setPodcastPlaying(true);
-    } else {
-      setPodcastPlaying(prev => !prev);
+      setPodcastProgress(0);
     }
+    setPodcastPlaying(prev => !prev);
   };
-
-  const handlePodcastSeek = (e) => {
-    const audio = audioRef.current;
-    if (!audio || !audio.duration) return;
-    const rect  = e.currentTarget.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
-    audio.currentTime = ratio * audio.duration;
-    setPodcastProgress(ratio * 100);
-  };
-
-  const handleSkip = (seconds) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = Math.min(Math.max(audio.currentTime + seconds, 0), audio.duration);
-  };
-
-  const fmtTime = (s) => {
-    if (!s || isNaN(s)) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = String(Math.floor(s % 60)).padStart(2, '0');
-    return `${m}:${sec}`;
-  };
+  useEffect(() => {
+    if (podcastPlaying) {
+      podcastTimerRef.current = setInterval(() => {
+        setPodcastProgress(p => {
+          if (p >= 100) { setPodcastPlaying(false); clearInterval(podcastTimerRef.current); return 100; }
+          return p + 0.1;
+        });
+      }, 170);
+    } else {
+      clearInterval(podcastTimerRef.current);
+    }
+    return () => clearInterval(podcastTimerRef.current);
+  }, [podcastPlaying]);
   
   // Compare states
-  const [compareOpt1, setCompareOpt1] = useState("");
-  const [compareOpt2, setCompareOpt2] = useState("");
+  const [compareOpt1, setCompareOpt1] = useState("prep-oral");
+  const [compareOpt2, setCompareOpt2] = useState("condom-male");
   
   // Service filter states
   const [serviceSearch, setServiceSearch] = useState("");
@@ -1057,10 +850,11 @@ export default function Application() {
   const [trackerNotes, setTrackerNotes] = useState("Tap days below to inspect fertile vs safe windows.");
   
   // Chatbot states
-  const [chatMessages, setChatMessages] = useState([]);
+  const [chatMessages, setChatMessages] = useState([
+    { sender: "bot", text: "Mhoro/Hello! I am Chengeto, your private AI assistant. Ask me anything about HIV, PEP, PrEP, condoms, or contraception in Zimbabwe. I work offline too!" }
+  ]);
   const [chatInput, setChatInput] = useState("");
   const chatBottomRef = useRef(null);
-  const chatGreetingDoneRef = useRef(false);
 
   // Commodity request states
   const [selectedCommodity, setSelectedCommodity] = useState("male-condoms");
@@ -1105,22 +899,6 @@ export default function Application() {
     }
   }, [chatMessages]);
 
-  // Personalised greeting when chat page opens — uses nickname if signed in
-  useEffect(() => {
-    if (page === 'chat' && !chatGreetingDoneRef.current) {
-      chatGreetingDoneRef.current = true;
-      const name = currentUser?.nickname;
-      const greeting = name
-        ? `Mhoro ${name}! \uD83D\uDC4B I'm Chengeto, your private health assistant.\n\nYou can talk to me about anything — HIV prevention, testing, PEP, PrEP, pregnancy, contraception, or describe a real situation you're worried about.\n\nEverything you share stays on this device only. I'm here to help, not to judge. What's on your mind?`
-        : `Mhoro! \uD83D\uDC4B I'm Chengeto, your private health assistant.\n\nYou can ask me anything — HIV, PEP, PrEP, testing, pregnancy prevention, or describe a situation you're concerned about. I'll give you clear, honest guidance.\n\nEverything is private and stays on your device. What's on your mind?`;
-      setChatMessages([{ sender: 'bot', text: greeting }]);
-    }
-    if (page !== 'chat') {
-      chatGreetingDoneRef.current = false;
-      setChatMessages([]);
-    }
-  }, [page, currentUser]);
-
   const toggleTheme = () => {
     setTheme(prev => prev === "light" ? "dark" : "light");
   };
@@ -1135,26 +913,31 @@ export default function Application() {
     setInstallPromptEvent(null);
   };
 
-  // Chat bot logic — scenario-based clinical engine
+  // Chat bot logic
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
     const userText = chatInput.trim();
-    setChatMessages(prev => [...prev, { sender: 'user', text: userText }]);
-    setChatInput('');
+    const updatedMessages = [...chatMessages, { sender: "user", text: userText }];
+    setChatMessages(updatedMessages);
+    setChatInput("");
 
-    // Show typing indicator
-    setChatMessages(prev => [...prev, { sender: 'bot', text: '...', isTyping: true }]);
-
+    // Bot response logic
     setTimeout(() => {
-      const nickname = currentUser?.nickname || null;
-      const answer = getBotResponse(userText, nickname);
-      setChatMessages(prev => {
-        const withoutTyping = prev.filter(m => !m.isTyping);
-        return [...withoutTyping, { sender: 'bot', text: answer }];
-      });
-    }, 900);
+      const query = userText.toLowerCase();
+      let answer = "I want to make sure you get accurate information. Please search for key terms like 'prep', 'pep', 'condom', 'cost', 'shona', 'pamuviri', or 'clinic' to learn more.";
+      
+      // Look for matches in BOT_KNOWLEDGE keys
+      for (const key in BOT_KNOWLEDGE) {
+        if (query.includes(key.replace('_', ' '))) {
+          answer = BOT_KNOWLEDGE[key];
+          break;
+        }
+      }
+      
+      setChatMessages(prev => [...prev, { sender: "bot", text: answer }]);
+    }, 600);
   };
 
   // Commodity code generator
@@ -1205,23 +988,23 @@ export default function Application() {
       let results = [];
       if (updated.goal === "hiv") {
         if (updated.duration === "emergency") {
-          results = [HIV_PREVENTION_METHODS.find(o => o.id === "pep")];
+          results = [HIV_OPTIONS.find(o => o.id === "pep")];
         } else if (updated.routine === "daily") {
-          results = [HIV_PREVENTION_METHODS.find(o => o.id === "prep-oral")];
+          results = [HIV_OPTIONS.find(o => o.id === "prep-oral")];
         } else if (updated.routine === "occasional") {
-          results = [HIV_PREVENTION_METHODS.find(o => o.id === "condom-male"), HIV_PREVENTION_METHODS.find(o => o.id === "condom-female")];
+          results = [HIV_OPTIONS.find(o => o.id === "condom-male"), HIV_OPTIONS.find(o => o.id === "condom-female")];
         } else {
-          results = [HIV_PREVENTION_METHODS.find(o => o.id === "prep-inject"), HIV_PREVENTION_METHODS.find(o => o.id === "dapivirine")];
+          results = [HIV_OPTIONS.find(o => o.id === "prep-inject"), HIV_OPTIONS.find(o => o.id === "dapivirine")];
         }
       } else if (updated.goal === "pregnancy") {
         if (updated.duration === "emergency") {
-          results = [PREG_PREVENTION_METHODS.find(o => o.id === "ec-pill")];
+          results = [PREG_OPTIONS.find(o => o.id === "ec")];
         } else if (updated.duration === "long") {
-          results = [PREG_PREVENTION_METHODS.find(o => o.id === "implant"), PREG_PREVENTION_METHODS.find(o => o.id === "copper-iud")];
+          results = [PREG_OPTIONS.find(o => o.id === "implant"), PREG_OPTIONS.find(o => o.id === "iud-copper")];
         } else if (updated.routine === "daily") {
-          results = [PREG_PREVENTION_METHODS.find(o => o.id === "pop")];
+          results = [PREG_OPTIONS.find(o => o.id === "pill")];
         } else {
-          results = [PREG_PREVENTION_METHODS.find(o => o.id === "depo-provera"), PREG_PREVENTION_METHODS.find(o => o.id === "female-condom")];
+          results = [PREG_OPTIONS.find(o => o.id === "injectable"), PREG_OPTIONS.find(o => o.id === "condom-preg")];
         }
       } else {
         // Both
@@ -1253,170 +1036,49 @@ export default function Application() {
   const c2 = ALL_OPTIONS.find(o => o.id === compareOpt2);
 
   const compareRows = [
-    { label: "Prevention Target", get: o => o.type ? o.type : (HIV_PREVENTION_METHODS.some(x => x.id === o.id) ? "HIV" : "Pregnancy") },
+    { label: "Prevention Target", get: o => o.type ? o.type : (HIV_OPTIONS.some(x => x.id === o.id) ? "HIV" : "Pregnancy") },
     { label: "Method Type", get: o => o.cat },
     { label: "Effectiveness Rate", get: o => `${o.effectiveness}%` },
     { label: "Usage Cycle", get: o => typeof o.frequency === 'object' ? o.frequency[lang] : o.frequency },
     { label: "Key Side Effects", get: o => typeof o.sideEffects === 'object' ? o.sideEffects[lang] : o.sideEffects },
     { label: "Availability cost", get: o => o.cost },
-    { label: "HIV Protection", get: o => (o.dual || o.type === "HIV" || HIV_PREVENTION_METHODS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
-    { label: "Pregnancy Protection", get: o => (o.dual || o.type === "Pregnancy" || PREG_PREVENTION_METHODS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
+    { label: "HIV Protection", get: o => (o.dual || o.type === "HIV" || HIV_OPTIONS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
+    { label: "Pregnancy Protection", get: o => (o.dual || o.type === "Pregnancy" || PREG_OPTIONS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
   ];
 
   return (
     <div>
 
       {/* ══════════════════════════════════════════════
-          AUTH MODAL OVERLAY
+          AUTH GATE : shown when not logged in
       ══════════════════════════════════════════════ */}
-
-      {/* ══ COMPREHENSIVE GUIDE MODAL ══ */}
-      {guideModal && (
-        <div
-          onClick={() => setGuideModal(null)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9998,
-            background: 'rgba(0,0,0,0.65)',
-            backdropFilter: 'blur(6px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '20px', fontFamily: 'inherit', animation: 'fadeIn 0.18s ease',
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: 'var(--color-bg-base)',
-              borderRadius: '20px',
-              width: '100%', maxWidth: '560px',
-              maxHeight: '85vh',
-              display: 'flex', flexDirection: 'column',
-              boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
-              animation: 'slideUp 0.22s cubic-bezier(0.34,1.1,0.64,1)',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Modal header */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '18px 22px 16px',
-              borderBottom: '1px solid var(--color-border)',
-              flexShrink: 0,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
-                  width: '38px', height: '38px', borderRadius: '10px',
-                  background: (guideModal.section.color || 'var(--color-primary)') + '18',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '20px', flexShrink: 0,
-                }}>
-                  {guideModal.section.emoji || '📚'}
-                </div>
-                <h3 style={{ fontWeight: 800, fontSize: '17px', color: 'var(--color-text-main)', margin: 0 }}>
-                  {guideModal.section.title}
-                </h3>
-              </div>
-              <button
-                onClick={() => setGuideModal(null)}
-                style={{
-                  width: '32px', height: '32px', borderRadius: '50%',
-                  background: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
-                  fontSize: '16px', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--color-text-muted)', flexShrink: 0,
-                  transition: 'all 0.15s',
-                }}
-                aria-label="Close guide"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Modal content */}
-            <div style={{
-              padding: '20px 22px 24px',
-              overflowY: 'auto',
-              fontSize: '14px',
-              lineHeight: 1.65,
-              color: 'var(--color-text-main)',
-              flex: 1,
-            }} className="hide-scrollbar">
-              {guideModal.section.content}
-            </div>
-
-            {/* Modal footer */}
-            <div style={{
-              padding: '14px 22px',
-              borderTop: '1px solid var(--color-border)',
-              flexShrink: 0,
-              display: 'flex', justifyContent: 'flex-end',
-            }}>
-              <button
-                onClick={() => setGuideModal(null)}
-                style={{
-                  padding: '10px 24px', borderRadius: '20px',
-                  border: 'none', background: 'var(--color-primary)',
-                  color: '#fff', fontWeight: 700, fontSize: '13px',
-                  cursor: 'pointer', transition: 'opacity 0.15s',
-                }}
-              >
-                Got it ✔
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showAuthModal && (
-        <div
-          onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(0,0,0,0.7)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '20px', fontFamily: 'inherit',
-          }}
-        >
-          <div style={{ width: '100%', maxWidth: '440px', position: 'relative' }}>
-            {/* Close button */}
-            <button
-              onClick={() => setShowAuthModal(false)}
-              style={{
-                position: 'absolute', top: '-48px', right: 0,
-                background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '50%', width: '36px', height: '36px',
-                color: '#fff', fontSize: '18px', cursor: 'pointer', lineHeight: 1,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >✕</button>
+      {!currentUser && (
+        <div style={{
+          minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'linear-gradient(135deg, hsl(152,60%,8%) 0%, hsl(152,40%,14%) 50%, hsl(200,50%,10%) 100%)',
+          padding: '20px', fontFamily: 'inherit',
+        }}>
+          <div style={{ width: '100%', maxWidth: '440px' }}>
 
             {/* Brand */}
-            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-              <div style={{ display: 'inline-block', filter: 'drop-shadow(0 6px 24px rgba(34,197,94,0.5))', margin: '0 auto 10px', lineHeight: 0 }}>
-                <img
-                  src="/chengeto-shield.png"
-                  alt="Chengeto Shield"
-                  style={{
-                    width: '64px', height: '70px', objectFit: 'contain', display: 'block',
-                    clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
-                    WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
-                  }}
-                />
-              </div>
-              <h1 style={{ fontSize: '26px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', margin: 0 }}>CHENGETO</h1>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px', marginTop: '4px', fontStyle: 'italic' }}>Zimbabwe's private university health platform</p>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ fontSize: '56px', marginBottom: '8px', filter: 'drop-shadow(0 4px 16px rgba(34,197,94,0.4))' }}>🛡️</div>
+              <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', margin: 0 }}>CHENGETO</h1>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginTop: '4px', fontStyle: 'italic' }}>chengeto : Shona for protection</p>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginTop: '8px', lineHeight: 1.5, maxWidth: '320px', margin: '8px auto 0' }}>
+                Zimbabwe's private university sexual health platform
+              </p>
             </div>
 
             {/* Card */}
             <div style={{
-              background: 'rgba(10,20,12,0.92)', backdropFilter: 'blur(24px)',
+              background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(24px)',
               borderRadius: '20px', border: '1px solid rgba(255,255,255,0.12)',
-              padding: '28px', boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+              padding: '32px', boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
             }}>
               {/* Tab switcher */}
-              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '4px', marginBottom: '24px', gap: '4px' }}>
-                {[['login','🔐 Log In'], ['register','✏️ Sign Up']].map(([v,l]) => (
+              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '4px', marginBottom: '28px', gap: '4px' }}>
+                {[['login','🔐 Sign In'], ['register','✏️ Register']].map(([v,l]) => (
                   <button key={v} onClick={() => { setAuthView(v); setLoginError(''); setRegError(''); }}
                     style={{
                       flex: 1, padding: '10px', border: 'none', borderRadius: '10px', cursor: 'pointer',
@@ -1432,57 +1094,56 @@ export default function Application() {
               {/* ── LOGIN FORM ── */}
               {authView === 'login' && (
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '16px' }}>🔒</span>
-                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.4 }}>No email or student ID required. Your identity stays private.</p>
-                  </div>
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname</label>
-                    <input type="text" value={loginNick} onChange={e => setLoginNick(e.target.value)}
-                      placeholder="e.g. Rudo" required autoComplete="username"
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontWeight: 700 }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Institution</label>
-                    <select value={loginInst} onChange={e => setLoginInst(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                      {INSTITUTION_TYPES.map(t => (
-                        <optgroup key={t.id} label={t.label} style={{ background: '#1a2a1a' }}>
-                          {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
-                            <option key={i.id} value={i.id} style={{ background: '#1a2a1a', color: '#fff' }}>{i.name}</option>
-                          ))}
-                        </optgroup>
-                      ))}
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>University</label>
+                    <select value={loginUni} onChange={e => setLoginUni(e.target.value)}
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
+                      {UNIVERSITIES.map(u => <option key={u.id} value={u.id} style={{ background: '#1a2a1a', color: '#fff' }}>{u.name}</option>)}
                     </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Student ID Number</label>
+                    <input
+                      type="text" value={loginId} onChange={e => setLoginId(e.target.value)}
+                      placeholder={`e.g. ${UNIVERSITIES.find(u=>u.id===loginUni)?.idFormat || 'R######X'}`}
+                      required
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box', letterSpacing: '0.5px', fontWeight: 700 }}
+                    />
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Password</label>
                     <div style={{ position: 'relative' }}>
-                      <input type={showPw ? 'text' : 'password'} value={loginPw} onChange={e => setLoginPw(e.target.value)}
-                        placeholder="Enter your password" required autoComplete="current-password"
-                        style={{ width: '100%', padding: '12px 44px 12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                      <input
+                        type={showPw ? 'text' : 'password'} value={loginPw} onChange={e => setLoginPw(e.target.value)}
+                        placeholder="Enter your password" required
+                        style={{ width: '100%', padding: '12px 44px 12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                      />
                       <button type="button" onClick={() => setShowPw(p => !p)}
                         style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '16px', padding: 0 }}>
                         {showPw ? '🙈' : '👁️'}
                       </button>
                     </div>
                   </div>
+
                   {loginError && (
                     <div style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#FCA5A5' }}>
                       ⚠️ {loginError}
                     </div>
                   )}
+
                   <button type="submit" disabled={loginLoading}
                     style={{ padding: '14px', borderRadius: '12px', border: 'none', background: loginLoading ? 'rgba(34,197,94,0.4)' : 'hsl(152,60%,42%)', color: '#fff', fontWeight: 800, fontSize: '15px', cursor: loginLoading ? 'default' : 'pointer', marginTop: '4px', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
-                    {loginLoading ? '⏳ Signing in...' : '🔐 Log In to Chengeto'}
+                    {loginLoading ? '⏳ Signing in...' : '🔐 Sign In to Chengeto'}
                   </button>
-                  <div style={{ marginTop: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '12px 14px', border: '1px dashed rgba(255,255,255,0.12)' }}>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>🎯 Demo Accounts</p>
+
+                  {/* Demo credentials */}
+                  <div style={{ marginTop: '8px', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px', border: '1px dashed rgba(255,255,255,0.12)' }}>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>🎯 Hackathon Demo Credentials</p>
                     {AUTH_DEMO_ACCOUNTS.map(a => (
-                      <button key={a.key} type="button"
-                        onClick={() => { setLoginNick(a.nickname); setLoginInst(a.institution); setLoginPw(a.password); }}
+                      <button key={a.studentId} type="button"
+                        onClick={() => { setLoginId(a.studentId); setLoginPw(a.password); setLoginUni(a.university); }}
                         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '7px 10px', marginBottom: '5px', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>
-                        <strong style={{ color: 'hsl(152,60%,72%)' }}>{a.nickname}</strong> · {INSTITUTIONS.find(i => i.id === a.institution)?.name} · pw: <code style={{ color: 'hsl(50,100%,72%)' }}>{a.password}</code>
+                        <strong style={{ color: 'hsl(152,60%,72%)' }}>{a.studentId}</strong> · pw: <code style={{ color: 'hsl(50,100%,72%)' }}>{a.password}</code> · {a.name}
                       </button>
                     ))}
                   </div>
@@ -1492,112 +1153,91 @@ export default function Application() {
               {/* ── REGISTER FORM ── */}
               {authView === 'register' && (
                 <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                    <span style={{ fontSize: '16px', marginTop: '1px' }}>🛡️</span>
-                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>We do <strong style={{ color: 'rgba(255,255,255,0.85)' }}>not</strong> collect your name, student ID, or email. Only your nickname and institution identify your account.</p>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Nickname <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
-                    <input type="text" value={regNick} onChange={e => setRegNick(e.target.value)} placeholder="e.g. Genius, Aisling, TK..." required autoComplete="username"
-                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
-                    <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>This is how Chengeto will greet you. No real name needed.</p>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Institution <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
-                    <select value={regInst} onChange={e => setRegInst(e.target.value)}
-                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
-                      {INSTITUTION_TYPES.map(t => (
-                        <optgroup key={t.id} label={t.label} style={{ background: '#1a2a1a' }}>
-                          {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
-                            <option key={i.id} value={i.id} style={{ background: '#1a2a1a', color: '#fff' }}>{i.name}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Level / Year <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
-                      <select value={regLevel} onChange={e => setRegLevel(e.target.value)}
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
-                        {STUDY_LEVELS.map(l => <option key={l} value={l} style={{ background: '#1a2a1a' }}>{l}</option>)}
-                      </select>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Full Name</label>
+                      <input type="text" value={regName} onChange={e => setRegName(e.target.value)} placeholder="Your full name" required
+                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                     <div>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Gender</label>
-                      <select value={regGender} onChange={e => setRegGender(e.target.value)}
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
-                        {GENDERS.map(g => <option key={g.id} value={g.id} style={{ background: '#1a2a1a' }}>{g.label}</option>)}
-                      </select>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Student ID</label>
+                      <input type="text" value={regId} onChange={e => setRegId(e.target.value)} placeholder="e.g. R190045X" required
+                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', fontWeight: 700, outline: 'none', boxSizing: 'border-box', letterSpacing: '0.5px' }} />
                     </div>
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Password <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
-                    <input type={showPw ? 'text' : 'password'} value={regPw} onChange={e => setRegPw(e.target.value)} placeholder="Min 6 characters" required autoComplete="new-password"
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>University</label>
+                    <select value={regUni} onChange={e => setRegUni(e.target.value)}
+                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
+                      {UNIVERSITIES.map(u => <option key={u.id} value={u.id} style={{ background: '#1a2a1a' }}>{u.name}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Year</label>
+                      <select value={regYear} onChange={e => setRegYear(e.target.value)}
+                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
+                        {['1','2','3','4','5','6'].map(y => <option key={y} value={y} style={{ background: '#1a2a1a' }}>Year {y}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Programme</label>
+                      <input type="text" value={regProgramme} onChange={e => setRegProgramme(e.target.value)} placeholder="e.g. Medicine, Law..." required
+                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Password</label>
+                    <input type={showPw ? 'text' : 'password'} value={regPw} onChange={e => setRegPw(e.target.value)} placeholder="Min 6 characters" required
                       style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Confirm Password <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
-                    <input type={showPw ? 'text' : 'password'} value={regPw2} onChange={e => setRegPw2(e.target.value)} placeholder="Re-enter password" required autoComplete="new-password"
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Confirm Password</label>
+                    <input type={showPw ? 'text' : 'password'} value={regPw2} onChange={e => setRegPw2(e.target.value)} placeholder="Re-enter password" required
                       style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
-                    <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)} /> Show passwords
+                    <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)} />
+                    Show passwords
                   </label>
+
                   {regError && (
                     <div style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#FCA5A5' }}>
                       ⚠️ {regError}
                     </div>
                   )}
+
                   <button type="submit"
                     style={{ padding: '13px', borderRadius: '12px', border: 'none', background: 'hsl(152,60%,42%)', color: '#fff', fontWeight: 800, fontSize: '14px', cursor: 'pointer', marginTop: '2px', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
                     ✅ Create My Account
                   </button>
                   <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>
-                    Your data stays on this device. Chengeto does not collect or share personal information.
+                    Your data stays on this device. Chengeto does not share personal information.
                   </p>
                 </form>
               )}
             </div>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: '16px' }}>
-              🔒 Private &amp; Secure · Works Offline · Made for Zimbabwe Students
+
+            {/* Footer */}
+            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: '20px' }}>
+              🔒 Private & Secure · Works Offline · Made for Zimbabwe Students
             </p>
           </div>
         </div>
       )}
 
-
       {/* ══════════════════════════════════════════════
-          MAIN APP : always visible
+          MAIN APP : shown when logged in
       ══════════════════════════════════════════════ */}
+      {currentUser && (
       <div>
       {/* ── HEADER ── */}
-      <header className={`nav-header ${page === "home" ? "home-header" : ""}`}>
+      <header className="nav-header">
         <div className="logo-group">
-          <div className="logo-icon-wrap">
-            <div style={{ filter: 'drop-shadow(0 2px 8px rgba(34,197,94,0.45))', lineHeight: 0 }}>
-              <img
-                src="/chengeto-shield.png"
-                alt="Chengeto Shield"
-                style={{
-                  width: '48px',
-                  height: '54px',
-                  objectFit: 'contain',
-                  display: 'block',
-                  clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
-                  WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
-                }}
-              />
-            </div>
+          <div className="logo-title">
+            <span style={{ fontSize: '26px' }}>🛡️</span> CHENGETO
           </div>
-          <div className="logo-text-wrap">
-            <span className="logo-title-text">
-              CHENGETO
-            </span>
-            <span className="logo-sub-text">
-              Youth Health & Self-Care Platform
-            </span>
-          </div>
+          <div className="logo-sub">Zimbabwe Youth Health & Self-Care Platform</div>
         </div>
         <div className="nav-links">
           <button onClick={() => setPage("home")} className={`nav-button ${page === "home" ? "active" : ""}`}>
@@ -1630,134 +1270,101 @@ export default function Application() {
           >
             {LANG_LABELS[lang].flag} {LANG_LABELS[lang].label}
           </button>
-          {/* ── Header right: Log In / Sign Up OR minimal avatar ── */}
-          {currentUser ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
-              <div
-                title={`Signed in as ${currentUser.nickname}`}
-                style={{ width: '32px', height: '32px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '14px', flexShrink: 0, cursor: 'default', border: '2px solid rgba(255,255,255,0.15)' }}
-              >
-                {(currentUser?.nickname || '?').charAt(0).toUpperCase()}
+          {/* User avatar + profile + logout */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
+            <button
+              onClick={openProfilePage}
+              title="Edit your profile"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '5px 10px 5px 5px', cursor: 'pointer', transition: 'all 0.15s' }}
+            >
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '13px', flexShrink: 0 }}>
+                {(currentUser?.nickname || currentUser?.name || '?').charAt(0).toUpperCase()}
               </div>
-              <button
-                onClick={handleLogout}
-                title="Sign out"
-                style={{ background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '7px 9px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', transition: 'all 0.15s' }}
-              >🚪</button>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
-              <button
-                onClick={() => { setAuthView('login'); setLoginError(''); setShowAuthModal(true); }}
-                style={{ padding: '8px 18px', borderRadius: '20px', border: '2px solid hsl(152,60%,38%)', background: 'transparent', color: 'hsl(152,65%,32%)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.2px' }}
-              >Log In</button>
-              <button
-                onClick={() => { setAuthView('register'); setRegError(''); setShowAuthModal(true); }}
-                style={{ padding: '8px 18px', borderRadius: '20px', border: 'none', background: 'hsl(152,60%,42%)', color: '#fff', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 10px rgba(34,197,94,0.35)', letterSpacing: '0.2px' }}
-              >Sign Up</button>
-            </div>
-          )}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.2 }}>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-primary)' }}>
+                  {currentUser?.nickname || currentUser?.name?.split(' ')[0]}
+                </span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                  {currentUser?.studentId}
+                </span>
+              </div>
+            </button>
+            <button
+              onClick={handleLogout}
+              title="Sign out"
+              style={{ background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '7px 9px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', transition: 'all 0.15s' }}
+            >🚪</button>
+          </div>
         </div>
       </header>
 
       {/* ── HOME VIEW ── */}
       {page === "home" && (
         <div className="animate-fade-in">
+          {/* ── PERSONALISED GREETING ── */}
+          {(() => {
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+            const name = currentUser?.nickname || currentUser?.name?.split(' ')[0] || 'there';
+            return (
+              <div style={{ background: `linear-gradient(135deg, ${currentUser?.avatarColor || '#059669'}18, ${currentUser?.avatarColor || '#059669'}08)`, borderBottom: '1px solid var(--color-border)', padding: '16px 24px' }}>
+                <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-main)' }}>
+                    {greeting}, <span style={{ color: currentUser?.avatarColor || 'var(--color-primary)' }}>{name}</span>! 👋
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                    What can we learn today?
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Hero section */}
           <section className="hero-banner">
-            {/* ── PERSONALISED GREETING pill overlay ── */}
-            {(() => {
-              const hour = new Date().getHours();
-              const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-              const name = currentUser?.nickname || currentUser?.name?.split(' ')[0] || 'there';
-              return (
-                <div style={{ marginTop: '-15px', marginBottom: '32px', animation: 'fadeInUp 0.4s' }}>
-                  <span className="hero-greeting-pill">
-                    {greeting}, <span style={{ color: '#4ade80', fontWeight: 800 }}>{name}</span>! 👋 &nbsp;•&nbsp; What can we learn today?
-                  </span>
-                </div>
-              );
-            })()}
-
-            <div style={{ marginBottom: '24px', animation: 'fadeInUp 0.5s' }}>
-              <div style={{ display: 'inline-block', filter: 'drop-shadow(0 4px 24px rgba(34,197,94,0.55))', lineHeight: 0 }}>
-                <img
-                  src="/chengeto-shield.png"
-                  alt="Chengeto Shield"
-                  style={{
-                    width: '88px',
-                    height: '96px',
-                    objectFit: 'contain',
-                    display: 'block',
-                    margin: '0 auto',
-                    clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
-                    WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
-                  }}
-                />
-              </div>
-            </div>
+            <div style={{ fontSize: '56px', marginBottom: '16px', animation: 'fadeInUp 0.6s' }}>💚</div>
             <h1 className="hero-title">CHENGETO</h1>
-            <div className="hero-shona">Shona word for protection</div>
+            <div className="hero-shona">chengeto : Shona word for protection</div>
             <p className="hero-subtitle">
-              Your safe, private space for sexual health & wellness. Explore trusted information, find local services, and access support anonymously.
+              Secure, private, and accurate sexual health information. Get details on prevention methods, locations, and request commodities anonymously.
             </p>
-            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button 
-                onClick={handlePortalAccess} 
-                className="breathe-btn"
-              >
-                📦 Commodity Portal
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={() => setPage("quiz")} className="btn btn-primary">
+                📝 Take Fit Quiz
               </button>
-              <button 
-                onClick={() => setShowChatComingSoon(true)} 
-                className="breathe-btn-secondary"
-              >
-                💬 Private Chatbot
+              <button onClick={() => setPage("chat")} className="btn btn-secondary" style={{ border: 'none' }}>
+                💬 Chat Privately
               </button>
               {installPromptEvent && (
-                <button 
-                  onClick={handleInstallApp} 
-                  className="btn btn-white" 
-                  style={{ 
-                    border: '2px solid rgba(255,255,255,0.4)', 
-                    color: '#fff', 
-                    background: 'rgba(255,255,255,0.12)', 
-                    backdropFilter: 'blur(8px)', 
-                    borderRadius: '30px', 
-                    padding: '14px 32px',
-                    fontSize: '14.5px',
-                    minWidth: '200px',
-                    fontWeight: 700
-                  }}
-                >
-                  📥 Install App
+                <button onClick={handleInstallApp} className="btn btn-white" style={{ border: '2px solid var(--color-primary-mid)' }}>
+                  📥 Install PWA
                 </button>
               )}
             </div>
           </section>
 
           {/* Quick Information Trust Anchors */}
-          <div style={{ background: 'rgba(8, 30, 16, 0.96)', padding: '24px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ background: 'var(--color-primary-light)', padding: '24px 0', borderBottom: '1px solid var(--color-border)' }}>
             <div style={{ display: 'flex', gap: '30px', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '280px' }}>
-                <span style={{ fontSize: '26px' }}>🔒</span>
+                <span style={{ fontSize: '28px' }}>🔒</span>
                 <div>
-                  <h4 style={{ fontWeight: 800, fontSize: '13px', color: '#4ade80' }}>100% Private</h4>
-                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>No sign-up or profile data required. Fully anonymous.</p>
+                  <h4 style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary)' }}>100% Private</h4>
+                  <p style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>No sign-up or profile data required. Fully anonymous.</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '280px' }}>
-                <span style={{ fontSize: '26px' }}>🎓</span>
+                <span style={{ fontSize: '28px' }}>🎓</span>
                 <div>
-                  <h4 style={{ fontWeight: 800, fontSize: '13px', color: '#4ade80' }}>Expert Verified</h4>
-                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Content aligns with CeSHHAR Zimbabwe &amp; MASCOT standards.</p>
+                  <h4 style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary)' }}>Expert Verified</h4>
+                  <p style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Content aligns with CeSHHAR Zimbabwe & MASCOT study standards.</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '280px' }}>
-                <span style={{ fontSize: '26px' }}>📶</span>
+                <span style={{ fontSize: '28px' }}>📶</span>
                 <div>
-                  <h4 style={{ fontWeight: 800, fontSize: '13px', color: '#4ade80' }}>Offline-First</h4>
-                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Loads instantly without internet. Works anywhere.</p>
+                  <h4 style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary)' }}>Offline-First</h4>
+                  <p style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Loads instantly without internet. Works anywhere.</p>
                 </div>
               </div>
             </div>
@@ -1770,26 +1377,6 @@ export default function Application() {
             
             <div className="grid-container">
               {/* Card 1 */}
-              <div className="glass-card" onClick={handlePortalAccess} style={{ cursor: 'pointer' }}>
-                <div style={{ fontSize: '36px', marginBottom: '12px' }}>🏥</div>
-                <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Commodity Code Portal</h3>
-                <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-                  Generate a private pickup code for HIV test kits or condoms, and claim them anonymously at campus health services.
-                </p>
-                <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Get Pickup Code →</span>
-              </div>
-
-              {/* Card 2 */}
-              <div className="glass-card" onClick={() => setShowChatComingSoon(true)} style={{ cursor: 'pointer' }}>
-                <div style={{ fontSize: '36px', marginBottom: '12px' }}>🤖</div>
-                <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Chengeto Private Chatbot</h3>
-                <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-                  Get quick answers in English or Shona about costs, locations, and directions without any judgements.
-                </p>
-                <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Chat Now →</span>
-              </div>
-
-              {/* Card 3 */}
               <div className="glass-card" onClick={() => setPage("quiz")} style={{ cursor: 'pointer' }}>
                 <div style={{ fontSize: '36px', marginBottom: '12px' }}>📊</div>
                 <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Find My Fit Quiz</h3>
@@ -1798,6 +1385,28 @@ export default function Application() {
                 </p>
                 <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Start Quiz →</span>
               </div>
+              
+              {/* Card 2 */}
+              <div className="glass-card" onClick={() => setPage("portal")} style={{ cursor: 'pointer' }}>
+                <div style={{ fontSize: '36px', marginBottom: '12px' }}>🏥</div>
+                <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Commodity Code Portal</h3>
+                <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                  Generate a private pickup code for HIV test kits or condoms, and claim them anonymously at campus health services.
+                </p>
+                <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Get Pickup Code →</span>
+              </div>
+
+              {/* Card 3 */}
+              <div className="glass-card" onClick={() => setPage("chat")} style={{ cursor: 'pointer' }}>
+                <div style={{ fontSize: '36px', marginBottom: '12px' }}>🤖</div>
+                <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Chengeto Private Chatbot</h3>
+                <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                  Get quick answers in English or Shona about costs, locations, and directions without any judgements.
+                </p>
+                <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Chat Now →</span>
+              </div>
+
+
             </div>
           </div>
 
@@ -1812,9 +1421,9 @@ export default function Application() {
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>Explore oral/injectable options, self-testing guides, and urgent PEP directions.</p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
-                  <button onClick={() => { setPage("hiv"); setHivTab("prevention"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🛡️ Prevention Methods</button>
-                  <button onClick={() => { setPage("hiv"); setHivTab("game"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🎮 Interactive Scenarios</button>
-                  <button onClick={() => { setPage("hiv"); setHivTab("myths"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🤔 Myths vs Facts</button>
+                  <button onClick={() => { setPage("hiv"); setHivTab("prevention"); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🛡️ Prevention Methods</button>
+                  <button onClick={() => { setPage("hiv"); setHivTab("game"); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🎮 Interactive Scenarios</button>
+                  <button onClick={() => { setPage("hiv"); setHivTab("myths"); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '11.5px' }}>🤔 Myths vs Facts</button>
                 </div>
               </div>
 
@@ -1825,9 +1434,9 @@ export default function Application() {
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>Check pills, implants, patches, IUD devices, and emergency contraception availability.</p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
-                  <button onClick={() => { setPage("pregnancy"); setPregTab("methods"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>🛡️ Contraception Methods</button>
-                  <button onClick={() => { setPage("pregnancy"); setPregTab("guides"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>📖 How-To Guides</button>
-                  <button onClick={() => { setPage("tracker"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>📅 Cycle Tracker</button>
+                  <button onClick={() => { setPage("pregnancy"); setPregTab("methods"); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>🛡️ Contraception Methods</button>
+                  <button onClick={() => { setPage("pregnancy"); setPregTab("guides"); }} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>📖 How-To Guides</button>
+                  <button onClick={() => setPage("tracker")} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)' }}>📅 Cycle Tracker</button>
                 </div>
               </div>
             </div>
@@ -1838,10 +1447,6 @@ export default function Application() {
       {/* ── HIV SECTION VIEW ── */}
       {page === "hiv" && (
         <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '1000px', margin: '0 auto' }}>
-
-          {/* ── HIV DASHBOARD OVERVIEW (only shown on main tab) ── */}
-          {hivTab === 'main' && (
-            <>
           <h2 style={{ fontSize: '28px', color: 'var(--color-primary)', marginBottom: '4px' }}>{UI[lang].hivTitle}</h2>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginBottom: '24px' }}>
             {UI[lang].hivSub}
@@ -1872,9 +1477,9 @@ export default function Application() {
               {/* Tab Headers (Horizontal Scroll) */}
               <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }} className="hide-scrollbar">
                 {HIV_INFO_SECTIONS.map(section => (
-                  <button
+                  <button 
                     key={section.id}
-                    onClick={() => { setActiveHivInfoTab(section.id); setGuideModal({ section }); }}
+                    onClick={() => setActiveHivInfoTab(section.id)}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '20px',
@@ -1906,8 +1511,6 @@ export default function Application() {
               </p>
             </div>
           </div>
-            </>
-          )}
 
           {/* ── HIV DASHBOARD (MAIN) ── */}
           {hivTab === 'main' && (
@@ -1915,7 +1518,7 @@ export default function Application() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '32px' }}>
                 
                 {/* Prevention Methods Card */}
-                <div className="glass-card" onClick={() => { setHivTab('prevention'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+                <div className="glass-card" onClick={() => setHivTab('prevention')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛡️</div>
                   <h3 style={{ fontSize: '17px', color: 'var(--color-primary)', marginBottom: '8px' }}>Prevention Methods</h3>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Explore how-to guides, ABCDE framework, and practical steps to stay safe.</p>
@@ -1923,7 +1526,7 @@ export default function Application() {
                 </div>
 
                 {/* HIV Game Card */}
-                <div className="glass-card" onClick={() => { setHivTab('game'); setGameScenarioIdx(0); setGameOver(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+                <div className="glass-card" onClick={() => { setHivTab('game'); setGameScenarioIdx(0); setGameOver(false); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎮</div>
                   <h3 style={{ fontSize: '17px', color: 'var(--color-primary)', marginBottom: '8px' }}>Interactive Scenarios</h3>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Play through real-life relationship and exposure scenarios to test your knowledge.</p>
@@ -1931,7 +1534,7 @@ export default function Application() {
                 </div>
 
                 {/* Myths vs Facts Card */}
-                <div className="glass-card" onClick={() => { setHivTab('myths'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+                <div className="glass-card" onClick={() => setHivTab('myths')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🤔</div>
                   <h3 style={{ fontSize: '17px', color: 'var(--color-primary)', marginBottom: '8px' }}>Myths vs Facts</h3>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Debunk common rumors around HIV transmission and prevention.</p>
@@ -1940,7 +1543,7 @@ export default function Application() {
               </div>
 
               {/* Bottom Chat Button */}
-              <button className="btn" onClick={() => setShowChatComingSoon(true)} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-primary)', boxShadow: '0 4px 12px var(--color-card-shadow)' }}>
+              <button className="btn" onClick={() => setPage('chat')} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-primary)', boxShadow: '0 4px 12px var(--color-card-shadow)' }}>
                 Have More Questions? Talk to Chengeto
               </button>
             </div>
@@ -1949,7 +1552,7 @@ export default function Application() {
           {/* ── HIV GAME VIEW ── */}
           {hivTab === 'game' && (
             <div className="animate-fade-in">
-              <button onClick={() => { setHivTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => setHivTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⬅ Back to HIV Dashboard
               </button>
               
@@ -1983,7 +1586,7 @@ export default function Application() {
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
                   <h3 style={{ fontSize: '22px', color: 'var(--color-primary)', marginBottom: '12px' }}>Great Job!</h3>
                   <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginBottom: '24px' }}>You have completed all scenarios. You are well equipped to handle real-life situations!</p>
-                  <button onClick={() => { setHivTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-primary">Return to Dashboard</button>
+                  <button onClick={() => setHivTab('main')} className="btn btn-primary">Return to Dashboard</button>
                 </div>
               )}
             </div>
@@ -1992,7 +1595,7 @@ export default function Application() {
           {/* ── MYTHS VIEW ── */}
           {hivTab === 'myths' && (
             <div className="animate-fade-in">
-              <button onClick={() => { setHivTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => setHivTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⬅ Back to HIV Dashboard
               </button>
               
@@ -2016,7 +1619,7 @@ export default function Application() {
           {/* ── PREVENTION METHODS (NESTED TABS) ── */}
           {hivTab === 'prevention' && (
             <div className="animate-fade-in">
-              <button onClick={() => { setHivTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => setHivTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⬅ Back to HIV Dashboard
               </button>
 
@@ -2034,151 +1637,16 @@ export default function Application() {
               {/* ── PREVENTION METHODS TAB ── */}
               {preventionSubTab === 'methods' && (
                 <div className="animate-fade-in">
-                  {activeHivMethod ? (
-                    <div className="animate-fade-in">
-                      <button onClick={() => setActiveHivMethod(null)} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        ⬅ Back to Prevention Methods
-                      </button>
-
-                      <div className="glass-card" style={{ padding: '0', overflow: 'hidden', border: 'none', boxShadow: '0 8px 30px rgba(8, 145, 178, 0.12)' }}>
-                        {/* ── HIV Detail Banner with image integration ── */}
-                        <div style={{ background: 'linear-gradient(135deg, var(--color-primary), #0369a1)', padding: '32px 24px', color: '#fff', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
-                          {/* Blended banner image on the right */}
-                          {activeHivMethod.bannerImg && (
-                            <div style={{
-                              position: 'absolute', top: 0, right: 0, bottom: 0,
-                              width: '55%',
-                              backgroundImage: `url(${activeHivMethod.bannerImg})`,
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center',
-                              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 100%)',
-                              maskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 100%)',
-                              opacity: 1,
-                            }} />
-                          )}
-                          {/* Overlay: solid left half fading to transparent at 50% */}
-                          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,78,120,1) 0%, rgba(2,78,120,0.95) 35%, rgba(2,78,120,0.5) 50%, rgba(2,78,120,0.0) 55%)', pointerEvents: 'none' }} />
-                          {/* Content */}
-                          <div style={{ position: 'relative', zIndex: 2, maxWidth: '60%' }}>
-                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activeHivMethod.icon}</div>
-                            <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
-                              {activeHivMethod.categoryLabel}
-                            </div>
-                            <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '8px', lineHeight: 1.2 }}>{activeHivMethod.name}</h2>
-                            <p style={{ fontSize: '15px', opacity: 0.9, lineHeight: 1.5, fontWeight: 500 }}>{activeHivMethod.tagline}</p>
-                          </div>
-                        </div>
-
-
-                        <div style={{ background: '#f8fafc', padding: '16px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-main)' }}>Effectiveness</span>
-                              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-primary)' }}>{activeHivMethod.effectiveness}%</span>
-                            </div>
-                            <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                              <div style={{ width: `${activeHivMethod.effectiveness}%`, height: '100%', background: 'var(--color-primary)', borderRadius: '4px' }}></div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                          <div className="glass-card" style={{ borderLeft: '4px solid var(--color-primary)' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-primary)', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>📝 Description</h4>
-                            <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activeHivMethod.detail.description}</p>
-                          </div>
-
-                          <div className="glass-card" style={{ borderLeft: '4px solid #F59E0B' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#F59E0B', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💊 Form of Use</h4>
-                            <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activeHivMethod.detail.formOfUse}</p>
-                          </div>
-
-                          <div className="glass-card" style={{ borderLeft: '4px solid #3B82F6' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#3B82F6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⚙️ How It Works</h4>
-                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                              {activeHivMethod.detail.howItWorks.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                            </ul>
-                          </div>
-
-                          <div className="glass-card" style={{ borderLeft: '4px solid #10B981' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#10B981', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>🛠️ How To Use</h4>
-                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                              {activeHivMethod.detail.howToUse.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                            </ul>
-                          </div>
-
-                          <div className="glass-card" style={{ borderLeft: '4px solid #8B5CF6' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#8B5CF6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⏱️ Frequency</h4>
-                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                              {activeHivMethod.detail.frequency.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                            </ul>
-                          </div>
-
-                          <div className="glass-card" style={{ borderLeft: '4px solid #EF4444' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#EF4444', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⚠️ Side Effects</h4>
-                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                              {activeHivMethod.detail.sideEffects.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                            </ul>
-                          </div>
-
-                          <div className="glass-card" style={{ borderLeft: '4px solid #0EA5E9' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#0EA5E9', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>📍 Where & How to Access</h4>
-                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                              {activeHivMethod.detail.access.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                            </ul>
-                          </div>
-
-                          <div className="glass-card" style={{ borderLeft: '4px solid #059669' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#059669', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💰 Cost</h4>
-                            <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7, fontWeight: 600 }}>{activeHivMethod.detail.cost}</p>
-                          </div>
-
-                          <div className="glass-card" style={{ borderLeft: '4px solid #6366F1' }}>
-                            <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#6366F1', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>🛡️ STI Protection</h4>
-                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                              {activeHivMethod.detail.stiProtection.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                            </ul>
-                          </div>
-
-                          {activeHivMethod.detail.misunderstandings.length > 0 && (
-                            <div className="glass-card" style={{ borderLeft: '4px solid #D97706' }}>
-                              <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#D97706', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💡 Correcting Misunderstandings</h4>
-                              <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                                {activeHivMethod.detail.misunderstandings.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>✅ {item}</li>)}
-                              </ul>
-                            </div>
-                          )}
-
-                          <button onClick={() => { setActiveHivMethod(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ width: '100%', marginTop: '8px' }}>
-                            ⬅ Back to All Prevention Methods
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="tabs-container" style={{ marginBottom: '20px' }}>
-                        {HIV_PREVENTION_CATEGORIES.map(c => (
-                          <button key={c.id} className={`tab-btn ${hivPreventionCat === c.id ? 'active-hiv' : ''}`} onClick={() => setHivPreventionCat(c.id)}>{c.label}</button>
-                        ))}
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                        {HIV_PREVENTION_METHODS.filter(o => hivPreventionCat === 'all' || o.cat === hivPreventionCat).map(o => (
-                          <div key={o.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', padding: '24px', borderTop: o.urgent ? '4px solid var(--color-primary)' : 'none', position: 'relative' }}>
-                            {o.urgent && <div style={{ position: 'absolute', top: 12, right: 12, background: 'var(--color-primary)', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Time Sensitive</div>}
-                            <div style={{ fontSize: '42px', marginBottom: '16px' }}>{o.icon}</div>
-                            <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px', fontWeight: 800, lineHeight: 1.3 }}>{o.name}</h3>
-                            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: '20px' }}>{o.tagline}</p>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
-                              <span style={{ fontSize: '11px', background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>{o.effectiveness}% Effective</span>
-                              {o.dual && <span style={{ fontSize: '11px', background: '#e0e7ff', color: '#4338ca', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>+ STI Protection</span>}
-                            </div>
-                            <button onClick={() => { setActiveHivMethod(o); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', padding: '10px', borderRadius: '8px', fontWeight: 600 }}>Learn More →</button>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                  <div className="tabs-container" style={{ marginBottom: '20px' }}>
+                    {HIV_CATEGORIES.map(c => (
+                      <button key={c} className={`tab-btn ${hivCat === c ? 'active-hiv' : ''}`} onClick={() => setHivCat(c)}>{c}</button>
+                    ))}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                    {HIV_OPTIONS.filter(o => hivCat === 'All' || o.cat === hivCat).map(o => (
+                      <ExpandableCard key={o.id} option={o} onCompareSelect={handleAddCompare1} isCompareBtnVisible={true} lang={lang} />
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -2321,10 +1789,6 @@ export default function Application() {
       {/* ── PREGNANCY SECTION VIEW ── */}
       {page === "pregnancy" && (
         <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '1000px', margin: '0 auto' }}>
-
-          {/* ── PREGNANCY DASHBOARD OVERVIEW (only shown on main tab) ── */}
-          {pregTab === 'main' && (
-            <>
           <h2 style={{ fontSize: '28px', color: 'var(--color-rose)', marginBottom: '4px' }}>{UI[lang].pregTitle}</h2>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginBottom: '24px' }}>
             {UI[lang].pregSub}
@@ -2353,33 +1817,29 @@ export default function Application() {
               
               <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }} className="hide-scrollbar">
                 {PREG_INFO_SECTIONS.map(section => (
-                  <button
+                  <button 
                     key={section.id}
-                    onClick={() => { setActivePregInfoTab(section.id); setGuideModal({ section }); }}
+                    onClick={() => setActivePregInfoTab(section.id)}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '20px',
                       border: '1px solid',
-                      borderColor: 'var(--color-border)',
-                      background: 'var(--color-bg-surface)',
-                      color: 'var(--color-text-main)',
+                      borderColor: activePregInfoTab === section.id ? 'var(--color-rose)' : 'var(--color-border)',
+                      background: activePregInfoTab === section.id ? 'var(--color-rose)' : 'transparent',
+                      color: activePregInfoTab === section.id ? '#fff' : 'var(--color-text-main)',
                       fontSize: '12.5px',
                       fontWeight: 600,
                       whiteSpace: 'nowrap',
                       cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      display: 'flex', alignItems: 'center', gap: '6px',
+                      transition: 'all 0.2s'
                     }}
                   >
-                    {section.emoji && <span>{section.emoji}</span>}
                     {section.title}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-            </>
-          )}
 
           {/* ── PREGNANCY MAIN DASHBOARD ── */}
           {pregTab === 'main' && (
@@ -2398,7 +1858,7 @@ export default function Application() {
           {/* ── PREGNANCY DASHBOARD TABS ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '32px' }}>
             {/* Contraception Methods Card */}
-            <div className="glass-card" onClick={() => { setPregTab('methods'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+            <div className="glass-card" onClick={() => setPregTab('methods')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛡️</div>
               <h3 style={{ fontSize: '17px', color: 'var(--color-rose)', marginBottom: '8px' }}>Contraception Methods</h3>
               <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Explore pills, implants, condoms, and other safe options for you.</p>
@@ -2406,7 +1866,7 @@ export default function Application() {
             </div>
 
             {/* How-To Guides Card */}
-            <div className="glass-card" onClick={() => { setPregTab('guides'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+            <div className="glass-card" onClick={() => setPregTab('guides')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>📖</div>
               <h3 style={{ fontSize: '17px', color: 'var(--color-rose)', marginBottom: '8px' }}>How-To Guides</h3>
               <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Step-by-step visual instructions on using contraception correctly.</p>
@@ -2423,7 +1883,7 @@ export default function Application() {
             </div>
 
             {/* Bottom Chat Button */}
-            <button className="btn" onClick={() => setShowChatComingSoon(true)} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-rose)', boxShadow: '0 4px 12px var(--color-card-shadow)', marginTop: '20px' }}>
+            <button className="btn" onClick={() => setPage('chat')} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-rose)', boxShadow: '0 4px 12px var(--color-card-shadow)', marginTop: '20px' }}>
               Have More Questions? Talk to Chengeto
             </button>
           </div>
@@ -2433,203 +1893,30 @@ export default function Application() {
           {/* ── PREVENTION METHODS TAB ── */}
           {pregTab === 'methods' && (
             <div className="animate-fade-in">
-              {activePregMethod ? (
-                <div className="animate-fade-in">
-                  <button onClick={() => setActivePregMethod(null)} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    ⬅ Back to Prevention Methods
-                  </button>
-
-                  <div className="glass-card" style={{ padding: '0', overflow: 'hidden', border: 'none', boxShadow: '0 8px 30px rgba(225, 29, 72, 0.12)' }}>
-                    {/* ── Pregnancy Detail Banner with image integration ── */}
-                    <div style={{ background: 'linear-gradient(135deg, var(--color-rose), #be123c)', padding: '32px 24px', color: '#fff', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
-                      {/* Blended banner image on the right */}
-                      {activePregMethod.bannerImg && (
-                        <div style={{
-                          position: 'absolute', top: 0, right: 0, bottom: 0,
-                          width: '55%',
-                          backgroundImage: `url(${activePregMethod.bannerImg})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 100%)',
-                          maskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 100%)',
-                          opacity: 1,
-                        }} />
-                      )}
-                      {/* Overlay: solid left half fading to transparent at 50% */}
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(190,18,60,1) 0%, rgba(190,18,60,0.95) 35%, rgba(190,18,60,0.5) 50%, rgba(190,18,60,0.0) 55%)', pointerEvents: 'none' }} />
-                      {/* Content */}
-                      <div style={{ position: 'relative', zIndex: 2, maxWidth: '60%' }}>
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>{activePregMethod.icon}</div>
-                        <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
-                          {activePregMethod.categoryLabel}
-                        </div>
-                        <h2 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '8px', lineHeight: 1.2 }}>{activePregMethod.name}</h2>
-                        <p style={{ fontSize: '15px', opacity: 0.9, lineHeight: 1.5, fontWeight: 500 }}>{activePregMethod.tagline}</p>
-                      </div>
-                    </div>
-
-
-                    <div style={{ background: '#f8fafc', padding: '16px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-main)' }}>Effectiveness</span>
-                          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-rose)' }}>{activePregMethod.effectiveness}%</span>
-                        </div>
-                        <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                          <div style={{ width: `${activePregMethod.effectiveness}%`, height: '100%', background: 'var(--color-rose)', borderRadius: '4px' }}></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                      <div className="glass-card" style={{ borderLeft: '4px solid var(--color-rose)' }}>
-                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-rose)', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>📝 Description</h4>
-                        <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activePregMethod.detail.description}</p>
-                      </div>
-
-                      <div className="glass-card" style={{ borderLeft: '4px solid #F59E0B' }}>
-                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#F59E0B', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💊 Form of Use</h4>
-                        <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activePregMethod.detail.formOfUse}</p>
-                      </div>
-
-                      <div className="glass-card" style={{ borderLeft: '4px solid #3B82F6' }}>
-                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#3B82F6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⚙️ How It Works</h4>
-                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                          {activePregMethod.detail.howItWorks.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                        </ul>
-                      </div>
-
-                      <div className="glass-card" style={{ borderLeft: '4px solid #10B981' }}>
-                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#10B981', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>🛠️ How To Use</h4>
-                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                          {activePregMethod.detail.howToUse.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                        </ul>
-                      </div>
-
-                      <div className="glass-card" style={{ borderLeft: '4px solid #8B5CF6' }}>
-                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#8B5CF6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⏱️ Frequency</h4>
-                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                          {activePregMethod.detail.frequency.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                        </ul>
-                      </div>
-
-                      <div className="glass-card" style={{ borderLeft: '4px solid #EC4899' }}>
-                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#EC4899', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>✅ Effectiveness Details</h4>
-                        <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>{activePregMethod.detail.effectiveness}</p>
-                      </div>
-
-                      <div className="glass-card" style={{ borderLeft: '4px solid #EF4444' }}>
-                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#EF4444', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>⚠️ Side Effects</h4>
-                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                          {activePregMethod.detail.sideEffects.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                        </ul>
-                      </div>
-
-                      {activePregMethod.detail.access && activePregMethod.detail.access.length > 0 && (
-                        <div className="glass-card" style={{ borderLeft: '4px solid #0EA5E9' }}>
-                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#0EA5E9', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>📍 Where & How to Access</h4>
-                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                            {activePregMethod.detail.access.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                          </ul>
-                        </div>
-                      )}
-
-                      {activePregMethod.detail.cost && (
-                        <div className="glass-card" style={{ borderLeft: '4px solid #059669' }}>
-                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#059669', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💰 Cost</h4>
-                          <p style={{ fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7, fontWeight: 600 }}>{activePregMethod.detail.cost}</p>
-                        </div>
-                      )}
-
-                      {activePregMethod.detail.returnToFertility && activePregMethod.detail.returnToFertility.length > 0 && (
-                        <div className="glass-card" style={{ borderLeft: '4px solid #14B8A6' }}>
-                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#14B8A6', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>👶 Return To Fertility</h4>
-                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                            {activePregMethod.detail.returnToFertility.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                          </ul>
-                        </div>
-                      )}
-
-                      {activePregMethod.detail.stiProtection && activePregMethod.detail.stiProtection.length > 0 && (
-                        <div className="glass-card" style={{ borderLeft: '4px solid #6366F1' }}>
-                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#6366F1', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>🛡️ STI Protection</h4>
-                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                            {activePregMethod.detail.stiProtection.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>{item}</li>)}
-                          </ul>
-                        </div>
-                      )}
-
-                      {activePregMethod.detail.misunderstandings && activePregMethod.detail.misunderstandings.length > 0 && (
-                        <div className="glass-card" style={{ borderLeft: '4px solid #D97706' }}>
-                          <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#D97706', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>💡 Correcting Misunderstandings</h4>
-                          <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                            {activePregMethod.detail.misunderstandings.map((item, i) => <li key={i} style={{ fontSize: '13.5px', lineHeight: 1.7, color: 'var(--color-text-main)', marginBottom: '4px' }}>✅ {item}</li>)}
-                          </ul>
-                        </div>
-                      )}
-
-                      <button onClick={() => { setActivePregMethod(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn" style={{ width: '100%', marginTop: '8px', background: 'var(--color-rose)', color: '#fff', border: 'none' }}>
-                        ⬅ Back to All Prevention Methods
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <button onClick={() => { setPregTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    ⬅ Back to Pregnancy Dashboard
-                  </button>
-                  
-                  <div style={{ background: 'var(--color-rose-light)', border: '1px solid var(--color-rose)', borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--color-rose)', fontWeight: 600 }}>
-                    {UI[lang].pregNote}
-                  </div>
-                  
-                  <div className="tabs-container" style={{ marginBottom: '20px' }}>
-                    {PREG_PREVENTION_CATEGORIES.map(c => (
-                      <button key={c.id} className={`tab-btn ${pregCat === c.id ? 'active-preg' : ''}`} onClick={() => setPregCat(c.id)}>{c.label}</button>
-                    ))}
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                    {PREG_PREVENTION_METHODS.filter(o => pregCat === 'All' || pregCat === 'all' || o.category === pregCat).map(o => (
-                      <div key={o.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', padding: '24px', borderTop: o.urgent ? '4px solid var(--color-rose)' : 'none', position: 'relative' }}>
-                        {o.urgent && <div style={{ position: 'absolute', top: 12, right: 12, background: 'var(--color-rose)', color: '#fff', fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Time Sensitive</div>}
-                        <div style={{ fontSize: '42px', marginBottom: '16px' }}>{o.icon}</div>
-                        <h3 style={{ fontSize: '18px', color: 'var(--color-rose)', marginBottom: '8px', fontWeight: 800, lineHeight: 1.3 }}>{o.name}</h3>
-                        <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: '20px' }}>{o.tagline}</p>
-                        
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
-                          <span style={{ fontSize: '11px', background: 'var(--color-rose-light)', color: 'var(--color-rose)', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
-                            {o.effectiveness}% Effective
-                          </span>
-                          {o.dual && (
-                            <span style={{ fontSize: '11px', background: '#e0e7ff', color: '#4338ca', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
-                              + STI Protection
-                            </span>
-                          )}
-                        </div>
-                        
-                        <button 
-                          onClick={() => { setActivePregMethod(o); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                          className="btn" 
-                          style={{ marginTop: 'auto', background: 'transparent', border: '1px solid var(--color-rose)', color: 'var(--color-rose)', width: '100%', padding: '10px', borderRadius: '8px', fontWeight: 600, transition: 'all 0.2s' }}
-                          onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-rose)'; e.currentTarget.style.color = '#fff'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-rose)'; }}
-                        >
-                          Learn More →
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+              <button onClick={() => setPregTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                ⬅ Back to Pregnancy Dashboard
+              </button>
+              
+              <div style={{ background: 'var(--color-rose-light)', border: '1px solid var(--color-rose)', borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--color-rose)', fontWeight: 600 }}>
+                {UI[lang].pregNote}
+              </div>
+              <div className="tabs-container" style={{ marginBottom: '20px' }}>
+                {PREG_CATEGORIES.map(c => (
+                  <button key={c} className={`tab-btn ${pregCat === c ? 'active-preg' : ''}`} onClick={() => setPregCat(c)}>{c}</button>
+                ))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                {PREG_OPTIONS.filter(o => pregCat === 'All' || o.cat === pregCat).map(o => (
+                  <ExpandableCard key={o.id} option={o} onCompareSelect={handleAddCompare2} isCompareBtnVisible={true} lang={lang} />
+                ))}
+              </div>
             </div>
           )}
 
           {/* ── PREGNANCY HOW-TO GUIDES TAB ── */}
           {pregTab === 'guides' && (
             <div className="animate-fade-in">
-              <button onClick={() => { setPregTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => setPregTab('main')} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 ⬅ Back to Pregnancy Dashboard
               </button>
 
@@ -2691,97 +1978,48 @@ export default function Application() {
             <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Real survivor stories. Real health facts. Real Zimbabwe.</p>
           </div>
 
-          {/* ══ NOW PLAYING BANNER ══ */}
+          {/* Now Playing Bar */}
           <div style={{
-            background: `linear-gradient(135deg, ${currentEpisode.coverColor}EE, ${currentEpisode.coverColor}99)`,
-            borderRadius: 'var(--radius-xl)', padding: '22px 24px', marginBottom: '32px',
-            color: '#fff', boxShadow: `0 8px 40px ${currentEpisode.coverColor}50`,
-            position: 'relative', overflow: 'hidden',
+            background: `linear-gradient(135deg, ${currentEpisode.coverColor}, ${currentEpisode.coverColor}CC)`,
+            borderRadius: 'var(--radius-xl)', padding: '20px 24px', marginBottom: '32px',
+            color: '#fff', boxShadow: `0 8px 32px ${currentEpisode.coverColor}40`
           }}>
-            {/* Background shimmer */}
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
-
-            {/* Episode info row */}
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '18px' }}>
-              <div style={{
-                width: '60px', height: '60px', borderRadius: '14px',
-                background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(8px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '30px', flexShrink: 0,
-                boxShadow: podcastPlaying ? `0 0 20px rgba(255,255,255,0.35)` : 'none',
-                transition: 'box-shadow 0.4s',
-                animation: podcastPlaying ? 'pulse 2s ease infinite' : 'none',
-              }}>{currentEpisode.coverEmoji}</div>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '1px' }}>{currentEpisode.episode}</span>
-                  {podcastPlaying && (
-                    <span style={{ fontSize: '9px', fontWeight: 900, background: 'rgba(255,255,255,0.25)', padding: '2px 7px', borderRadius: '10px', letterSpacing: '1px', textTransform: 'uppercase', animation: 'blink 1.6s step-start infinite' }}>● LIVE</span>
-                  )}
-                  {podcastLoading && (
-                    <span style={{ fontSize: '9px', opacity: 0.7 }}>Loading…</span>
-                  )}
-                </div>
-                <div style={{ fontSize: '17px', fontWeight: 900, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentEpisode.title}</div>
-                <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '3px' }}>{currentEpisode.guest} · {currentEpisode.guestRole}</div>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 }}>
+                {currentEpisode.coverEmoji}
               </div>
-
-              {/* Main play/pause */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{currentEpisode.episode} • {currentEpisode.duration}</div>
+                <div style={{ fontSize: '17px', fontWeight: 800, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentEpisode.title}</div>
+                <div style={{ fontSize: '12px', opacity: 0.85, marginTop: '2px' }}>{currentEpisode.guest} • {currentEpisode.guestRole}</div>
+              </div>
               <button
                 onClick={() => handlePodcastPlay(currentEpisode)}
                 style={{
-                  width: '54px', height: '54px', borderRadius: '50%', border: 'none',
-                  background: 'rgba(255,255,255,0.28)', color: '#fff', fontSize: '22px',
+                  width: '52px', height: '52px', borderRadius: '50%', border: 'none',
+                  background: 'rgba(255,255,255,0.25)', color: '#fff', fontSize: '22px',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0, backdropFilter: 'blur(8px)',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.25)', transition: 'transform 0.15s',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.2)', transition: 'all 0.15s'
                 }}
-              >{podcastPlaying ? '⏸️' : '▶️'}</button>
+              >
+                {podcastPlaying && currentEpisode.id === currentEpisode.id ? '⏸️' : '▶️'}
+              </button>
             </div>
-
-            {/* ── FREQUENCY VISUALIZER CANVAS ── */}
-            <div style={{
-              width: '100%', marginBottom: '14px', marginTop: '4px',
-              borderRadius: '10px', overflow: 'hidden',
-              background: 'rgba(0,0,0,0.18)',
-              backdropFilter: 'blur(4px)',
-            }}>
-              <canvas
-                ref={canvasRef}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  height: '64px',
-                  borderRadius: '10px',
-                }}
-              />
+            {/* Progress bar */}
+            <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '4px', height: '5px', overflow: 'hidden' }}>
+              <div style={{ background: '#fff', height: '100%', width: `${podcastProgress}%`, transition: 'width 0.15s linear', borderRadius: '4px' }} />
             </div>
-
-            {/* Seekable progress bar */}
-            <div
-              onClick={handlePodcastSeek}
-              style={{
-                background: 'rgba(255,255,255,0.22)', borderRadius: '6px', height: '6px',
-                overflow: 'hidden', cursor: 'pointer', marginBottom: '6px',
-              }}
-            >
-              <div style={{ background: '#fff', height: '100%', width: `${podcastProgress}%`, transition: 'width 0.2s linear', borderRadius: '6px' }} />
-            </div>
-
-            {/* Time row + controls */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', opacity: 0.85 }}>
-              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtTime(podcastCurrentTime)}</span>
-              {/* Skip + speed controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button onClick={() => handleSkip(-15)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '20px', padding: '3px 9px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>« 15</button>
-                <button
-                  onClick={() => setPodcastSpeed(s => s === 1 ? 1.25 : s === 1.25 ? 1.5 : s === 1.5 ? 2 : 1)}
-                  style={{ background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '20px', padding: '3px 9px', color: '#fff', fontSize: '11px', fontWeight: 800, cursor: 'pointer', minWidth: '36px' }}
-                >{podcastSpeed}x</button>
-                <button onClick={() => handleSkip(15)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '20px', padding: '3px 9px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>15 »</button>
-              </div>
-              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{podcastDuration > 0 ? fmtTime(podcastDuration) : '--:--'}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>
+              <span>{(() => {
+                const parts = currentEpisode.duration.split(':');
+                const total = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                const elapsed = Math.floor(podcastProgress / 100 * total);
+                const m = Math.floor(elapsed / 60);
+                const s = String(elapsed % 60).padStart(2, '0');
+                return `${m}:${s}`;
+              })()}</span>
+              <span>{currentEpisode.duration}</span>
             </div>
           </div>
 
@@ -2806,20 +2044,10 @@ export default function Application() {
                       </div>
                       <button
                         onClick={() => handlePodcastPlay(ep)}
-                        style={{
-                          background: currentEpisode.id === ep.id && podcastPlaying ? ep.coverColor : ep.coverColor + 'CC',
-                          border: 'none', color: '#fff', borderRadius: '50%',
-                          width: '42px', height: '42px', cursor: 'pointer', fontSize: '16px',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          flexShrink: 0, marginTop: '4px',
-                          boxShadow: currentEpisode.id === ep.id && podcastPlaying ? `0 0 14px ${ep.coverColor}80` : 'none',
-                          transition: 'all 0.2s',
-                          animation: currentEpisode.id === ep.id && podcastPlaying ? 'pulse 1.8s ease infinite' : 'none',
-                        }}
+                        style={{ background: ep.coverColor, border: 'none', color: '#fff', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '4px' }}
                         aria-label={`Play ${ep.title}`}
                       >
-                        {currentEpisode.id === ep.id && podcastLoading ? '⏳' :
-                          currentEpisode.id === ep.id && podcastPlaying ? '⏸' : '▶'}
+                        {currentEpisode.id === ep.id && podcastPlaying ? '⏸' : '▶'}
                       </button>
                     </div>
                     {/* Tags */}
@@ -2876,17 +2104,16 @@ export default function Application() {
         <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h2 style={{ fontSize: '28px', color: 'var(--color-primary)', marginBottom: '8px' }}>Your Profile</h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Your identity stays private — only your nickname is visible.</p>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Customize your Chengeto experience.</p>
           </div>
 
           <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
             {/* Avatar & Colors */}
             <div className="glass-card">
               <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '16px', fontWeight: 800 }}>Avatar Color</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: profColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '32px', flexShrink: 0, boxShadow: `0 8px 24px ${profColor}50`, transition: 'background 0.3s' }}>
-                  {(profNickname || '?').charAt(0).toUpperCase()}
+                  {(profNickname || profName || '?').charAt(0).toUpperCase()}
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
                   {AVATAR_COLORS.map(c => (
@@ -2898,47 +2125,46 @@ export default function Application() {
               </div>
             </div>
 
-            {/* Profile Information */}
+            {/* Personal Information */}
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Profile Information</h3>
-
-              {/* Nickname */}
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname</label>
-                <input type="text" value={profNickname} onChange={e => setProfNickname(e.target.value)} placeholder="e.g. Genius" required
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* Institution */}
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Institution</label>
-                <select value={profInst} onChange={e => setProfInst(e.target.value)}
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                  {INSTITUTION_TYPES.map(t => (
-                    <optgroup key={t.id} label={t.label}>
-                      {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
-                        <option key={i.id} value={i.id}>{i.name}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-
-              {/* Level + Gender */}
+              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Personal Information</h3>
+              
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Level / Year</label>
-                  <select value={profLevel} onChange={e => setProfLevel(e.target.value)}
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname (Greeting)</label>
+                  <input type="text" value={profNickname} onChange={e => setProfNickname(e.target.value)} placeholder="e.g. Genius"
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Full Name</label>
+                  <input type="text" value={profName} onChange={e => setProfName(e.target.value)} placeholder="Your full name" required
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Bio / Status</label>
+                <input type="text" value={profBio} onChange={e => setProfBio(e.target.value)} placeholder="e.g. Health advocate! 🩺"
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+            </div>
+
+            {/* Academic Information */}
+            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Academic Information</h3>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Year</label>
+                  <select value={profYear} onChange={e => setProfYear(e.target.value)}
                     style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                    {STUDY_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                    {['1','2','3','4','5','6'].map(y => <option key={y} value={y}>Year {y}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Gender</label>
-                  <select value={profGender} onChange={e => setProfGender(e.target.value)}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                    {GENDERS.map(g => <option key={g.id} value={g.id}>{g.label}</option>)}
-                  </select>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Programme</label>
+                  <input type="text" value={profProgramme} onChange={e => setProfProgramme(e.target.value)} required
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
               </div>
             </div>
@@ -2947,6 +2173,7 @@ export default function Application() {
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Change Password</h3>
               <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '-8px' }}>Leave blank to keep your current password.</p>
+              
               <div>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Current Password</label>
                 <input type="password" value={profPwCurrent} onChange={e => setProfPwCurrent(e.target.value)} placeholder="Required to change password"
@@ -2964,6 +2191,7 @@ export default function Application() {
                 ⚠️ {profPwErr}
               </div>
             )}
+
             {profSaved && (
               <div className="animate-fade-in" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#15803d', textAlign: 'center', fontWeight: 700 }}>
                 ✅ Profile updated successfully!
@@ -2990,12 +2218,11 @@ export default function Application() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)' }}>Option 1</label>
               <select className="select-custom" value={compareOpt1} onChange={e => setCompareOpt1(e.target.value)}>
-                <option value="" disabled>— Select your method here —</option>
                 <optgroup label="HIV Prevention">
-                  {HIV_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
+                  {HIV_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
                 <optgroup label="Contraception">
-                  {PREG_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
+                  {PREG_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
               </select>
             </div>
@@ -3003,19 +2230,18 @@ export default function Application() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)' }}>Option 2</label>
               <select className="select-custom" value={compareOpt2} onChange={e => setCompareOpt2(e.target.value)}>
-                <option value="" disabled>— Select your method here —</option>
                 <optgroup label="HIV Prevention">
-                  {HIV_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
+                  {HIV_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
                 <optgroup label="Contraception">
-                  {PREG_PREVENTION_METHODS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
+                  {PREG_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.icon} {o.name}</option>)}
                 </optgroup>
               </select>
             </div>
           </div>
 
-          {/* Comparison Table — only shown when both options are selected */}
-          {compareOpt1 && compareOpt2 && c1 && c2 ? (
+          {/* Comparison Table */}
+          {c1 && c2 ? (
             <div style={{ overflowX: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', boxShadow: '0 10px 30px var(--color-card-shadow)', background: 'var(--color-bg-surface)' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                 <thead>
@@ -3358,22 +2584,18 @@ export default function Application() {
             
             <div className="chat-messages">
               {chatMessages.map((msg, index) => (
-                <div key={index} className={`chat-bubble ${msg.sender}${msg.isTyping ? ' typing-bubble' : ''}`}>
-                  {msg.isTyping ? (
-                    <span className="typing-dots"><span /><span /><span /></span>
-                  ) : (
-                    <span style={{ whiteSpace: 'pre-line' }}>{msg.text}</span>
-                  )}
+                <div key={index} className={`chat-bubble ${msg.sender}`}>
+                  {msg.text}
                 </div>
               ))}
               <div ref={chatBottomRef}></div>
             </div>
 
             <form onSubmit={handleSendMessage} className="chat-input-area">
-              <input
-                type="text"
+              <input 
+                type="text" 
                 className="chat-input"
-                placeholder="Describe your situation e.g. I slept with someone without a condom..."
+                placeholder="Ask about prep, pep, condoms, side effects..." 
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
               />
@@ -3466,7 +2688,7 @@ export default function Application() {
           </div>
 
           {/* Bottom Chat Button */}
-          <button className="btn" onClick={() => setShowChatComingSoon(true)} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-rose)', boxShadow: '0 4px 12px var(--color-card-shadow)', marginTop: '20px' }}>
+          <button className="btn" onClick={() => setPage('chat')} style={{ width: '100%', padding: '16px', fontSize: '15px', fontWeight: 700, borderRadius: '12px', background: 'var(--color-bg-surface)', border: 'none', color: 'var(--color-rose)', boxShadow: '0 4px 12px var(--color-card-shadow)', marginTop: '20px' }}>
             Have More Questions? Talk to Chengeto
           </button>
         </div>
@@ -3514,478 +2736,8 @@ export default function Application() {
         </div>
       </footer>
       </div>
-
-      {/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-          PORTAL GATE MODAL \u2014 shown to non-logged-in users
-      \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */}
-      {showPortalGate && (
-        <div
-          onClick={(e) => { if (e.target === e.currentTarget) setShowPortalGate(false); }}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(0,0,0,0.72)',
-            backdropFilter: 'blur(10px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '20px', animation: 'fadeIn 0.25s ease',
-          }}
-        >
-          <div style={{
-            width: '100%', maxWidth: '420px',
-            background: 'linear-gradient(145deg, rgba(10,22,14,0.97), rgba(6,18,10,0.99))',
-            border: '1px solid rgba(34,197,94,0.25)',
-            borderRadius: '24px', padding: '36px 32px',
-            boxShadow: '0 32px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(34,197,94,0.08)',
-            animation: 'slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)',
-            position: 'relative',
-          }}>
-            {/* Close */}
-            <button onClick={() => setShowPortalGate(false)} style={{
-              position: 'absolute', top: '16px', right: '16px',
-              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: '50%', width: '32px', height: '32px',
-              color: 'rgba(255,255,255,0.5)', fontSize: '16px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
-            }}>✕</button>
-
-            {/* Icon + Title */}
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <div style={{
-                width: '72px', height: '72px', borderRadius: '50%', margin: '0 auto 16px',
-                background: 'radial-gradient(circle at 40% 40%, hsl(152,60%,28%), hsl(152,50%,16%))',
-                border: '2px solid rgba(34,197,94,0.3)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px',
-                boxShadow: '0 0 32px rgba(34,197,94,0.2)',
-              }}>🔐</div>
-              <h2 style={{ fontSize: '21px', fontWeight: 900, color: '#fff', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
-                Secure Access Required
-              </h2>
-              <p style={{ fontSize: '13.5px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: 0 }}>
-                You must <strong style={{ color: 'rgba(255,255,255,0.85)' }}>log in or create an account</strong> to access the Commodity Portal.
-              </p>
-            </div>
-
-            {/* Privacy badge */}
-            <div style={{
-              background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.18)',
-              borderRadius: '10px', padding: '10px 14px',
-              display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px',
-            }}>
-              <span style={{ fontSize: '15px' }}>🛡️</span>
-              <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.4 }}>
-                Anonymous &amp; private. No student ID or real name required.
-              </p>
-            </div>
-
-            {/* Buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button
-                onClick={() => {
-                  setShowPortalGate(false);
-                  setAuthView('login');
-                  setLoginError('');
-                  setShowAuthModal(true);
-                }}
-                style={{
-                  padding: '13px', borderRadius: '14px', border: 'none',
-                  background: 'hsl(152,60%,42%)', color: '#fff',
-                  fontWeight: 800, fontSize: '14px', cursor: 'pointer',
-                  boxShadow: '0 4px 20px rgba(34,197,94,0.35)', transition: 'all 0.2s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                }}
-              >🔐 Log In to Chengeto</button>
-              <button
-                onClick={() => {
-                  setShowPortalGate(false);
-                  setAuthView('register');
-                  setRegError('');
-                  setShowAuthModal(true);
-                }}
-                style={{
-                  padding: '13px', borderRadius: '14px',
-                  border: '1px solid rgba(34,197,94,0.35)',
-                  background: 'rgba(34,197,94,0.08)', color: 'hsl(152,70%,68%)',
-                  fontWeight: 700, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                }}
-              >✏️ Create Account (Free)</button>
-            </div>
-
-            <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.22)', marginTop: '20px' }}>
-              🔒 Private &amp; Secure · Offline Ready · Made for Zimbabwe Students
-            </p>
-          </div>
-        </div>
       )}
-
-      {/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-          PORTAL PASSWORD MODAL \u2014 secondary layer for logged-in users
-      \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */}
-      {showPortalPassword && (
-        <div
-          onClick={(e) => { if (e.target === e.currentTarget && !portalSuccess) setShowPortalPassword(false); }}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: portalSuccess ? 'rgba(0,30,10,0.85)' : 'rgba(0,0,0,0.75)',
-            backdropFilter: 'blur(12px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '20px', animation: 'fadeIn 0.25s ease',
-            transition: 'background 0.6s ease',
-          }}
-        >
-          <div style={{
-            width: '100%', maxWidth: '400px',
-            background: portalSuccess
-              ? 'linear-gradient(145deg, rgba(5,30,15,0.98), rgba(10,45,20,0.99))'
-              : 'linear-gradient(145deg, rgba(8,18,12,0.97), rgba(5,14,9,0.99))',
-            border: portalSuccess
-              ? '1px solid rgba(34,197,94,0.6)'
-              : '1px solid rgba(34,197,94,0.2)',
-            borderRadius: '24px', padding: '36px 32px',
-            boxShadow: portalSuccess
-              ? '0 32px 100px rgba(0,0,0,0.6), 0 0 60px rgba(34,197,94,0.25)'
-              : '0 32px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(34,197,94,0.06)',
-            animation: 'slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)',
-            position: 'relative',
-            transition: 'border 0.5s ease, box-shadow 0.5s ease, background 0.5s ease',
-          }}>
-            {/* Close — hidden during success */}
-            {!portalSuccess && (
-              <button onClick={() => setShowPortalPassword(false)} style={{
-                position: 'absolute', top: '16px', right: '16px',
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '50%', width: '32px', height: '32px',
-                color: 'rgba(255,255,255,0.4)', fontSize: '16px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>✕</button>
-            )}
-
-            {/* Success state */}
-            {portalSuccess ? (
-              <div style={{ textAlign: 'center', padding: '12px 0' }}>
-                <div style={{
-                  width: '80px', height: '80px', borderRadius: '50%', margin: '0 auto 20px',
-                  background: 'radial-gradient(circle at 40% 40%, hsl(152,60%,30%), hsl(152,55%,18%))',
-                  border: '2px solid hsl(152,60%,50%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px',
-                  boxShadow: '0 0 40px rgba(34,197,94,0.4)',
-                  animation: 'pulse 0.8s ease',
-                }}>✅</div>
-                <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#4ade80', margin: '0 0 8px' }}>
-                  Access Granted
-                </h3>
-                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-                  Entering Commodity Portal…
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* Header */}
-                <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                  <div style={{
-                    width: '68px', height: '68px', borderRadius: '50%', margin: '0 auto 16px',
-                    background: 'radial-gradient(circle at 38% 38%, hsl(152,50%,22%), hsl(152,45%,12%))',
-                    border: '2px solid rgba(34,197,94,0.25)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px',
-                    boxShadow: '0 0 28px rgba(34,197,94,0.15)',
-                  }}>🔑</div>
-                  <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.3px' }}>
-                    Portal Access Password
-                  </h2>
-                  <p style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.5 }}>
-                    Enter your account password to confirm access
-                  </p>
-                </div>
-
-                {/* User badge */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.15)',
-                  borderRadius: '10px', padding: '10px 12px', marginBottom: '20px',
-                }}>
-                  <div style={{
-                    width: '28px', height: '28px', borderRadius: '50%',
-                    background: currentUser?.avatarColor || '#059669',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#fff', fontWeight: 900, fontSize: '12px', flexShrink: 0,
-                  }}>{(currentUser?.nickname || '?').charAt(0).toUpperCase()}</div>
-                  <div>
-                    <p style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(152,70%,65%)', margin: 0 }}>
-                      {currentUser?.nickname}
-                    </p>
-                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', margin: 0 }}>
-                      {INSTITUTIONS.find(i => i.id === currentUser?.institution)?.name || 'Verified user'}
-                    </p>
-                  </div>
-                  <span style={{ marginLeft: 'auto', fontSize: '10px', color: 'hsl(152,60%,55%)', fontWeight: 700 }}>✓ Verified</span>
-                </div>
-
-                {/* Password form */}
-                <form onSubmit={handlePortalPasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'block', marginBottom: '6px' }}>
-                      Your Account Password
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type={portalPwVisible ? 'text' : 'password'}
-                        value={portalPw}
-                        onChange={e => { setPortalPw(e.target.value); setPortalPwError(''); }}
-                        placeholder="Enter your account password"
-                        required
-                        autoFocus
-                        style={{
-                          width: '100%', padding: '13px 44px 13px 14px',
-                          borderRadius: '12px',
-                          border: portalPwError ? '1px solid rgba(220,38,38,0.5)' : '1px solid rgba(255,255,255,0.12)',
-                          background: 'rgba(255,255,255,0.06)',
-                          color: '#fff', fontSize: '14px', outline: 'none',
-                          boxSizing: 'border-box', letterSpacing: portalPwVisible ? 'normal' : '0.1em',
-                          transition: 'border 0.2s',
-                        }}
-                      />
-                      <button type="button" onClick={() => setPortalPwVisible(v => !v)}
-                        style={{
-                          position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-                          background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)',
-                          cursor: 'pointer', fontSize: '15px', padding: 0,
-                        }}
-                      >{portalPwVisible ? '🙈' : '👁️'}</button>
-                    </div>
-                    {/* Password hint */}
-                    <div style={{
-                      marginTop: '8px', background: 'rgba(34,197,94,0.06)',
-                      border: '1px solid rgba(34,197,94,0.12)', borderRadius: '8px',
-                      padding: '7px 12px', display: 'flex', alignItems: 'center', gap: '6px',
-                    }}>
-                      <span style={{ fontSize: '12px' }}>🔒</span>
-                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                        Use the same password you signed in with
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Inline error */}
-                  {portalPwError && (
-                    <div style={{
-                      background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.3)',
-                      borderRadius: '10px', padding: '10px 14px',
-                      display: 'flex', alignItems: 'center', gap: '8px',
-                      animation: 'fadeIn 0.2s ease',
-                    }}>
-                      <span style={{ fontSize: '14px' }}>⚠️</span>
-                      <p style={{ fontSize: '12.5px', color: '#FCA5A5', margin: 0, fontWeight: 600 }}>
-                        {portalPwError}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '2px' }}>
-                    <button type="button" onClick={() => setShowPortalPassword(false)}
-                      style={{
-                        flex: 1, padding: '12px', borderRadius: '12px',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        background: 'rgba(255,255,255,0.05)',
-                        color: 'rgba(255,255,255,0.5)', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
-                      }}
-                    >Cancel</button>
-                    <button type="submit" disabled={portalPwLoading}
-                      style={{
-                        flex: 2, padding: '12px', borderRadius: '12px', border: 'none',
-                        background: portalPwLoading ? 'rgba(34,197,94,0.4)' : 'hsl(152,60%,42%)',
-                        color: '#fff', fontWeight: 800, fontSize: '13px',
-                        cursor: portalPwLoading ? 'default' : 'pointer',
-                        boxShadow: '0 4px 16px rgba(34,197,94,0.3)', transition: 'all 0.2s',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                      }}
-                    >
-                      {portalPwLoading
-                        ? <><span style={{ animation: 'spin 0.8s linear infinite', display: 'inline-block' }}>⏳</span> Verifying…</>
-                        : '🔓 Enter Portal'}
-                    </button>
-                  </div>
-                </form>
-
-                <p style={{ textAlign: 'center', fontSize: '10.5px', color: 'rgba(255,255,255,0.2)', marginTop: '18px' }}>
-                  🔒 Private &amp; Secure · Chengeto Commodity Portal
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-          AI CHATBOT COMING SOON MODAL
-      \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */}
-      {showChatComingSoon && (
-        <div
-          onClick={(e) => { if (e.target === e.currentTarget) setShowChatComingSoon(false); }}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(0,0,0,0.75)',
-            backdropFilter: 'blur(12px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '20px',
-            animation: 'fadeIn 0.3s ease',
-          }}
-        >
-          <div style={{
-            width: '100%', maxWidth: '400px',
-            background: 'linear-gradient(160deg, rgba(6,20,12,0.98) 0%, rgba(10,28,16,0.98) 60%, rgba(5,15,22,0.98) 100%)',
-            border: '1px solid rgba(34,197,94,0.3)',
-            borderRadius: '28px',
-            padding: '44px 32px 36px',
-            boxShadow: '0 40px 120px rgba(0,0,0,0.8), 0 0 80px rgba(34,197,94,0.08)',
-            animation: 'slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)',
-            position: 'relative',
-            textAlign: 'center',
-            overflow: 'hidden',
-          }}>
-
-            {/* Subtle background glow blobs */}
-            <div style={{
-              position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)',
-              width: '200px', height: '200px', borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)',
-              pointerEvents: 'none',
-            }} />
-            <div style={{
-              position: 'absolute', bottom: '-30px', right: '-30px',
-              width: '150px', height: '150px', borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 70%)',
-              pointerEvents: 'none',
-            }} />
-
-            {/* Close button */}
-            <button onClick={() => setShowChatComingSoon(false)} style={{
-              position: 'absolute', top: '16px', right: '16px',
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '50%', width: '32px', height: '32px',
-              color: 'rgba(255,255,255,0.4)', fontSize: '15px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>✕</button>
-
-            {/* Animated robot icon */}
-            <div style={{ position: 'relative', display: 'inline-block', marginBottom: '28px' }}>
-              {/* Outer glow ring 1 */}
-              <div style={{
-                position: 'absolute', inset: '-18px', borderRadius: '50%',
-                border: '1px solid rgba(34,197,94,0.2)',
-                animation: 'ripple1 2.4s ease-out infinite',
-              }} />
-              {/* Outer glow ring 2 */}
-              <div style={{
-                position: 'absolute', inset: '-8px', borderRadius: '50%',
-                border: '1px solid rgba(34,197,94,0.35)',
-                animation: 'ripple2 2.4s ease-out infinite 0.5s',
-              }} />
-              {/* Robot circle */}
-              <div style={{
-                width: '100px', height: '100px', borderRadius: '50%',
-                background: 'radial-gradient(circle at 38% 35%, hsl(152,65%,32%), hsl(152,55%,16%))',
-                border: '2px solid hsl(152,60%,45%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 40px rgba(34,197,94,0.35), inset 0 1px 0 rgba(255,255,255,0.1)',
-                animation: 'robotFloat 3s ease-in-out infinite',
-                position: 'relative', zIndex: 1,
-              }}>
-                {/* Inline green robot SVG */}
-                <svg width="54" height="54" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Antenna */}
-                  <line x1="32" y1="6" x2="32" y2="14" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round"/>
-                  <circle cx="32" cy="5" r="3" fill="#4ade80"/>
-                  {/* Head */}
-                  <rect x="14" y="14" width="36" height="26" rx="7" fill="#16a34a" stroke="#4ade80" strokeWidth="1.5"/>
-                  {/* Eyes */}
-                  <circle cx="24" cy="25" r="5" fill="#0f172a"/>
-                  <circle cx="40" cy="25" r="5" fill="#0f172a"/>
-                  <circle cx="24" cy="25" r="2.5" fill="#4ade80"/>
-                  <circle cx="40" cy="25" r="2.5" fill="#4ade80"/>
-                  {/* Mouth */}
-                  <rect x="22" y="33" width="20" height="3.5" rx="1.75" fill="#4ade80" opacity="0.7"/>
-                  {/* Body */}
-                  <rect x="20" y="42" width="24" height="16" rx="5" fill="#15803d" stroke="#4ade80" strokeWidth="1.2"/>
-                  {/* Body panel dots */}
-                  <circle cx="27" cy="50" r="2" fill="#4ade80" opacity="0.6"/>
-                  <circle cx="37" cy="50" r="2" fill="#4ade80" opacity="0.6"/>
-                  {/* Arms */}
-                  <rect x="8" y="43" width="10" height="4" rx="2" fill="#15803d" stroke="#4ade80" strokeWidth="1"/>
-                  <rect x="46" y="43" width="10" height="4" rx="2" fill="#15803d" stroke="#4ade80" strokeWidth="1"/>
-                </svg>
-              </div>
-            </div>
-
-            {/* Heading */}
-            <h2 style={{
-              fontSize: '24px', fontWeight: 900, color: '#fff',
-              letterSpacing: '-0.5px', margin: '0 0 8px',
-              lineHeight: 1.2,
-            }}>
-              AI ChatBot
-            </h2>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
-              borderRadius: '20px', padding: '4px 14px', marginBottom: '20px',
-            }}>
-              <span style={{ fontSize: '10px', fontWeight: 800, color: 'hsl(152,70%,60%)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>
-                Coming Soon
-              </span>
-              <span style={{ animation: 'blink 1.2s step-start infinite', color: 'hsl(152,70%,60%)', fontSize: '12px' }}>●</span>
-            </div>
-
-            {/* Message */}
-            <p style={{
-              fontSize: '15px', color: 'rgba(255,255,255,0.65)',
-              lineHeight: 1.7, margin: '0 0 8px',
-            }}>
-              We're building something incredible.
-            </p>
-            <p style={{
-              fontSize: '14px', color: 'rgba(255,255,255,0.4)',
-              lineHeight: 1.6, margin: '0 0 32px',
-            }}>
-              Chengeto's private AI health assistant is almost here — ask anything about HIV, contraception &amp; more, completely anonymously.
-            </p>
-
-            {/* Animated dots loader */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '32px' }}>
-              {[0, 1, 2, 3, 4].map(i => (
-                <div key={i} style={{
-                  width: '6px', height: '6px', borderRadius: '50%',
-                  background: 'hsl(152,60%,45%)',
-                  animation: `dotBounce 1.4s ease-in-out infinite`,
-                  animationDelay: `${i * 0.18}s`,
-                  opacity: 0.8,
-                }} />
-              ))}
-            </div>
-
-            {/* CTA button */}
-            <button
-              onClick={() => { setShowChatComingSoon(false); setPage('chat'); }}
-              style={{
-                width: '100%', padding: '14px',
-                borderRadius: '14px', border: 'none',
-                background: 'hsl(152,60%,38%)',
-                color: '#fff', fontWeight: 800, fontSize: '14px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(34,197,94,0.3)',
-                transition: 'all 0.2s',
-                letterSpacing: '0.2px',
-              }}
-            >
-              Have a Look at What It Will Look Like 👀
-            </button>
-
-            <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.2)', marginTop: '16px' }}>
-              Powered by CHENGETO · Built for Zimbabwe Students
-            </p>
-          </div>
-        </div>
-      )}
-
+      
       {/* MindMap Modal */}
       {showMindMap && (
         <MindMap 
