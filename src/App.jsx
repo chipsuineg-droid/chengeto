@@ -232,6 +232,17 @@ const HIV_MYTHS = [
   { myth: "HIV is a death sentence.", fact: "False. With modern ART medication, people with HIV live long, healthy lives and can reach an undetectable viral load (U=U)." }
 ];
 
+const PREG_MYTHS = [
+  { myth: "You can't get pregnant the first time you have sex.", fact: "You absolutely can. Pregnancy is possible any time there is unprotected sex, including the very first time — no exceptions." },
+  { myth: "Washing or douching after sex prevents pregnancy.", fact: "No. Sperm can reach the uterus within minutes. Washing afterwards has zero effect on preventing pregnancy." },
+  { myth: "The pull-out method is safe and reliable.", fact: "It is not. Pre-ejaculate (pre-cum) can contain active sperm, and the method has a high failure rate even when timed correctly." },
+  { myth: "You can't get pregnant while breastfeeding.", fact: "Breastfeeding reduces but does not eliminate the chance of pregnancy. Contraception is still needed." },
+  { myth: "Contraception causes infertility.", fact: "False. Modern contraception is safe. Fertility returns shortly after stopping most methods, including the pill and injection." },
+  { myth: "You can't get pregnant during your period.", fact: "Unlikely but not impossible. Sperm can survive for up to 5 days, and some women ovulate early — so pregnancy during a period can occur." },
+  { myth: "You have to take the morning-after pill the next morning.", fact: "The morning-after pill works for up to 72 hours (3 days) after unprotected sex. Earlier is better, but you have time." },
+  { myth: "Pregnancy symptoms are always obvious and early.", fact: "Many women have no obvious symptoms in the first weeks. A missed period and a test are the only reliable ways to know." },
+];
+
 
 const ALL_OPTIONS = [...HIV_PREVENTION_METHODS.map(o => ({ ...o, type: "HIV" })), ...PREG_PREVENTION_METHODS.map(o => ({ ...o, type: "Pregnancy" }))];
 
@@ -794,7 +805,7 @@ export default function Application() {
   const [pregCat, setPregCat] = useState("All");
   const [hivTab, setHivTab] = useState("main"); // 'main' | 'prevention' | 'game' | 'myths'
   const [preventionSubTab, setPreventionSubTab] = useState("methods"); // 'methods' | 'guides' | 'abcde'
-  const [pregTab, setPregTab] = useState("main"); // 'main' | 'methods' | 'guides'
+  const [pregTab, setPregTab] = useState("main"); // 'main' | 'methods' | 'guides' | 'myths'
   
   // HIV Prevention Methods detail view state
   const [activeHivMethod, setActiveHivMethod] = useState(null); // null = grid, object = detail view
@@ -2413,12 +2424,12 @@ export default function Application() {
               <span style={{ fontWeight: 700, fontSize: '13px', color: 'var(--color-rose)', marginTop: 'auto' }}>View Guides →</span>
             </div>
 
-            {/* Cycle Tracker Card */}
-            <div className="glass-card" onClick={() => setPage('tracker')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📅</div>
-              <h3 style={{ fontSize: '17px', color: 'var(--color-rose)', marginBottom: '8px' }}>Cycle Tracker</h3>
-              <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Understand your fertile window and estimate safe days.</p>
-              <span style={{ fontWeight: 700, fontSize: '13px', color: 'var(--color-rose)', marginTop: 'auto' }}>Track Cycle →</span>
+            {/* Myths vs Facts Card */}
+            <div className="glass-card" onClick={() => { setPregTab('myths'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'var(--color-bg-surface)', border: 'none' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🤔</div>
+              <h3 style={{ fontSize: '17px', color: 'var(--color-rose)', marginBottom: '8px' }}>Myths vs Facts</h3>
+              <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>Bust common pregnancy myths with clear, evidence-based facts.</p>
+              <span style={{ fontWeight: 700, fontSize: '13px', color: 'var(--color-rose)', marginTop: 'auto' }}>Read the Facts →</span>
             </div>
             </div>
 
@@ -2681,7 +2692,41 @@ export default function Application() {
         </div>
       )}
 
-      {/* ── PODCAST VIEW ── */}
+          {/* ── PREGNANCY MYTHS VIEW ── */}
+          {pregTab === 'myths' && (
+            <div className="animate-fade-in">
+              <button
+                onClick={() => { setPregTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                ⬅ Back to Pregnancy Dashboard
+              </button>
+              <div style={{ marginBottom: '28px' }}>
+                <h3 style={{ fontSize: '24px', color: 'var(--color-rose)', marginBottom: '6px' }}>🤔 Myths vs Facts</h3>
+                <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
+                  Common misconceptions about pregnancy — busted with clear, evidence-based facts.
+                </p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {PREG_MYTHS.map((m, i) => (
+                  <div key={i} className="glass-card" style={{ borderLeft: '4px solid var(--color-rose)' }}>
+                    <h4 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                      <span style={{ flexShrink: 0 }}>❌</span>
+                      <span><strong>Myth:</strong> {m.myth}</span>
+                    </h4>
+                    <p style={{ fontSize: '14px', color: 'var(--color-rose)', fontWeight: 600, marginLeft: '28px', lineHeight: 1.6 }}>
+                      ✅ <strong>Fact:</strong> {m.fact}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: '28px', padding: '18px 20px', background: 'var(--color-rose-light)', borderRadius: '14px', fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>
+                💡 <strong>Remember:</strong> When in doubt, visit any government clinic or student health centre. Consultations are free and completely confidential.
+              </div>
+            </div>
+          )}
+
+            {/* ── PODCAST VIEW ── */}
       {page === 'podcast' && (
         <div className="animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 24px' }}>
           {/* Header */}
