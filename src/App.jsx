@@ -653,22 +653,27 @@ export default function Application() {
 
   const handlePortalPasswordSubmit = (e) => {
     e.preventDefault();
+    const entered = portalPw.trim();
     setPortalPwError('');
+    if (!entered) { setPortalPwError('Please enter the portal password.'); return; }
     setPortalPwLoading(true);
+    // Use a small delay just for UX feel, but read value NOW (no closure staleness)
+    const correct = entered === PORTAL_PASSWORD;
     setTimeout(() => {
-      if (portalPw === PORTAL_PASSWORD) {
+      setPortalPwLoading(false);
+      if (correct) {
         setPortalSuccess(true);
         setTimeout(() => {
           setShowPortalPassword(false);
           setPortalSuccess(false);
+          setPortalPw('');
           setPage('portal');
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 900);
+        }, 850);
       } else {
         setPortalPwError('Incorrect portal password. Please try again.');
       }
-      setPortalPwLoading(false);
-    }, 700);
+    }, 600);
   };
 
   const handleLogin = (e) => {
@@ -3353,6 +3358,17 @@ export default function Application() {
                           cursor: 'pointer', fontSize: '15px', padding: 0,
                         }}
                       >{portalPwVisible ? '🙈' : '👁️'}</button>
+                    </div>
+                    {/* Password hint */}
+                    <div style={{
+                      marginTop: '8px', background: 'rgba(255,255,255,0.04)',
+                      border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px',
+                      padding: '7px 12px', display: 'flex', alignItems: 'center', gap: '6px',
+                    }}>
+                      <span style={{ fontSize: '12px' }}>🎯</span>
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                        Demo portal password: <code style={{ color: 'hsl(152,70%,60%)', fontWeight: 700, letterSpacing: '0.5px' }}>chengeto2025</code>
+                      </p>
                     </div>
                   </div>
 
