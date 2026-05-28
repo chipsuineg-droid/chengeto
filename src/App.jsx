@@ -613,6 +613,15 @@ export default function Application() {
   const [currentUser, setCurrentUser] = useState(() => getSession());
   const [authView, setAuthView] = useState("login"); // 'login' | 'register'
   const [showAuthModal, setShowAuthModal] = useState(false); // auth modal open/close
+  // ── PORTAL GATE STATE ──
+  const [showPortalGate, setShowPortalGate]         = useState(false); // not-logged-in gate
+  const [showPortalPassword, setShowPortalPassword] = useState(false); // secondary password modal
+  const [portalPw, setPortalPw]                     = useState('');
+  const [portalPwVisible, setPortalPwVisible]       = useState(false);
+  const [portalPwError, setPortalPwError]           = useState('');
+  const [portalPwLoading, setPortalPwLoading]       = useState(false);
+  const [portalSuccess, setPortalSuccess]           = useState(false);
+  const PORTAL_PASSWORD = 'chengeto2025'; // portal-level access password
   // Login form
   const [loginNick, setLoginNick] = useState("");
   const [loginInst, setLoginInst] = useState("uz");
@@ -628,6 +637,39 @@ export default function Application() {
   const [regPw2,     setRegPw2]     = useState("");
   const [regError,   setRegError]   = useState("");
   const [showPw,     setShowPw]     = useState(false);
+
+  // ── PORTAL ACCESS HANDLER ──
+  const handlePortalAccess = () => {
+    if (!currentUser) {
+      setShowPortalGate(true);
+    } else {
+      setPortalPw('');
+      setPortalPwError('');
+      setPortalPwVisible(false);
+      setPortalSuccess(false);
+      setShowPortalPassword(true);
+    }
+  };
+
+  const handlePortalPasswordSubmit = (e) => {
+    e.preventDefault();
+    setPortalPwError('');
+    setPortalPwLoading(true);
+    setTimeout(() => {
+      if (portalPw === PORTAL_PASSWORD) {
+        setPortalSuccess(true);
+        setTimeout(() => {
+          setShowPortalPassword(false);
+          setPortalSuccess(false);
+          setPage('portal');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 900);
+      } else {
+        setPortalPwError('Incorrect portal password. Please try again.');
+      }
+      setPortalPwLoading(false);
+    }, 700);
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -1329,7 +1371,7 @@ export default function Application() {
             </p>
             <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button 
-                onClick={() => { setPage("portal"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                onClick={handlePortalAccess} 
                 className="breathe-btn"
               >
                 📦 Commodity Portal
@@ -1396,7 +1438,7 @@ export default function Application() {
             
             <div className="grid-container">
               {/* Card 1 */}
-              <div className="glass-card" onClick={() => setPage("portal")} style={{ cursor: 'pointer' }}>
+              <div className="glass-card" onClick={handlePortalAccess} style={{ cursor: 'pointer' }}>
                 <div style={{ fontSize: '36px', marginBottom: '12px' }}>🏥</div>
                 <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Commodity Code Portal</h3>
                 <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
@@ -3075,6 +3117,295 @@ export default function Application() {
         </div>
       </footer>
       </div>
+
+      {/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+          PORTAL GATE MODAL \u2014 shown to non-logged-in users
+      \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */}
+      {showPortalGate && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowPortalGate(false); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.72)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px', animation: 'fadeIn 0.25s ease',
+          }}
+        >
+          <div style={{
+            width: '100%', maxWidth: '420px',
+            background: 'linear-gradient(145deg, rgba(10,22,14,0.97), rgba(6,18,10,0.99))',
+            border: '1px solid rgba(34,197,94,0.25)',
+            borderRadius: '24px', padding: '36px 32px',
+            boxShadow: '0 32px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(34,197,94,0.08)',
+            animation: 'slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+            position: 'relative',
+          }}>
+            {/* Close */}
+            <button onClick={() => setShowPortalGate(false)} style={{
+              position: 'absolute', top: '16px', right: '16px',
+              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '50%', width: '32px', height: '32px',
+              color: 'rgba(255,255,255,0.5)', fontSize: '16px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+            }}>✕</button>
+
+            {/* Icon + Title */}
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{
+                width: '72px', height: '72px', borderRadius: '50%', margin: '0 auto 16px',
+                background: 'radial-gradient(circle at 40% 40%, hsl(152,60%,28%), hsl(152,50%,16%))',
+                border: '2px solid rgba(34,197,94,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px',
+                boxShadow: '0 0 32px rgba(34,197,94,0.2)',
+              }}>🔐</div>
+              <h2 style={{ fontSize: '21px', fontWeight: 900, color: '#fff', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
+                Secure Access Required
+              </h2>
+              <p style={{ fontSize: '13.5px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: 0 }}>
+                You must <strong style={{ color: 'rgba(255,255,255,0.85)' }}>log in or create an account</strong> to access the Commodity Portal.
+              </p>
+            </div>
+
+            {/* Privacy badge */}
+            <div style={{
+              background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.18)',
+              borderRadius: '10px', padding: '10px 14px',
+              display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px',
+            }}>
+              <span style={{ fontSize: '15px' }}>🛡️</span>
+              <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.4 }}>
+                Anonymous &amp; private. No student ID or real name required.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setShowPortalGate(false);
+                  setAuthView('login');
+                  setLoginError('');
+                  setShowAuthModal(true);
+                }}
+                style={{
+                  padding: '13px', borderRadius: '14px', border: 'none',
+                  background: 'hsl(152,60%,42%)', color: '#fff',
+                  fontWeight: 800, fontSize: '14px', cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(34,197,94,0.35)', transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                }}
+              >🔐 Log In to Chengeto</button>
+              <button
+                onClick={() => {
+                  setShowPortalGate(false);
+                  setAuthView('register');
+                  setRegError('');
+                  setShowAuthModal(true);
+                }}
+                style={{
+                  padding: '13px', borderRadius: '14px',
+                  border: '1px solid rgba(34,197,94,0.35)',
+                  background: 'rgba(34,197,94,0.08)', color: 'hsl(152,70%,68%)',
+                  fontWeight: 700, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                }}
+              >✏️ Create Account (Free)</button>
+            </div>
+
+            <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.22)', marginTop: '20px' }}>
+              🔒 Private &amp; Secure · Offline Ready · Made for Zimbabwe Students
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+          PORTAL PASSWORD MODAL \u2014 secondary layer for logged-in users
+      \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */}
+      {showPortalPassword && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget && !portalSuccess) setShowPortalPassword(false); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: portalSuccess ? 'rgba(0,30,10,0.85)' : 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px', animation: 'fadeIn 0.25s ease',
+            transition: 'background 0.6s ease',
+          }}
+        >
+          <div style={{
+            width: '100%', maxWidth: '400px',
+            background: portalSuccess
+              ? 'linear-gradient(145deg, rgba(5,30,15,0.98), rgba(10,45,20,0.99))'
+              : 'linear-gradient(145deg, rgba(8,18,12,0.97), rgba(5,14,9,0.99))',
+            border: portalSuccess
+              ? '1px solid rgba(34,197,94,0.6)'
+              : '1px solid rgba(34,197,94,0.2)',
+            borderRadius: '24px', padding: '36px 32px',
+            boxShadow: portalSuccess
+              ? '0 32px 100px rgba(0,0,0,0.6), 0 0 60px rgba(34,197,94,0.25)'
+              : '0 32px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(34,197,94,0.06)',
+            animation: 'slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+            position: 'relative',
+            transition: 'border 0.5s ease, box-shadow 0.5s ease, background 0.5s ease',
+          }}>
+            {/* Close — hidden during success */}
+            {!portalSuccess && (
+              <button onClick={() => setShowPortalPassword(false)} style={{
+                position: 'absolute', top: '16px', right: '16px',
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '50%', width: '32px', height: '32px',
+                color: 'rgba(255,255,255,0.4)', fontSize: '16px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>✕</button>
+            )}
+
+            {/* Success state */}
+            {portalSuccess ? (
+              <div style={{ textAlign: 'center', padding: '12px 0' }}>
+                <div style={{
+                  width: '80px', height: '80px', borderRadius: '50%', margin: '0 auto 20px',
+                  background: 'radial-gradient(circle at 40% 40%, hsl(152,60%,30%), hsl(152,55%,18%))',
+                  border: '2px solid hsl(152,60%,50%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px',
+                  boxShadow: '0 0 40px rgba(34,197,94,0.4)',
+                  animation: 'pulse 0.8s ease',
+                }}>✅</div>
+                <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#4ade80', margin: '0 0 8px' }}>
+                  Access Granted
+                </h3>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+                  Entering Commodity Portal…
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                  <div style={{
+                    width: '68px', height: '68px', borderRadius: '50%', margin: '0 auto 16px',
+                    background: 'radial-gradient(circle at 38% 38%, hsl(152,50%,22%), hsl(152,45%,12%))',
+                    border: '2px solid rgba(34,197,94,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px',
+                    boxShadow: '0 0 28px rgba(34,197,94,0.15)',
+                  }}>🔑</div>
+                  <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.3px' }}>
+                    Portal Access Password
+                  </h2>
+                  <p style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.5 }}>
+                    Enter the secure portal password to proceed
+                  </p>
+                </div>
+
+                {/* User badge */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.15)',
+                  borderRadius: '10px', padding: '10px 12px', marginBottom: '20px',
+                }}>
+                  <div style={{
+                    width: '28px', height: '28px', borderRadius: '50%',
+                    background: currentUser?.avatarColor || '#059669',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#fff', fontWeight: 900, fontSize: '12px', flexShrink: 0,
+                  }}>{(currentUser?.nickname || '?').charAt(0).toUpperCase()}</div>
+                  <div>
+                    <p style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(152,70%,65%)', margin: 0 }}>
+                      {currentUser?.nickname}
+                    </p>
+                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+                      {INSTITUTIONS.find(i => i.id === currentUser?.institution)?.name || 'Verified user'}
+                    </p>
+                  </div>
+                  <span style={{ marginLeft: 'auto', fontSize: '10px', color: 'hsl(152,60%,55%)', fontWeight: 700 }}>✓ Verified</span>
+                </div>
+
+                {/* Password form */}
+                <form onSubmit={handlePortalPasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'block', marginBottom: '6px' }}>
+                      Portal Password
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={portalPwVisible ? 'text' : 'password'}
+                        value={portalPw}
+                        onChange={e => { setPortalPw(e.target.value); setPortalPwError(''); }}
+                        placeholder="Enter portal password"
+                        required
+                        autoFocus
+                        style={{
+                          width: '100%', padding: '13px 44px 13px 14px',
+                          borderRadius: '12px',
+                          border: portalPwError ? '1px solid rgba(220,38,38,0.5)' : '1px solid rgba(255,255,255,0.12)',
+                          background: 'rgba(255,255,255,0.06)',
+                          color: '#fff', fontSize: '14px', outline: 'none',
+                          boxSizing: 'border-box', letterSpacing: portalPwVisible ? 'normal' : '0.1em',
+                          transition: 'border 0.2s',
+                        }}
+                      />
+                      <button type="button" onClick={() => setPortalPwVisible(v => !v)}
+                        style={{
+                          position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+                          background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)',
+                          cursor: 'pointer', fontSize: '15px', padding: 0,
+                        }}
+                      >{portalPwVisible ? '🙈' : '👁️'}</button>
+                    </div>
+                  </div>
+
+                  {/* Inline error */}
+                  {portalPwError && (
+                    <div style={{
+                      background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.3)',
+                      borderRadius: '10px', padding: '10px 14px',
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      animation: 'fadeIn 0.2s ease',
+                    }}>
+                      <span style={{ fontSize: '14px' }}>⚠️</span>
+                      <p style={{ fontSize: '12.5px', color: '#FCA5A5', margin: 0, fontWeight: 600 }}>
+                        {portalPwError}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '2px' }}>
+                    <button type="button" onClick={() => setShowPortalPassword(false)}
+                      style={{
+                        flex: 1, padding: '12px', borderRadius: '12px',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        background: 'rgba(255,255,255,0.05)',
+                        color: 'rgba(255,255,255,0.5)', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+                      }}
+                    >Cancel</button>
+                    <button type="submit" disabled={portalPwLoading}
+                      style={{
+                        flex: 2, padding: '12px', borderRadius: '12px', border: 'none',
+                        background: portalPwLoading ? 'rgba(34,197,94,0.4)' : 'hsl(152,60%,42%)',
+                        color: '#fff', fontWeight: 800, fontSize: '13px',
+                        cursor: portalPwLoading ? 'default' : 'pointer',
+                        boxShadow: '0 4px 16px rgba(34,197,94,0.3)', transition: 'all 0.2s',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                      }}
+                    >
+                      {portalPwLoading
+                        ? <><span style={{ animation: 'spin 0.8s linear infinite', display: 'inline-block' }}>⏳</span> Verifying…</>
+                        : '🔓 Enter Portal'}
+                    </button>
+                  </div>
+                </form>
+
+                <p style={{ textAlign: 'center', fontSize: '10.5px', color: 'rgba(255,255,255,0.2)', marginTop: '18px' }}>
+                  🔒 Private &amp; Secure · Chengeto Commodity Portal
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* MindMap Modal */}
       {showMindMap && (
