@@ -391,11 +391,23 @@ const HOW_TO_GUIDES = [
 ];
 
 // ── PODCAST EPISODES ──
+// Audio files live in /public/audio/ — place MP3s there and update audioSrc fields
+function formatEpisodeTitle(filename) {
+  return filename
+    .replace(/\.mp3$/i, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b(\w)/g, c => c.toUpperCase())
+    .replace(/\bAt\b/g, 'at')
+    .replace(/\bOf\b/g, 'of')
+    .replace(/\bThe\b/g, 'the')
+    .replace(/^(\w)/, c => c.toUpperCase()); // always capitalise first letter
+}
+
 const PODCAST_EPISODES = [
   {
     id: "ep1",
     episode: "EP 01",
-    duration: "28:14",
+    audioSrc: "/audio/I_Found_Out_At_19.mp3",
     title: "I Found Out at 19",
     guest: "Rudo M.",
     guestRole: "HIV+ Young Woman, Harare",
@@ -417,7 +429,7 @@ const PODCAST_EPISODES = [
   {
     id: "ep2",
     episode: "EP 02",
-    duration: "31:07",
+    audioSrc: "/audio/She_Chose_To_Keep_Going.mp3",
     title: "She Chose to Keep Going",
     guest: "Thembi N.",
     guestRole: "Young Mother, Bulawayo",
@@ -439,7 +451,7 @@ const PODCAST_EPISODES = [
   {
     id: "ep3",
     episode: "EP 03",
-    duration: "24:50",
+    audioSrc: "/audio/My_Brothers_Keeper.mp3",
     title: "My Brother's Keeper",
     guest: "Tatenda K.",
     guestRole: "Male HIV Advocate, Gweru",
@@ -456,12 +468,12 @@ const PODCAST_EPISODES = [
       { time: "19:00", title: "Speaking in schools" },
       { time: "22:40", title: "What I wish I'd known" },
     ],
-    quote: "\"Being a real man means protecting the people you love : and that starts with testing.\"",
+    quote: "\"Being a real man means protecting the people you love — and that starts with testing.\"",
   },
   {
     id: "ep4",
     episode: "EP 04",
-    duration: "35:22",
+    audioSrc: "/audio/The_Nurse_Who_Changed_Everything.mp3",
     title: "The Nurse Who Changed Everything",
     guest: "Sr. Grace C.",
     guestRole: "Registered Nurse, Parirenyatwa Hospital",
@@ -791,34 +803,109 @@ export default function Application() {
   const [expandedAbcde, setExpandedAbcde] = useState(null);
   const [expandedGuide, setExpandedGuide] = useState(null);
 
-  // Podcast states
+  // ── PODCAST — Real HTML5 Audio Player ──
   const [podcastPlaying, setPodcastPlaying] = useState(false);
   const [currentEpisode, setCurrentEpisode] = useState(PODCAST_EPISODES[0]);
-  const [podcastProgress, setPodcastProgress] = useState(0);
-  const [expandedEpisode, setExpandedEpisode] = useState(null);
-  const podcastTimerRef = useRef(null);
+  const [podcastProgress, setPodcastProgress] = useState(0);   // 0–100
+  const [podcastCurrentTime, setPodcastCurrentTime] = useState(0); // seconds
+  const [podcastDuration, setPodcastDuration]       = useState(0); // seconds
+  const [podcastLoading, setPodcastLoading]         = useState(false);
+  const [podcastSpeed, setPodcastSpeed]             = useState(1);
+  const [expandedEpisode, setExpandedEpisode]       = useState(null);
+  const audioRef = useRef(null); // single <audio> element managed in effect
 
-  // Podcast simulated playback
+  // Initialise / swap audio source when episode changes
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.preload = 'metadata';
+    }
+    const audio = audioRef.current;
+    const wasPlaying = !audio.paused;
+    audio.src = currentEpisode.audioSrc;
+    audio.playbackRate = podcastSpeed;
+    setPodcastCurrentTime(0);
+    setPodcastProgress(0);
+    setPodcastDuration(0);
+    setPodcastLoading(true);
+
+    const onLoaded   = () => { setPodcastDuration(audio.duration || 0); setPodcastLoading(false); };
+    const onTime     = () => {
+      setPodcastCurrentTime(audio.currentTime);
+      if (audio.duration > 0) setPodcastProgress((audio.currentTime / audio.duration) * 100);
+    };
+    const onEnded    = () => {
+      setPodcastPlaying(false);
+      setPodcastProgress(100);
+      // Auto-advance to next episode
+      const idx = PODCAST_EPISODES.findIndex(e => e.id === currentEpisode.id);
+      if (idx < PODCAST_EPISODES.length - 1) {
+        setTimeout(() => setCurrentEpisode(PODCAST_EPISODES[idx + 1]), 800);
+      }
+    };
+    const onError    = () => { setPodcastLoading(false); };
+    audio.addEventListener('loadedmetadata', onLoaded);
+    audio.addEventListener('timeupdate',     onTime);
+    audio.addEventListener('ended',          onEnded);
+    audio.addEventListener('error',          onError);
+    if (wasPlaying) { audio.play().catch(() => {}); }
+    return () => {
+      audio.removeEventListener('loadedmetadata', onLoaded);
+      audio.removeEventListener('timeupdate',     onTime);
+      audio.removeEventListener('ended',          onEnded);
+      audio.removeEventListener('error',          onError);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentEpisode.id]);
+
+  // Sync playing state → audio
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (podcastPlaying) { audio.play().catch(() => setPodcastPlaying(false)); }
+    else                { audio.pause(); }
+  }, [podcastPlaying]);
+
+  // Sync speed
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = podcastSpeed;
+  }, [podcastSpeed]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; } };
+  }, []);
+
   const handlePodcastPlay = (ep) => {
     if (currentEpisode.id !== ep.id) {
       setCurrentEpisode(ep);
-      setPodcastProgress(0);
-    }
-    setPodcastPlaying(prev => !prev);
-  };
-  useEffect(() => {
-    if (podcastPlaying) {
-      podcastTimerRef.current = setInterval(() => {
-        setPodcastProgress(p => {
-          if (p >= 100) { setPodcastPlaying(false); clearInterval(podcastTimerRef.current); return 100; }
-          return p + 0.1;
-        });
-      }, 170);
+      setPodcastPlaying(true);
     } else {
-      clearInterval(podcastTimerRef.current);
+      setPodcastPlaying(prev => !prev);
     }
-    return () => clearInterval(podcastTimerRef.current);
-  }, [podcastPlaying]);
+  };
+
+  const handlePodcastSeek = (e) => {
+    const audio = audioRef.current;
+    if (!audio || !audio.duration) return;
+    const rect  = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = ratio * audio.duration;
+    setPodcastProgress(ratio * 100);
+  };
+
+  const handleSkip = (seconds) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = Math.min(Math.max(audio.currentTime + seconds, 0), audio.duration);
+  };
+
+  const fmtTime = (s) => {
+    if (!s || isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = String(Math.floor(s % 60)).padStart(2, '0');
+    return `${m}:${sec}`;
+  };
   
   // Compare states
   const [compareOpt1, setCompareOpt1] = useState("");
@@ -2363,48 +2450,79 @@ export default function Application() {
             <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Real survivor stories. Real health facts. Real Zimbabwe.</p>
           </div>
 
-          {/* Now Playing Bar */}
+          {/* ══ NOW PLAYING BANNER ══ */}
           <div style={{
-            background: `linear-gradient(135deg, ${currentEpisode.coverColor}, ${currentEpisode.coverColor}CC)`,
-            borderRadius: 'var(--radius-xl)', padding: '20px 24px', marginBottom: '32px',
-            color: '#fff', boxShadow: `0 8px 32px ${currentEpisode.coverColor}40`
+            background: `linear-gradient(135deg, ${currentEpisode.coverColor}EE, ${currentEpisode.coverColor}99)`,
+            borderRadius: 'var(--radius-xl)', padding: '22px 24px', marginBottom: '32px',
+            color: '#fff', boxShadow: `0 8px 40px ${currentEpisode.coverColor}50`,
+            position: 'relative', overflow: 'hidden',
           }}>
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 }}>
-                {currentEpisode.coverEmoji}
-              </div>
+            {/* Background shimmer */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
+
+            {/* Episode info row */}
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '18px' }}>
+              <div style={{
+                width: '60px', height: '60px', borderRadius: '14px',
+                background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(8px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '30px', flexShrink: 0,
+                boxShadow: podcastPlaying ? `0 0 20px rgba(255,255,255,0.35)` : 'none',
+                transition: 'box-shadow 0.4s',
+                animation: podcastPlaying ? 'pulse 2s ease infinite' : 'none',
+              }}>{currentEpisode.coverEmoji}</div>
+
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{currentEpisode.episode} • {currentEpisode.duration}</div>
-                <div style={{ fontSize: '17px', fontWeight: 800, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentEpisode.title}</div>
-                <div style={{ fontSize: '12px', opacity: 0.85, marginTop: '2px' }}>{currentEpisode.guest} • {currentEpisode.guestRole}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '1px' }}>{currentEpisode.episode}</span>
+                  {podcastPlaying && (
+                    <span style={{ fontSize: '9px', fontWeight: 900, background: 'rgba(255,255,255,0.25)', padding: '2px 7px', borderRadius: '10px', letterSpacing: '1px', textTransform: 'uppercase', animation: 'blink 1.6s step-start infinite' }}>● LIVE</span>
+                  )}
+                  {podcastLoading && (
+                    <span style={{ fontSize: '9px', opacity: 0.7 }}>Loading…</span>
+                  )}
+                </div>
+                <div style={{ fontSize: '17px', fontWeight: 900, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentEpisode.title}</div>
+                <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '3px' }}>{currentEpisode.guest} · {currentEpisode.guestRole}</div>
               </div>
+
+              {/* Main play/pause */}
               <button
                 onClick={() => handlePodcastPlay(currentEpisode)}
                 style={{
-                  width: '52px', height: '52px', borderRadius: '50%', border: 'none',
-                  background: 'rgba(255,255,255,0.25)', color: '#fff', fontSize: '22px',
+                  width: '54px', height: '54px', borderRadius: '50%', border: 'none',
+                  background: 'rgba(255,255,255,0.28)', color: '#fff', fontSize: '22px',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0, backdropFilter: 'blur(8px)',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.2)', transition: 'all 0.15s'
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.25)', transition: 'transform 0.15s',
                 }}
-              >
-                {podcastPlaying && currentEpisode.id === currentEpisode.id ? '⏸️' : '▶️'}
-              </button>
+              >{podcastPlaying ? '⏸️' : '▶️'}</button>
             </div>
-            {/* Progress bar */}
-            <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '4px', height: '5px', overflow: 'hidden' }}>
-              <div style={{ background: '#fff', height: '100%', width: `${podcastProgress}%`, transition: 'width 0.15s linear', borderRadius: '4px' }} />
+
+            {/* Seekable progress bar */}
+            <div
+              onClick={handlePodcastSeek}
+              style={{
+                background: 'rgba(255,255,255,0.22)', borderRadius: '6px', height: '6px',
+                overflow: 'hidden', cursor: 'pointer', marginBottom: '6px',
+              }}
+            >
+              <div style={{ background: '#fff', height: '100%', width: `${podcastProgress}%`, transition: 'width 0.2s linear', borderRadius: '6px' }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>
-              <span>{(() => {
-                const parts = currentEpisode.duration.split(':');
-                const total = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-                const elapsed = Math.floor(podcastProgress / 100 * total);
-                const m = Math.floor(elapsed / 60);
-                const s = String(elapsed % 60).padStart(2, '0');
-                return `${m}:${s}`;
-              })()}</span>
-              <span>{currentEpisode.duration}</span>
+
+            {/* Time row + controls */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', opacity: 0.85 }}>
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtTime(podcastCurrentTime)}</span>
+              {/* Skip + speed controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button onClick={() => handleSkip(-15)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '20px', padding: '3px 9px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>« 15</button>
+                <button
+                  onClick={() => setPodcastSpeed(s => s === 1 ? 1.25 : s === 1.25 ? 1.5 : s === 1.5 ? 2 : 1)}
+                  style={{ background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '20px', padding: '3px 9px', color: '#fff', fontSize: '11px', fontWeight: 800, cursor: 'pointer', minWidth: '36px' }}
+                >{podcastSpeed}x</button>
+                <button onClick={() => handleSkip(15)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '20px', padding: '3px 9px', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>15 »</button>
+              </div>
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{podcastDuration > 0 ? fmtTime(podcastDuration) : '--:--'}</span>
             </div>
           </div>
 
@@ -2429,10 +2547,20 @@ export default function Application() {
                       </div>
                       <button
                         onClick={() => handlePodcastPlay(ep)}
-                        style={{ background: ep.coverColor, border: 'none', color: '#fff', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '4px' }}
+                        style={{
+                          background: currentEpisode.id === ep.id && podcastPlaying ? ep.coverColor : ep.coverColor + 'CC',
+                          border: 'none', color: '#fff', borderRadius: '50%',
+                          width: '42px', height: '42px', cursor: 'pointer', fontSize: '16px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          flexShrink: 0, marginTop: '4px',
+                          boxShadow: currentEpisode.id === ep.id && podcastPlaying ? `0 0 14px ${ep.coverColor}80` : 'none',
+                          transition: 'all 0.2s',
+                          animation: currentEpisode.id === ep.id && podcastPlaying ? 'pulse 1.8s ease infinite' : 'none',
+                        }}
                         aria-label={`Play ${ep.title}`}
                       >
-                        {currentEpisode.id === ep.id && podcastPlaying ? '⏸' : '▶'}
+                        {currentEpisode.id === ep.id && podcastLoading ? '⏳' :
+                          currentEpisode.id === ep.id && podcastPlaying ? '⏸' : '▶'}
                       </button>
                     </div>
                     {/* Tags */}
