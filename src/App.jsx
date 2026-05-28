@@ -1774,22 +1774,22 @@ export default function Application() {
           </div>
         </div>
         <div className="nav-links">
-          <button onClick={() => setPage("home")} className={`nav-button ${page === "home" ? "active" : ""}`}>
+          <button onClick={() => { setPage("home"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "home" ? "active" : ""}`}>
             🏠 <span>Home</span>
           </button>
-          <button onClick={() => setPage("hiv")} className={`nav-button ${page === "hiv" ? "active" : ""}`}>
+          <button onClick={() => { setPage("hiv"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "hiv" ? "active" : ""}`}>
             🛡️ <span>HIV</span>
           </button>
-          <button onClick={() => setPage("pregnancy")} className={`nav-button ${page === "pregnancy" ? "active" : ""}`}>
+          <button onClick={() => { setPage("pregnancy"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "pregnancy" ? "active" : ""}`}>
             🌸 <span>Pregnancy</span>
           </button>
-          <button onClick={() => setPage("compare")} className={`nav-button ${page === "compare" ? "active" : ""}`}>
+          <button onClick={() => { setPage("compare"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "compare" ? "active" : ""}`}>
             ⚖️ <span>Compare</span>
           </button>
-          <button onClick={() => setPage("directory")} className={`nav-button ${page === "directory" ? "active" : ""}`}>
+          <button onClick={() => { setPage("directory"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "directory" ? "active" : ""}`}>
             📍 <span>Services</span>
           </button>
-          <button onClick={() => setPage("podcast")} className={`nav-button ${page === "podcast" ? "active" : ""}`}>
+          <button onClick={() => { setPage("podcast"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "podcast" ? "active" : ""}`}>
             🎙️ <span>Podcast</span>
           </button>
           <button onClick={toggleTheme} className="theme-toggle-btn" aria-label="Toggle theme">
@@ -2096,6 +2096,40 @@ export default function Application() {
             </div>
           </section>
 
+
+          {/* ── PREGNANCY MYTHS VIEW ── */}
+          {pregTab === 'myths' && (
+            <div className="animate-fade-in">
+              <button
+                onClick={() => { setPregTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                ⬅ Back to Pregnancy Dashboard
+              </button>
+              <div style={{ marginBottom: '28px' }}>
+                <h3 style={{ fontSize: '24px', color: 'var(--color-rose)', marginBottom: '6px' }}>🤔 Myths vs Facts</h3>
+                <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
+                  Common misconceptions about pregnancy — busted with clear, evidence-based facts.
+                </p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {PREG_MYTHS.map((m, i) => (
+                  <div key={i} className="glass-card" style={{ borderLeft: '4px solid var(--color-rose)' }}>
+                    <h4 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                      <span style={{ flexShrink: 0 }}>❌</span>
+                      <span><strong>Myth:</strong> {m.myth}</span>
+                    </h4>
+                    <p style={{ fontSize: '14px', color: 'var(--color-rose)', fontWeight: 600, marginLeft: '28px', lineHeight: 1.6 }}>
+                      ✅ <strong>Fact:</strong> {m.fact}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: '28px', padding: '18px 20px', background: 'var(--color-rose-light)', borderRadius: '14px', fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>
+                💡 <strong>Remember:</strong> When in doubt, visit any government clinic or student health centre. Consultations are free and completely confidential.
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -2945,41 +2979,7 @@ export default function Application() {
         </div>
       )}
 
-          {/* ── PREGNANCY MYTHS VIEW ── */}
-          {pregTab === 'myths' && (
-            <div className="animate-fade-in">
-              <button
-                onClick={() => { setPregTab('main'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                ⬅ Back to Pregnancy Dashboard
-              </button>
-              <div style={{ marginBottom: '28px' }}>
-                <h3 style={{ fontSize: '24px', color: 'var(--color-rose)', marginBottom: '6px' }}>🤔 Myths vs Facts</h3>
-                <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
-                  Common misconceptions about pregnancy — busted with clear, evidence-based facts.
-                </p>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {PREG_MYTHS.map((m, i) => (
-                  <div key={i} className="glass-card" style={{ borderLeft: '4px solid var(--color-rose)' }}>
-                    <h4 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                      <span style={{ flexShrink: 0 }}>❌</span>
-                      <span><strong>Myth:</strong> {m.myth}</span>
-                    </h4>
-                    <p style={{ fontSize: '14px', color: 'var(--color-rose)', fontWeight: 600, marginLeft: '28px', lineHeight: 1.6 }}>
-                      ✅ <strong>Fact:</strong> {m.fact}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: '28px', padding: '18px 20px', background: 'var(--color-rose-light)', borderRadius: '14px', fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>
-                💡 <strong>Remember:</strong> When in doubt, visit any government clinic or student health centre. Consultations are free and completely confidential.
-              </div>
-            </div>
-          )}
-
-            {/* ── PODCAST VIEW ── */}
+                    {/* ── PODCAST VIEW ── */}
       {page === 'podcast' && (
         <div className="animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 24px' }}>
           {/* Header */}
@@ -3564,7 +3564,7 @@ export default function Application() {
 
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                   <button onClick={handleResetQuiz} className="btn btn-secondary">Retake Quiz</button>
-                  <button onClick={() => setPage("directory")} className="btn btn-primary">Find Clinic</button>
+                  <button onClick={() => { setPage("directory"); setHivTab("main"); setPregTab("main"); }} className="btn btn-primary">Find Clinic</button>
                 </div>
               </div>
             )}
@@ -3686,7 +3686,7 @@ export default function Application() {
       {/* ── CYCLE TRACKER VIEW ── */}
       {page === "tracker" && (
         <div id="cycle-tracker" className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '650px', margin: '0 auto' }}>
-          <button onClick={() => setPage('pregnancy')} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={() => { setPage("pregnancy"); setHivTab("main"); setPregTab("main"); }} style={{ background: 'none', border: 'none', color: 'var(--color-rose)', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             ⬅ Back to Pregnancy Dashboard
           </button>
           <h2 style={{ fontSize: '28px', color: 'var(--color-primary)', textAlign: 'center', marginBottom: '4px' }}>📅 Menstrual & Cycle Safety helper</h2>
@@ -3785,18 +3785,18 @@ export default function Application() {
             <div>
               <h5 style={{ color: 'var(--color-text-light)', fontSize: '13px', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Learn More</h5>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                <button onClick={() => setPage("hiv")} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>HIV Prevention</button>
-                <button onClick={() => setPage("pregnancy")} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>Pregnancy Prevention</button>
-                <button onClick={() => setPage("compare")} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>Option Comparison</button>
+                <button onClick={() => { setPage("hiv"); setHivTab("main"); setPregTab("main"); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>HIV Prevention</button>
+                <button onClick={() => { setPage("pregnancy"); setHivTab("main"); setPregTab("main"); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>Pregnancy Prevention</button>
+                <button onClick={() => { setPage("compare"); setHivTab("main"); setPregTab("main"); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>Option Comparison</button>
               </div>
             </div>
 
             <div>
               <h5 style={{ color: 'var(--color-text-light)', fontSize: '13px', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Campus Support</h5>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                <button onClick={() => setPage("directory")} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>Clinics Near Me</button>
-                <button onClick={() => setPage("portal")} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>Confidential Pickup</button>
-                <button onClick={() => setPage("chat")} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>AI Chatbot Support</button>
+                <button onClick={() => { setPage("directory"); setHivTab("main"); setPregTab("main"); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>Clinics Near Me</button>
+                <button onClick={() => { setPage("portal"); setHivTab("main"); setPregTab("main"); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>Confidential Pickup</button>
+                <button onClick={() => { setPage("chat"); setHivTab("main"); setPregTab("main"); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', textAlign: 'left', cursor: 'pointer' }}>AI Chatbot Support</button>
               </div>
             </div>
           </div>
