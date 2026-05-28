@@ -3959,7 +3959,7 @@ export default function Application() {
 
             {/* CTA button */}
             <button
-              onClick={() => setShowChatComingSoon(false)}
+              onClick={() => { setShowChatComingSoon(false); setPage('chat'); }}
               style={{
                 width: '100%', padding: '14px',
                 borderRadius: '14px', border: 'none',
@@ -3971,7 +3971,7 @@ export default function Application() {
                 letterSpacing: '0.2px',
               }}
             >
-              Got it — Stay Tuned! 🚀
+              Have a Look at What It Will Look Like 👀
             </button>
 
             <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.2)', marginTop: '16px' }}>
