@@ -818,6 +818,7 @@ export default function Application() {
   const [showMindMap, setShowMindMap] = useState(false);
   const [activeHivInfoTab, setActiveHivInfoTab] = useState("transmission");
   const [activePregInfoTab, setActivePregInfoTab] = useState("fertility");
+  const [guideModal, setGuideModal] = useState(null); // { section } or null
 
   // ABCDE & Guide states
   const [expandedAbcde, setExpandedAbcde] = useState(null);
@@ -1267,6 +1268,104 @@ export default function Application() {
       {/* ══════════════════════════════════════════════
           AUTH MODAL OVERLAY
       ══════════════════════════════════════════════ */}
+
+      {/* ══ COMPREHENSIVE GUIDE MODAL ══ */}
+      {guideModal && (
+        <div
+          onClick={() => setGuideModal(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9998,
+            background: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px', fontFamily: 'inherit', animation: 'fadeIn 0.18s ease',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--color-bg-base)',
+              borderRadius: '20px',
+              width: '100%', maxWidth: '560px',
+              maxHeight: '85vh',
+              display: 'flex', flexDirection: 'column',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
+              animation: 'slideUp 0.22s cubic-bezier(0.34,1.1,0.64,1)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Modal header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '18px 22px 16px',
+              borderBottom: '1px solid var(--color-border)',
+              flexShrink: 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '10px',
+                  background: (guideModal.section.color || 'var(--color-primary)') + '18',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '20px', flexShrink: 0,
+                }}>
+                  {guideModal.section.emoji || '📚'}
+                </div>
+                <h3 style={{ fontWeight: 800, fontSize: '17px', color: 'var(--color-text-main)', margin: 0 }}>
+                  {guideModal.section.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setGuideModal(null)}
+                style={{
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  background: 'var(--color-bg-surface)',
+                  border: '1px solid var(--color-border)',
+                  fontSize: '16px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--color-text-muted)', flexShrink: 0,
+                  transition: 'all 0.15s',
+                }}
+                aria-label="Close guide"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal content */}
+            <div style={{
+              padding: '20px 22px 24px',
+              overflowY: 'auto',
+              fontSize: '14px',
+              lineHeight: 1.65,
+              color: 'var(--color-text-main)',
+              flex: 1,
+            }} className="hide-scrollbar">
+              {guideModal.section.content}
+            </div>
+
+            {/* Modal footer */}
+            <div style={{
+              padding: '14px 22px',
+              borderTop: '1px solid var(--color-border)',
+              flexShrink: 0,
+              display: 'flex', justifyContent: 'flex-end',
+            }}>
+              <button
+                onClick={() => setGuideModal(null)}
+                style={{
+                  padding: '10px 24px', borderRadius: '20px',
+                  border: 'none', background: 'var(--color-primary)',
+                  color: '#fff', fontWeight: 700, fontSize: '13px',
+                  cursor: 'pointer', transition: 'opacity 0.15s',
+                }}
+              >
+                Got it ✔
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAuthModal && (
         <div
           onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}
@@ -1772,9 +1871,9 @@ export default function Application() {
               {/* Tab Headers (Horizontal Scroll) */}
               <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }} className="hide-scrollbar">
                 {HIV_INFO_SECTIONS.map(section => (
-                  <button 
+                  <button
                     key={section.id}
-                    onClick={() => setActiveHivInfoTab(section.id)}
+                    onClick={() => { setActiveHivInfoTab(section.id); setGuideModal({ section }); }}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '20px',
@@ -2253,23 +2352,25 @@ export default function Application() {
               
               <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }} className="hide-scrollbar">
                 {PREG_INFO_SECTIONS.map(section => (
-                  <button 
+                  <button
                     key={section.id}
-                    onClick={() => setActivePregInfoTab(section.id)}
+                    onClick={() => { setActivePregInfoTab(section.id); setGuideModal({ section }); }}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '20px',
                       border: '1px solid',
-                      borderColor: activePregInfoTab === section.id ? 'var(--color-rose)' : 'var(--color-border)',
-                      background: activePregInfoTab === section.id ? 'var(--color-rose)' : 'transparent',
-                      color: activePregInfoTab === section.id ? '#fff' : 'var(--color-text-main)',
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-bg-surface)',
+                      color: 'var(--color-text-main)',
                       fontSize: '12.5px',
                       fontWeight: 600,
                       whiteSpace: 'nowrap',
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', gap: '6px',
                     }}
                   >
+                    {section.emoji && <span>{section.emoji}</span>}
                     {section.title}
                   </button>
                 ))}
