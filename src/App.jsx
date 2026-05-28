@@ -655,10 +655,10 @@ export default function Application() {
     e.preventDefault();
     const entered = portalPw.trim();
     setPortalPwError('');
-    if (!entered) { setPortalPwError('Please enter the portal password.'); return; }
+    if (!entered) { setPortalPwError('Please enter your account password.'); return; }
     setPortalPwLoading(true);
-    // Use a small delay just for UX feel, but read value NOW (no closure staleness)
-    const correct = entered === PORTAL_PASSWORD;
+    // Verify against the user's own account password
+    const correct = entered === (currentUser?.password || '');
     setTimeout(() => {
       setPortalPwLoading(false);
       if (correct) {
@@ -671,7 +671,7 @@ export default function Application() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 850);
       } else {
-        setPortalPwError('Incorrect portal password. Please try again.');
+        setPortalPwError('Incorrect password. Please enter the password you used to sign in.');
       }
     }, 600);
   };
@@ -3300,7 +3300,7 @@ export default function Application() {
                     Portal Access Password
                   </h2>
                   <p style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.5 }}>
-                    Enter the secure portal password to proceed
+                    Enter your account password to confirm access
                   </p>
                 </div>
 
@@ -3331,14 +3331,14 @@ export default function Application() {
                 <form onSubmit={handlePortalPasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'block', marginBottom: '6px' }}>
-                      Portal Password
+                      Your Account Password
                     </label>
                     <div style={{ position: 'relative' }}>
                       <input
                         type={portalPwVisible ? 'text' : 'password'}
                         value={portalPw}
                         onChange={e => { setPortalPw(e.target.value); setPortalPwError(''); }}
-                        placeholder="Enter portal password"
+                        placeholder="Enter your account password"
                         required
                         autoFocus
                         style={{
@@ -3361,13 +3361,13 @@ export default function Application() {
                     </div>
                     {/* Password hint */}
                     <div style={{
-                      marginTop: '8px', background: 'rgba(255,255,255,0.04)',
-                      border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px',
+                      marginTop: '8px', background: 'rgba(34,197,94,0.06)',
+                      border: '1px solid rgba(34,197,94,0.12)', borderRadius: '8px',
                       padding: '7px 12px', display: 'flex', alignItems: 'center', gap: '6px',
                     }}>
-                      <span style={{ fontSize: '12px' }}>🎯</span>
+                      <span style={{ fontSize: '12px' }}>🔒</span>
                       <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                        Demo portal password: <code style={{ color: 'hsl(152,70%,60%)', fontWeight: 700, letterSpacing: '0.5px' }}>chengeto2025</code>
+                        Use the same password you signed in with
                       </p>
                     </div>
                   </div>
