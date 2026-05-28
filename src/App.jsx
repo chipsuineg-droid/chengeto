@@ -4,6 +4,7 @@ import { HIV_INFO_SECTIONS } from './data/hivInfo';
 import { PREG_INFO_SECTIONS } from './data/pregInfo';
 import { hivMindMapData } from './data/hivMindMapData';
 import { pregMindMapData } from './data/pregMindMapData';
+import { getBotResponse } from './data/botEngine';
 import { HIV_PREVENTION_METHODS, HIV_PREVENTION_CATEGORIES } from './data/hivPreventionMethods';
 import { PREG_PREVENTION_METHODS, PREG_PREVENTION_CATEGORIES } from './data/pregPreventionMethods';
 
@@ -260,17 +261,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // Distance in km
 };
 
-const BOT_KNOWLEDGE = {
-  prep: "Daily Oral PrEP is a highly effective pill (99% prevention rate) to protect against HIV before exposure. It is 100% FREE at UZ Health Centre, Parirenyatwa, and public clinics. Common side effects are mild nausea which fades in 2 weeks.",
-  pep: "PEP (Post-Exposure Prophylaxis) is emergency HIV medication. You MUST start it within 72 hours of possible exposure. It is a 28-day course of pills. Go to Parirenyatwa A&E or Harare Hospital A&E immediately : it is free and available 24/7.",
-  condom: "Condoms (male & female) are the ONLY dual-protection method, meaning they prevent BOTH HIV and pregnancy at the same time. You can pick up free packs anonymously using our commodity simulator at student clinics.",
-  cost: "Most HIV and pregnancy prevention methods (like condoms, PrEP, implants, and injections) are 100% FREE at government clinics and university student health clinics in Zimbabwe.",
-  side_effects: "Most methods have minor side effects. Oral pills/PrEP might cause mild nausea for the first 2 weeks. Implants and injections might cause irregular bleeding or spotting. Speak to a doctor if side effects persist.",
-  shona: "Mhoro! Chengeto ndiyo nzira yako yekudzivirira HIV pamwe nekudzivisa kubata pamuviri pasina kurongeka. Kuti uzive zvakawanda, nyora mazwi akadai sekuti: 'prep', 'pep', 'condom', kana 'clinic'.",
-  pamuviri: "Kudzivirira kubata pamuviri (contraception) kune nzira dzakawanda dzemahara: short-term (pill, condoms), medium-term (injectable Depo every 3 months), and long-term (implants kwemakore 3, Copper IUD kwemakore 10). Mhanya muende ku clinic yepedyo kunoziva yakakukwanirai.",
-  dziviriro: "Chengeto inokubatsira kudzivirira HIV. Pane nzira dzinoti PrEP (kudzivirira usati wasangana nehutachiwana), PEP (kudzivirira kana uchinge wasangana nehutachiwana usingafungiri mukati memaawa 72), nema condoms (anodzivirira HIV nemimba panguva imwe chete).",
-  clinic: "Unogona kuwana rubatsiro rwakazara pa UZ Student Health Centre, NUST Student Clinic, MSU Health Services, kana Parirenyatwa Hospital. Tarisa tab yedu inoti '📍 Services' kutiona dziri pedyo newe."
-};
+// BOT_KNOWLEDGE replaced by src/data/botEngine.js — clinical scenario engine
 
 // ── ABCDE OF HIV PREVENTION ──
 const ABCDE = [
@@ -1066,11 +1057,10 @@ export default function Application() {
   const [trackerNotes, setTrackerNotes] = useState("Tap days below to inspect fertile vs safe windows.");
   
   // Chatbot states
-  const [chatMessages, setChatMessages] = useState([
-    { sender: "bot", text: "Mhoro/Hello! I am Chengeto, your private AI assistant. Ask me anything about HIV, PEP, PrEP, condoms, or contraception in Zimbabwe. I work offline too!" }
-  ]);
+  const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const chatBottomRef = useRef(null);
+  const chatGreetingDoneRef = useRef(false);
 
   // Commodity request states
   const [selectedCommodity, setSelectedCommodity] = useState("male-condoms");
@@ -1115,6 +1105,22 @@ export default function Application() {
     }
   }, [chatMessages]);
 
+  // Personalised greeting when chat page opens — uses nickname if signed in
+  useEffect(() => {
+    if (page === 'chat' && !chatGreetingDoneRef.current) {
+      chatGreetingDoneRef.current = true;
+      const name = currentUser?.nickname;
+      const greeting = name
+        ? `Mhoro ${name}! \uD83D\uDC4B I'm Chengeto, your private health assistant.\n\nYou can talk to me about anything — HIV prevention, testing, PEP, PrEP, pregnancy, contraception, or describe a real situation you're worried about.\n\nEverything you share stays on this device only. I'm here to help, not to judge. What's on your mind?`
+        : `Mhoro! \uD83D\uDC4B I'm Chengeto, your private health assistant.\n\nYou can ask me anything — HIV, PEP, PrEP, testing, pregnancy prevention, or describe a situation you're concerned about. I'll give you clear, honest guidance.\n\nEverything is private and stays on your device. What's on your mind?`;
+      setChatMessages([{ sender: 'bot', text: greeting }]);
+    }
+    if (page !== 'chat') {
+      chatGreetingDoneRef.current = false;
+      setChatMessages([]);
+    }
+  }, [page, currentUser]);
+
   const toggleTheme = () => {
     setTheme(prev => prev === "light" ? "dark" : "light");
   };
@@ -1129,31 +1135,26 @@ export default function Application() {
     setInstallPromptEvent(null);
   };
 
-  // Chat bot logic
+  // Chat bot logic — scenario-based clinical engine
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
     const userText = chatInput.trim();
-    const updatedMessages = [...chatMessages, { sender: "user", text: userText }];
-    setChatMessages(updatedMessages);
-    setChatInput("");
+    setChatMessages(prev => [...prev, { sender: 'user', text: userText }]);
+    setChatInput('');
 
-    // Bot response logic
+    // Show typing indicator
+    setChatMessages(prev => [...prev, { sender: 'bot', text: '...', isTyping: true }]);
+
     setTimeout(() => {
-      const query = userText.toLowerCase();
-      let answer = "I want to make sure you get accurate information. Please search for key terms like 'prep', 'pep', 'condom', 'cost', 'shona', 'pamuviri', or 'clinic' to learn more.";
-      
-      // Look for matches in BOT_KNOWLEDGE keys
-      for (const key in BOT_KNOWLEDGE) {
-        if (query.includes(key.replace('_', ' '))) {
-          answer = BOT_KNOWLEDGE[key];
-          break;
-        }
-      }
-      
-      setChatMessages(prev => [...prev, { sender: "bot", text: answer }]);
-    }, 600);
+      const nickname = currentUser?.nickname || null;
+      const answer = getBotResponse(userText, nickname);
+      setChatMessages(prev => {
+        const withoutTyping = prev.filter(m => !m.isTyping);
+        return [...withoutTyping, { sender: 'bot', text: answer }];
+      });
+    }, 900);
   };
 
   // Commodity code generator
@@ -3357,18 +3358,22 @@ export default function Application() {
             
             <div className="chat-messages">
               {chatMessages.map((msg, index) => (
-                <div key={index} className={`chat-bubble ${msg.sender}`}>
-                  {msg.text}
+                <div key={index} className={`chat-bubble ${msg.sender}${msg.isTyping ? ' typing-bubble' : ''}`}>
+                  {msg.isTyping ? (
+                    <span className="typing-dots"><span /><span /><span /></span>
+                  ) : (
+                    <span style={{ whiteSpace: 'pre-line' }}>{msg.text}</span>
+                  )}
                 </div>
               ))}
               <div ref={chatBottomRef}></div>
             </div>
 
             <form onSubmit={handleSendMessage} className="chat-input-area">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="chat-input"
-                placeholder="Ask about prep, pep, condoms, side effects..." 
+                placeholder="Describe your situation e.g. I slept with someone without a condom..."
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
               />
