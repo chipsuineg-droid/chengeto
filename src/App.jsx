@@ -1318,13 +1318,21 @@ export default function Application() {
               );
             })()}
 
-            {/* Shield SVG icon */}
             <div style={{ marginBottom: '24px', animation: 'fadeInUp 0.5s' }}>
-              <svg width="64" height="72" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))' }}>
-                <path d="M32 2L6 13v20c0 17.6 11.2 34 26 39 14.8-5 26-21.4 26-39V13L32 2z" fill="#1a6638" />
-                <path d="M32 8L10 17.5V33c0 14.5 9.2 28 22 32.2C44.8 61 54 47.5 54 33V17.5L32 8z" fill="#2d7a4f" />
-                <path d="M25 34l-5-5 3-3 2 2 8-8 3 3-11 11z" fill="#ffffff" />
-              </svg>
+              <img
+                src="/chengeto-shield.png"
+                alt="Chengeto Shield"
+                style={{
+                  width: '88px',
+                  height: '96px',
+                  objectFit: 'contain',
+                  display: 'block',
+                  margin: '0 auto',
+                  WebkitMaskImage: 'radial-gradient(ellipse 76% 84% at 50% 47%, black 52%, transparent 100%)',
+                  maskImage: 'radial-gradient(ellipse 76% 84% at 50% 47%, black 52%, transparent 100%)',
+                  filter: 'drop-shadow(0 4px 20px rgba(34,197,94,0.45)) brightness(1.08)',
+                }}
+              />
             </div>
             <h1 className="hero-title">CHENGETO</h1>
             <div className="hero-shona">Shona word for protection</div>
