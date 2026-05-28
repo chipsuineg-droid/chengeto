@@ -1275,7 +1275,7 @@ export default function Application() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
               <button
                 onClick={() => { setAuthView('login'); setLoginError(''); setShowAuthModal(true); }}
-                style={{ padding: '8px 18px', borderRadius: '20px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.2px' }}
+                style={{ padding: '8px 18px', borderRadius: '20px', border: '2px solid hsl(152,60%,38%)', background: 'transparent', color: 'hsl(152,65%,32%)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.2px' }}
               >Log In</button>
               <button
                 onClick={() => { setAuthView('register'); setRegError(''); setShowAuthModal(true); }}
