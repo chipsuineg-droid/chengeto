@@ -394,7 +394,7 @@ const HOW_TO_GUIDES = [
 // Audio files live in /public/audio/ — place MP3s there and update audioSrc fields
 function formatEpisodeTitle(filename) {
   return filename
-    .replace(/\.mp3$/i, '')
+    .replace(/\.m4a$/i, '')
     .replace(/[_-]+/g, ' ')
     .replace(/\b(\w)/g, c => c.toUpperCase())
     .replace(/\bAt\b/g, 'at')
@@ -407,13 +407,33 @@ const PODCAST_EPISODES = [
   {
     id: "ep1",
     episode: "EP 01",
-    audioSrc: "/audio/I_Found_Out_At_19.mp3",
+    audioSrc: "/audio/Nyaya Yangu Yekuridza MaRecords.m4a",
+    title: "Nyaya Yangu Yekuridza MaRecords",
+    guest: "Chengeto Feature",
+    guestRole: "Shona Health Story · Zimbabwe",
+    coverEmoji: "🎙️",
+    coverColor: "#059669",
+    coverLight: "#D1FAE5",
+    tags: ["Shona", "Health Story", "Zimbabwe", "Awareness"],
+    summary: "Nyaya Yangu Yekuridza MaRecords — a powerful Shona-language health story from the heart of Zimbabwe. This episode brings the Chengeto message to life through authentic storytelling in our mother tongue, connecting young Zimbabweans to critical health information in the language they know best.",
+    chapters: [
+      { time: "00:00", title: "Kutanga / Introduction" },
+      { time: "02:00", title: "Nyaya Yekutanga / The Story Begins" },
+      { time: "05:00", title: "Matambudziko / The Challenges" },
+      { time: "08:00", title: "Tariro / Hope & Message" },
+    ],
+    quote: "\"Nyaya yako inokosha. Taurirai vanhu vako chokwadi.\"",
+  },
+  {
+    id: "ep2",
+    episode: "EP 02",
+    audioSrc: "/audio/I_Found_Out_at_19_-_Rudo_M.m4a",
     title: "I Found Out at 19",
     guest: "Rudo M.",
     guestRole: "HIV+ Young Woman, Harare",
     coverEmoji: "💚",
-    coverColor: "#059669",
-    coverLight: "#D1FAE5",
+    coverColor: "#7C3AED",
+    coverLight: "#EDE9FE",
     tags: ["HIV", "ART", "Stigma", "Hope"],
     summary: "Rudo was diagnosed with HIV at 19 while studying at the University of Zimbabwe. In this raw and powerful episode, she shares the fear of her first positive result, how she told her family, navigating relationships, and how she now advocates for young people to know their status. She has been on ART for 3 years and describes herself as 'undetectable and unstoppable.'",
     chapters: [
@@ -427,9 +447,9 @@ const PODCAST_EPISODES = [
     quote: "\"The test result wasn't a death sentence. It was the beginning of me taking my life seriously.\"",
   },
   {
-    id: "ep2",
-    episode: "EP 02",
-    audioSrc: "/audio/She_Chose_To_Keep_Going.mp3",
+    id: "ep3",
+    episode: "EP 03",
+    audioSrc: "/audio/She_Chose_to_Keep_Going_-_Thembi_N.m4a",
     title: "She Chose to Keep Going",
     guest: "Thembi N.",
     guestRole: "Young Mother, Bulawayo",
@@ -449,15 +469,15 @@ const PODCAST_EPISODES = [
     quote: "\"I walked into the clinic thinking I had no options. I walked out knowing I had all of them.\"",
   },
   {
-    id: "ep3",
-    episode: "EP 03",
-    audioSrc: "/audio/My_Brothers_Keeper.mp3",
+    id: "ep4",
+    episode: "EP 04",
+    audioSrc: "/audio/My_Brother_s_Keeper_-_Tatenda_K.m4a",
     title: "My Brother's Keeper",
     guest: "Tatenda K.",
     guestRole: "Male HIV Advocate, Gweru",
     coverEmoji: "💪",
-    coverColor: "#7C3AED",
-    coverLight: "#EDE9FE",
+    coverColor: "#0891B2",
+    coverLight: "#E0F2FE",
     tags: ["Male Perspective", "HIV Disclosure", "Masculinity"],
     summary: "Tatenda is HIV-positive and decided to go public at MSU to challenge the silence around men and HIV. He speaks candidly about toxic masculinity in Zimbabwe's sexual culture, why men avoid testing, and how he learned to protect his partners. He now speaks in secondary schools across Midlands Province.",
     chapters: [
@@ -471,16 +491,16 @@ const PODCAST_EPISODES = [
     quote: "\"Being a real man means protecting the people you love — and that starts with testing.\"",
   },
   {
-    id: "ep4",
-    episode: "EP 04",
-    audioSrc: "/audio/The_Nurse_Who_Changed_Everything.mp3",
+    id: "ep5",
+    episode: "EP 05",
+    audioSrc: "/audio/The_Nurse_Who_Changed_Everything_-_Sr._Grace_C.m4a",
     title: "The Nurse Who Changed Everything",
     guest: "Sr. Grace C.",
     guestRole: "Registered Nurse, Parirenyatwa Hospital",
     coverEmoji: "🏥",
-    coverColor: "#0891B2",
-    coverLight: "#E0F2FE",
-    tags: ["Healthcare", "Prevention", "Education"],
+    coverColor: "#D97706",
+    coverLight: "#FEF3C7",
+    tags: ["Healthcare", "Prevention", "PrEP", "Education"],
     summary: "Sister Grace has worked at Parirenyatwa's HIV clinic for 14 years. She has seen thousands of young patients and shares what she wishes every university student knew: the moment you walk through those doors, there is no judgement. She discusses PEP, PrEP, misconceptions she hears daily, and the power of showing up for your own health.",
     chapters: [
       { time: "00:00", title: "Introduction" },
