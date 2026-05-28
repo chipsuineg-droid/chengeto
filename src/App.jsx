@@ -612,6 +612,7 @@ export default function Application() {
   // ── AUTH STATE ──
   const [currentUser, setCurrentUser] = useState(() => getSession());
   const [authView, setAuthView] = useState("login"); // 'login' | 'register'
+  const [showAuthModal, setShowAuthModal] = useState(false); // auth modal open/close
   // Login form
   const [loginNick, setLoginNick] = useState("");
   const [loginInst, setLoginInst] = useState("uz");
@@ -637,6 +638,7 @@ export default function Application() {
       if (user) {
         saveSession(user);
         setCurrentUser(user);
+        setShowAuthModal(false);
       } else {
         setLoginError("Nickname, institution, or password is incorrect. Please try again.");
       }
@@ -652,6 +654,7 @@ export default function Application() {
     if (result.error) { setRegError(result.error); return; }
     saveSession(result.user);
     setCurrentUser(result.user);
+    setShowAuthModal(false);
   };
 
   const handleLogout = () => {
@@ -988,48 +991,58 @@ export default function Application() {
     <div>
 
       {/* ══════════════════════════════════════════════
-          AUTH GATE : shown when not logged in
+          AUTH MODAL OVERLAY
       ══════════════════════════════════════════════ */}
-      {!currentUser && (
-        <div style={{
-          minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'linear-gradient(135deg, hsl(152,60%,8%) 0%, hsl(152,40%,14%) 50%, hsl(200,50%,10%) 100%)',
-          padding: '20px', fontFamily: 'inherit',
-        }}>
-          <div style={{ width: '100%', maxWidth: '440px' }}>
+      {showAuthModal && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px', fontFamily: 'inherit',
+          }}
+        >
+          <div style={{ width: '100%', maxWidth: '440px', position: 'relative' }}>
+            {/* Close button */}
+            <button
+              onClick={() => setShowAuthModal(false)}
+              style={{
+                position: 'absolute', top: '-48px', right: 0,
+                background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '50%', width: '36px', height: '36px',
+                color: '#fff', fontSize: '18px', cursor: 'pointer', lineHeight: 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >✕</button>
 
             {/* Brand */}
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-              <div style={{ display: 'inline-block', filter: 'drop-shadow(0 6px 24px rgba(34,197,94,0.5))', margin: '0 auto 12px', lineHeight: 0 }}>
+            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+              <div style={{ display: 'inline-block', filter: 'drop-shadow(0 6px 24px rgba(34,197,94,0.5))', margin: '0 auto 10px', lineHeight: 0 }}>
                 <img
                   src="/chengeto-shield.png"
                   alt="Chengeto Shield"
                   style={{
-                    width: '88px',
-                    height: '96px',
-                    objectFit: 'contain',
-                    display: 'block',
+                    width: '64px', height: '70px', objectFit: 'contain', display: 'block',
                     clipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
                     WebkitClipPath: 'polygon(50% 0%, 96% 16%, 97% 50%, 76% 83%, 50% 100%, 24% 83%, 3% 50%, 4% 16%)',
                   }}
                 />
               </div>
-              <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', margin: 0 }}>CHENGETO</h1>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginTop: '4px', fontStyle: 'italic' }}>chengeto : Shona for protection</p>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginTop: '8px', lineHeight: 1.5, maxWidth: '320px', margin: '8px auto 0' }}>
-                Zimbabwe's private university sexual health platform
-              </p>
+              <h1 style={{ fontSize: '26px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', margin: 0 }}>CHENGETO</h1>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px', marginTop: '4px', fontStyle: 'italic' }}>Zimbabwe's private university health platform</p>
             </div>
 
             {/* Card */}
             <div style={{
-              background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(24px)',
+              background: 'rgba(10,20,12,0.92)', backdropFilter: 'blur(24px)',
               borderRadius: '20px', border: '1px solid rgba(255,255,255,0.12)',
-              padding: '32px', boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+              padding: '28px', boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
             }}>
               {/* Tab switcher */}
-              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '4px', marginBottom: '28px', gap: '4px' }}>
-                {[['login','🔐 Sign In'], ['register','✏️ Register']].map(([v,l]) => (
+              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '4px', marginBottom: '24px', gap: '4px' }}>
+                {[['login','🔐 Log In'], ['register','✏️ Sign Up']].map(([v,l]) => (
                   <button key={v} onClick={() => { setAuthView(v); setLoginError(''); setRegError(''); }}
                     style={{
                       flex: 1, padding: '10px', border: 'none', borderRadius: '10px', cursor: 'pointer',
@@ -1045,26 +1058,20 @@ export default function Application() {
               {/* ── LOGIN FORM ── */}
               {authView === 'login' && (
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-                  {/* Privacy badge */}
                   <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '16px' }}>🔒</span>
                     <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.4 }}>No email or student ID required. Your identity stays private.</p>
                   </div>
-
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname</label>
-                    <input
-                      type="text" value={loginNick} onChange={e => setLoginNick(e.target.value)}
+                    <input type="text" value={loginNick} onChange={e => setLoginNick(e.target.value)}
                       placeholder="e.g. Rudo" required autoComplete="username"
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontWeight: 700 }}
-                    />
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontWeight: 700 }} />
                   </div>
-
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Institution</label>
                     <select value={loginInst} onChange={e => setLoginInst(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
                       {INSTITUTION_TYPES.map(t => (
                         <optgroup key={t.id} label={t.label} style={{ background: '#1a2a1a' }}>
                           {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
@@ -1074,35 +1081,28 @@ export default function Application() {
                       ))}
                     </select>
                   </div>
-
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Password</label>
                     <div style={{ position: 'relative' }}>
-                      <input
-                        type={showPw ? 'text' : 'password'} value={loginPw} onChange={e => setLoginPw(e.target.value)}
+                      <input type={showPw ? 'text' : 'password'} value={loginPw} onChange={e => setLoginPw(e.target.value)}
                         placeholder="Enter your password" required autoComplete="current-password"
-                        style={{ width: '100%', padding: '12px 44px 12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                      />
+                        style={{ width: '100%', padding: '12px 44px 12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
                       <button type="button" onClick={() => setShowPw(p => !p)}
                         style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '16px', padding: 0 }}>
                         {showPw ? '🙈' : '👁️'}
                       </button>
                     </div>
                   </div>
-
                   {loginError && (
                     <div style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#FCA5A5' }}>
                       ⚠️ {loginError}
                     </div>
                   )}
-
                   <button type="submit" disabled={loginLoading}
                     style={{ padding: '14px', borderRadius: '12px', border: 'none', background: loginLoading ? 'rgba(34,197,94,0.4)' : 'hsl(152,60%,42%)', color: '#fff', fontWeight: 800, fontSize: '15px', cursor: loginLoading ? 'default' : 'pointer', marginTop: '4px', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
-                    {loginLoading ? '⏳ Signing in...' : '🔐 Sign In to Chengeto'}
+                    {loginLoading ? '⏳ Signing in...' : '🔐 Log In to Chengeto'}
                   </button>
-
-                  {/* Demo credentials */}
-                  <div style={{ marginTop: '8px', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px', border: '1px dashed rgba(255,255,255,0.12)' }}>
+                  <div style={{ marginTop: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '12px 14px', border: '1px dashed rgba(255,255,255,0.12)' }}>
                     <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>🎯 Demo Accounts</p>
                     {AUTH_DEMO_ACCOUNTS.map(a => (
                       <button key={a.key} type="button"
@@ -1118,26 +1118,20 @@ export default function Application() {
               {/* ── REGISTER FORM ── */}
               {authView === 'register' && (
                 <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
-                  {/* Privacy promise */}
                   <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                     <span style={{ fontSize: '16px', marginTop: '1px' }}>🛡️</span>
-                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>We do <strong style={{ color: 'rgba(255,255,255,0.85)' }}>not</strong> collect your name, student ID, or email. Only your nickname and institution are used to identify your account.</p>
+                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>We do <strong style={{ color: 'rgba(255,255,255,0.85)' }}>not</strong> collect your name, student ID, or email. Only your nickname and institution identify your account.</p>
                   </div>
-
-                  {/* Nickname */}
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Nickname <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
                     <input type="text" value={regNick} onChange={e => setRegNick(e.target.value)} placeholder="e.g. Genius, Aisling, TK..." required autoComplete="username"
                       style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
                     <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>This is how Chengeto will greet you. No real name needed.</p>
                   </div>
-
-                  {/* Institution */}
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Institution <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
                     <select value={regInst} onChange={e => setRegInst(e.target.value)}
-                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
+                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
                       {INSTITUTION_TYPES.map(t => (
                         <optgroup key={t.id} label={t.label} style={{ background: '#1a2a1a' }}>
                           {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
@@ -1147,26 +1141,22 @@ export default function Application() {
                       ))}
                     </select>
                   </div>
-
-                  {/* Level + Gender side by side */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
                       <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Level / Year <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
                       <select value={regLevel} onChange={e => setRegLevel(e.target.value)}
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
+                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
                         {STUDY_LEVELS.map(l => <option key={l} value={l} style={{ background: '#1a2a1a' }}>{l}</option>)}
                       </select>
                     </div>
                     <div>
                       <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Gender</label>
                       <select value={regGender} onChange={e => setRegGender(e.target.value)}
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
+                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
                         {GENDERS.map(g => <option key={g.id} value={g.id} style={{ background: '#1a2a1a' }}>{g.label}</option>)}
                       </select>
                     </div>
                   </div>
-
-                  {/* Password */}
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Password <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
                     <input type={showPw ? 'text' : 'password'} value={regPw} onChange={e => setRegPw(e.target.value)} placeholder="Min 6 characters" required autoComplete="new-password"
@@ -1177,18 +1167,14 @@ export default function Application() {
                     <input type={showPw ? 'text' : 'password'} value={regPw2} onChange={e => setRegPw2(e.target.value)} placeholder="Re-enter password" required autoComplete="new-password"
                       style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
-
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
-                    <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)} />
-                    Show passwords
+                    <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)} /> Show passwords
                   </label>
-
                   {regError && (
                     <div style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#FCA5A5' }}>
                       ⚠️ {regError}
                     </div>
                   )}
-
                   <button type="submit"
                     style={{ padding: '13px', borderRadius: '12px', border: 'none', background: 'hsl(152,60%,42%)', color: '#fff', fontWeight: 800, fontSize: '14px', cursor: 'pointer', marginTop: '2px', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
                     ✅ Create My Account
@@ -1199,19 +1185,17 @@ export default function Application() {
                 </form>
               )}
             </div>
-
-            {/* Footer */}
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: '20px' }}>
-              🔒 Private & Secure · Works Offline · Made for Zimbabwe Students
+            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: '16px' }}>
+              🔒 Private &amp; Secure · Works Offline · Made for Zimbabwe Students
             </p>
           </div>
         </div>
       )}
 
+
       {/* ══════════════════════════════════════════════
-          MAIN APP : shown when logged in
+          MAIN APP : always visible
       ══════════════════════════════════════════════ */}
-      {currentUser && (
       <div>
       {/* ── HEADER ── */}
       <header className={`nav-header ${page === "home" ? "home-header" : ""}`}>
@@ -1272,31 +1256,33 @@ export default function Application() {
           >
             {LANG_LABELS[lang].flag} {LANG_LABELS[lang].label}
           </button>
-          {/* User avatar + profile + logout */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
-            <button
-              onClick={openProfilePage}
-              title="Edit your profile"
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '5px 10px 5px 5px', cursor: 'pointer', transition: 'all 0.15s' }}
-            >
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '13px', flexShrink: 0 }}>
-                {(currentUser?.nickname || currentUser?.name || '?').charAt(0).toUpperCase()}
+          {/* ── Header right: Log In / Sign Up OR minimal avatar ── */}
+          {currentUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
+              <div
+                title={`Signed in as ${currentUser.nickname}`}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '14px', flexShrink: 0, cursor: 'default', border: '2px solid rgba(255,255,255,0.15)' }}
+              >
+                {(currentUser?.nickname || '?').charAt(0).toUpperCase()}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.2 }}>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-primary)' }}>
-                  {currentUser?.nickname || currentUser?.name?.split(' ')[0]}
-                </span>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                  {currentUser?.studentId}
-                </span>
-              </div>
-            </button>
-            <button
-              onClick={handleLogout}
-              title="Sign out"
-              style={{ background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '7px 9px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', transition: 'all 0.15s' }}
-            >🚪</button>
-          </div>
+              <button
+                onClick={handleLogout}
+                title="Sign out"
+                style={{ background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '7px 9px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', transition: 'all 0.15s' }}
+              >🚪</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
+              <button
+                onClick={() => { setAuthView('login'); setLoginError(''); setShowAuthModal(true); }}
+                style={{ padding: '8px 18px', borderRadius: '20px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.2px' }}
+              >Log In</button>
+              <button
+                onClick={() => { setAuthView('register'); setRegError(''); setShowAuthModal(true); }}
+                style={{ padding: '8px 18px', borderRadius: '20px', border: 'none', background: 'hsl(152,60%,42%)', color: '#fff', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 10px rgba(34,197,94,0.35)', letterSpacing: '0.2px' }}
+              >Sign Up</button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -3089,8 +3075,7 @@ export default function Application() {
         </div>
       </footer>
       </div>
-      )}
-      
+
       {/* MindMap Modal */}
       {showMindMap && (
         <MindMap 
