@@ -832,7 +832,12 @@ export default function Application() {
   const [podcastLoading, setPodcastLoading]         = useState(false);
   const [podcastSpeed, setPodcastSpeed]             = useState(1);
   const [expandedEpisode, setExpandedEpisode]       = useState(null);
-  const audioRef = useRef(null); // single <audio> element managed in effect
+  const audioRef       = useRef(null); // single <audio> element
+  const audioCtxRef    = useRef(null); // Web Audio API context
+  const analyserRef    = useRef(null); // AnalyserNode for frequency data
+  const sourceRef      = useRef(null); // MediaElementSourceNode
+  const canvasRef      = useRef(null); // visualizer canvas
+  const animFrameRef   = useRef(null); // requestAnimationFrame id
 
   // Initialise / swap audio source when episode changes
   useEffect(() => {
@@ -893,10 +898,124 @@ export default function Application() {
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; } };
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (audioRef.current)  { audioRef.current.pause(); audioRef.current.src = ''; }
+      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') audioCtxRef.current.close();
+    };
   }, []);
 
+  // ── WEB AUDIO VISUALIZER ──
+  // Connects the audio element to an AnalyserNode and draws frequency bars on canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const audio  = audioRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const BAR_COUNT = 60;
+    let frameId;
+
+    const drawBars = (dataArray, bufferLength, accentColor) => {
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const barW = (W / BAR_COUNT) - 1.2;
+      for (let i = 0; i < BAR_COUNT; i++) {
+        // Map BAR_COUNT bars across the lower half of frequency spectrum (more musical)
+        const dataIdx = Math.floor((i / BAR_COUNT) * (bufferLength * 0.6));
+        const rawVal  = dataArray ? dataArray[dataIdx] : 0;
+        // Normalise 0-255 → 0-1, apply slight curve for visual pop
+        const norm    = Math.pow(rawVal / 255, 0.8);
+        const barH    = Math.max(2, norm * H * 0.92);
+        const x       = i * (barW + 1.2);
+        const y       = H - barH;
+
+        // Gradient per bar: bottom = solid accent, top = semi-transparent white
+        const grad = ctx.createLinearGradient(x, y, x, H);
+        grad.addColorStop(0,   'rgba(255,255,255,0.85)');
+        grad.addColorStop(0.4, accentColor + 'DD');
+        grad.addColorStop(1,   accentColor + '55');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
+        ctx.fill();
+      }
+    };
+
+    const drawIdleBars = (accentColor, t) => {
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      const barW = (W / BAR_COUNT) - 1.2;
+      for (let i = 0; i < BAR_COUNT; i++) {
+        const phase = (i / BAR_COUNT) * Math.PI * 3 + t * 1.4;
+        const norm  = (Math.sin(phase) * 0.12 + 0.14);
+        const barH  = Math.max(2, norm * H);
+        const x = i * (barW + 1.2);
+        const y = H - barH;
+        ctx.fillStyle = accentColor + '55';
+        ctx.beginPath();
+        ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
+        ctx.fill();
+      }
+    };
+
+    let t = 0;
+    const tick = () => {
+      frameId = requestAnimationFrame(tick);
+      t += 0.016;
+      const epColor = currentEpisode.coverColor || '#059669';
+
+      if (analyserRef.current && podcastPlaying) {
+        const bufLen = analyserRef.current.frequencyBinCount;
+        const data   = new Uint8Array(bufLen);
+        analyserRef.current.getByteFrequencyData(data);
+        drawBars(data, bufLen, epColor);
+      } else {
+        drawIdleBars(epColor, t);
+      }
+    };
+
+    // Make canvas DPR-sharp
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width  = rect.width  * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    canvas.style.width  = rect.width  + 'px';
+    canvas.style.height = rect.height + 'px';
+
+    frameId = requestAnimationFrame(tick);
+    animFrameRef.current = frameId;
+
+    return () => { cancelAnimationFrame(frameId); };
+  // re-run when playing state or episode changes so colors update
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [podcastPlaying, currentEpisode.id]);
+
+  // Connect HTML Audio element to Web Audio API analyser (once, on first play)
+  const connectAnalyser = () => {
+    if (analyserRef.current) return; // already connected
+    const audio = audioRef.current;
+    if (!audio) return;
+    try {
+      const ac  = new (window.AudioContext || window.webkitAudioContext)();
+      const src = ac.createMediaElementSource(audio);
+      const an  = ac.createAnalyser();
+      an.fftSize            = 256;
+      an.smoothingTimeConstant = 0.78;
+      src.connect(an);
+      an.connect(ac.destination);
+      audioCtxRef.current = ac;
+      analyserRef.current = an;
+      sourceRef.current   = src;
+    } catch(e) { /* AudioContext not available in this environment */ }
+  };
+
   const handlePodcastPlay = (ep) => {
+    connectAnalyser(); // wire up Web Audio on first interaction
     if (currentEpisode.id !== ep.id) {
       setCurrentEpisode(ep);
       setPodcastPlaying(true);
@@ -2517,6 +2636,24 @@ export default function Application() {
                   boxShadow: '0 4px 16px rgba(0,0,0,0.25)', transition: 'transform 0.15s',
                 }}
               >{podcastPlaying ? '⏸️' : '▶️'}</button>
+            </div>
+
+            {/* ── FREQUENCY VISUALIZER CANVAS ── */}
+            <div style={{
+              width: '100%', marginBottom: '14px', marginTop: '4px',
+              borderRadius: '10px', overflow: 'hidden',
+              background: 'rgba(0,0,0,0.18)',
+              backdropFilter: 'blur(4px)',
+            }}>
+              <canvas
+                ref={canvasRef}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  height: '64px',
+                  borderRadius: '10px',
+                }}
+              />
             </div>
 
             {/* Seekable progress bar */}
