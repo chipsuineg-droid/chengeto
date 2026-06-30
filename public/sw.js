@@ -1,9 +1,12 @@
-const CACHE_NAME = 'chengeto-cache-v1';
+const CACHE_NAME = 'chengeto-cache-v2';
+
+// We want to aggressively cache everything on the first visit
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './icon.svg',
-  './manifest.json'
+  './manifest.json',
+  // Dynamic assets (JS/CSS) will be cached as they are requested
 ];
 
 // Install Event: Cache app shell
@@ -32,49 +35,60 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event: Stale-while-revalidate strategy
+// Fetch Event: Cache-First for static assets, Network-First for dynamic data
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests and ignore chrome-extension / non-http requests
+  // Only handle GET requests and ignore non-http requests
   if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Return cached response immediately
-        // Fetch new version in the background to update cache
-        fetch(event.request).then((networkResponse) => {
+  // Determine if this is a static asset or a navigation request
+  const isStaticAsset = event.request.url.match(/\.(js|css|svg|png|jpg|jpeg|woff|woff2)$/i);
+  const isNavigation = event.request.mode === 'navigate';
+
+  if (isStaticAsset) {
+    // Cache First Strategy for static assets
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, networkResponse);
+              cache.put(event.request, responseToCache);
             });
           }
+          return networkResponse;
+        }).catch(() => {
+          console.log('[Service Worker] Static asset fetch failed');
+        });
+      })
+    );
+  } else {
+    // Stale-While-Revalidate for everything else (HTML, JSON, etc)
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        const networkFetch = fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
         }).catch((err) => {
           console.log('[Service Worker] Background fetch failed (offline):', err);
         });
-        
-        return cachedResponse;
-      }
 
-      // If not in cache, fetch from network and add to cache
-      return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
-        }
-
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
+        // Return cached immediately if available, otherwise wait for network
+        return cachedResponse || networkFetch.catch(() => {
+          if (isNavigation) {
+            return caches.match('./index.html');
+          }
         });
-
-        return networkResponse;
-      }).catch(() => {
-        // Fallback for offline if page request fails
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
-    })
-  );
+      })
+    );
+  }
 });

@@ -7,6 +7,14 @@ import { pregMindMapData } from './data/pregMindMapData';
 import { getBotResponse } from './data/botEngine';
 import { HIV_PREVENTION_METHODS, HIV_PREVENTION_CATEGORIES } from './data/hivPreventionMethods';
 import { PREG_PREVENTION_METHODS, PREG_PREVENTION_CATEGORIES } from './data/pregPreventionMethods';
+import HealthTracker from './components/HealthTracker';
+import HealthTutor from './components/HealthTutor';
+import UserProfile from './components/UserProfile';
+import UtanoCommunity from './components/UtanoCommunity';
+import OnlineDoc from './components/OnlineDoc';
+import { HEALTH_ALERTS } from './data/alerts';
+import { HEALTH_MODULES } from './data/healthModules';
+import { sanitizePrompt } from './utils/privacyLayer';
 
 // ── LANGUAGES ──
 const LANG_LABELS = {
@@ -63,15 +71,9 @@ const GENDERS = [
 
 
 // ── AUTH UTILITIES (privacy-first: no student ID, no email, no full name) ──
-// Unique account key = nickname + institution (lowercase, trimmed)
-const makeAccountKey = (nickname, institution) =>
-  `${nickname.trim().toLowerCase()}@${institution}`;
-
-const AUTH_DEMO_ACCOUNTS = [
-  { key: "rudo@uz",    nickname: "Rudo",    institution: "uz",   level: "Year 2",  gender: "female",         password: "chengeto2024", avatarColor: '#059669' },
-  { key: "tatenda@nust", nickname: "Tatenda", institution: "nust", level: "Year 3",  gender: "male",           password: "health123",   avatarColor: '#7C3AED' },
-  { key: "thembi@msu",  nickname: "Thembi",  institution: "msu",  level: "Part 1",  gender: "female",         password: "protect123",  avatarColor: '#DB2777' },
-];
+// Unique account key = nickname only (no institution)
+const makeAccountKey = (nickname) =>
+  nickname.trim().toLowerCase().replace(/\s+/g, '_');
 
 const getStoredUsers = () => {
   try { return JSON.parse(localStorage.getItem("chengeto_users") || "[]"); } catch(e) { return []; }
@@ -83,25 +85,22 @@ const getSession = () => {
 const saveSession = (user) => localStorage.setItem("chengeto_session", JSON.stringify(user));
 const clearSession = () => localStorage.removeItem("chengeto_session");
 
-const validateLogin = (nickname, institution, password) => {
-  const key = makeAccountKey(nickname, institution);
-  const demo = AUTH_DEMO_ACCOUNTS.find(a => a.key === key && a.password === password);
-  if (demo) return { ...demo };
+const validateLogin = (nickname, password) => {
+  const key = makeAccountKey(nickname);
   const stored = getStoredUsers();
   const user = stored.find(u => u.key === key && u.password === password);
   return user || null;
 };
 
-const registerUser = (nickname, institution, level, gender, password) => {
+const registerUser = (nickname, phone, gender, password) => {
   const nick = nickname.trim();
-  const key  = makeAccountKey(nick, institution);
+  const key  = makeAccountKey(nick);
   if (nick.length < 2)    return { error: "Nickname must be at least 2 characters." };
   if (password.length < 6) return { error: "Password must be at least 6 characters." };
-  const all = [...AUTH_DEMO_ACCOUNTS, ...getStoredUsers()];
-  if (all.find(u => u.key === key)) return { error: "This nickname is already taken at that institution. Try a different nickname." };
-  const newUser = { key, nickname: nick, institution, level, gender, password, avatarColor: '#059669' };
-  const users = getStoredUsers();
-  saveUsers([...users, newUser]);
+  const all = getStoredUsers();
+  if (all.find(u => u.key === key)) return { error: "This nickname is already taken. Try a different one." };
+  const newUser = { key, nickname: nick, phone: phone.trim(), gender, password, avatarColor: '#059669', comorbidities: [], healthLiteracy: 'basic', medications: [] };
+  saveUsers([...all, newUser]);
   return { user: newUser };
 };
 
@@ -700,8 +699,18 @@ const TESTIMONIALS = [
 
 export default function Application() {
   const [page, setPage] = useState("home");
+  const [randomAlert, setRandomAlert] = useState(() => HEALTH_ALERTS[Math.floor(Math.random() * HEALTH_ALERTS.length)]);
+
+  useEffect(() => {
+    // Automatically rotate the bulletin every 8 seconds
+    const interval = setInterval(() => {
+      setRandomAlert(HEALTH_ALERTS[Math.floor(Math.random() * HEALTH_ALERTS.length)]);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [activeArticle, setActiveArticle] = useState(null);
   const testimonialScrollRef = useRef(null);
   const testimonialAutoplayActive = useRef(true);
 
@@ -822,19 +831,18 @@ export default function Application() {
   const PORTAL_PASSWORD = 'chengeto2025'; // portal-level access password
   // Login form
   const [loginNick, setLoginNick] = useState("");
-  const [loginInst, setLoginInst] = useState("uz");
   const [loginPw,   setLoginPw]   = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   // Register form
   const [regNick,    setRegNick]    = useState("");
-  const [regInst,    setRegInst]    = useState("uz");
-  const [regLevel,   setRegLevel]   = useState("Year 1");
+  const [regPhone,   setRegPhone]   = useState("");
   const [regGender,  setRegGender]  = useState("prefer-not-say");
   const [regPw,      setRegPw]      = useState("");
   const [regPw2,     setRegPw2]     = useState("");
   const [regError,   setRegError]   = useState("");
   const [showPw,     setShowPw]     = useState(false);
+  const [gatedPage,  setGatedPage]  = useState(null); // page to go to after auth
 
   // ── PORTAL ACCESS HANDLER ──
   const handlePortalAccess = () => {
@@ -879,13 +887,14 @@ export default function Application() {
     setLoginError("");
     setLoginLoading(true);
     setTimeout(() => {
-      const user = validateLogin(loginNick, loginInst, loginPw);
+      const user = validateLogin(loginNick, loginPw);
       if (user) {
         saveSession(user);
         setCurrentUser(user);
         setShowAuthModal(false);
+        if (gatedPage) { setPage(gatedPage); setGatedPage(null); }
       } else {
-        setLoginError("Nickname, institution, or password is incorrect. Please try again.");
+        setLoginError("Nickname or password is incorrect. Please try again.");
       }
       setLoginLoading(false);
     }, 800);
@@ -895,11 +904,24 @@ export default function Application() {
     e.preventDefault();
     setRegError("");
     if (regPw !== regPw2) { setRegError("Passwords do not match."); return; }
-    const result = registerUser(regNick, regInst, regLevel, regGender, regPw);
+    const result = registerUser(regNick, regPhone, regGender, regPw);
     if (result.error) { setRegError(result.error); return; }
     saveSession(result.user);
     setCurrentUser(result.user);
     setShowAuthModal(false);
+    if (gatedPage) { setPage(gatedPage); setGatedPage(null); }
+  };
+
+  // ── AUTH GATE: Redirect to login if not signed in ──
+  const requireAuth = (targetPage) => {
+    if (currentUser) {
+      setPage(targetPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      setGatedPage(targetPage);
+      setAuthView('login');
+      setShowAuthModal(true);
+    }
   };
 
   const handleLogout = () => {
@@ -1310,7 +1332,7 @@ export default function Application() {
   };
 
   // Chat bot logic — scenario-based clinical engine
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
@@ -1321,14 +1343,37 @@ export default function Application() {
     // Show typing indicator
     setChatMessages(prev => [...prev, { sender: 'bot', text: '...', isTyping: true }]);
 
-    setTimeout(() => {
-      const nickname = currentUser?.nickname || null;
-      const answer = getBotResponse(userText, nickname);
-      setChatMessages(prev => {
-        const withoutTyping = prev.filter(m => !m.isTyping);
-        return [...withoutTyping, { sender: 'bot', text: answer }];
+    // 1. PRIVACY LAYER: Intercept and sanitize the prompt before it "leaves" the browser
+    const sanitizedText = sanitizePrompt(userText);
+    console.log("[Privacy Layer] Original:", userText);
+    console.log("[Privacy Layer] Sanitized for API:", sanitizedText);
+
+    // 2. AI API Integration (Mock/Fallback)
+    let answer = "";
+    try {
+      // ⚠️ In a real scenario, this would be a fetch to an AI API.
+      // E.g.: fetch('https://api.openai.com/v1/chat/completions', { ... })
+      // Since we don't have an API key and are running entirely client-side,
+      // we will simulate the AI delay and fallback to our local botEngine.
+      
+      const simulateApiCall = new Promise((resolve) => {
+        setTimeout(() => {
+          const nickname = currentUser?.nickname || null;
+          resolve(getBotResponse(sanitizedText, nickname));
+        }, 1200);
       });
-    }, 900);
+      
+      answer = await simulateApiCall;
+      
+    } catch (error) {
+      console.error("[AI Engine Error]", error);
+      answer = "I'm having trouble connecting to the AI engine right now. Please try again later.";
+    }
+
+    setChatMessages(prev => {
+      const withoutTyping = prev.filter(m => !m.isTyping);
+      return [...withoutTyping, { sender: 'bot', text: answer }];
+    });
   };
 
   // Commodity code generator
@@ -1606,28 +1651,20 @@ export default function Application() {
               {/* ── LOGIN FORM ── */}
               {authView === 'login' && (
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {gatedPage && (
+                    <div style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '10px', padding: '10px 14px', fontSize: '12px', color: '#FCD34D', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span>🔒</span> Sign in to access this feature.
+                    </div>
+                  )}
                   <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '16px' }}>🔒</span>
-                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.4 }}>No email or student ID required. Your identity stays private.</p>
+                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.4 }}>No email or ID required. Just your nickname.</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname</label>
                     <input type="text" value={loginNick} onChange={e => setLoginNick(e.target.value)}
-                      placeholder="e.g. Rudo" required autoComplete="username"
+                      placeholder="e.g. Taps" required autoComplete="username"
                       style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontWeight: 700 }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Institution</label>
-                    <select value={loginInst} onChange={e => setLoginInst(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                      {INSTITUTION_TYPES.map(t => (
-                        <optgroup key={t.id} label={t.label} style={{ background: '#1a2a1a' }}>
-                          {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
-                            <option key={i.id} value={i.id} style={{ background: '#1a2a1a', color: '#fff' }}>{i.name}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
                   </div>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Password</label>
@@ -1650,16 +1687,6 @@ export default function Application() {
                     style={{ padding: '14px', borderRadius: '12px', border: 'none', background: loginLoading ? 'rgba(34,197,94,0.4)' : 'hsl(152,60%,42%)', color: '#fff', fontWeight: 800, fontSize: '15px', cursor: loginLoading ? 'default' : 'pointer', marginTop: '4px', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
                     {loginLoading ? '⏳ Signing in...' : '🔐 Log In to Chengeto'}
                   </button>
-                  <div style={{ marginTop: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '12px 14px', border: '1px dashed rgba(255,255,255,0.12)' }}>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>🎯 Demo Accounts</p>
-                    {AUTH_DEMO_ACCOUNTS.map(a => (
-                      <button key={a.key} type="button"
-                        onClick={() => { setLoginNick(a.nickname); setLoginInst(a.institution); setLoginPw(a.password); }}
-                        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '7px 10px', marginBottom: '5px', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>
-                        <strong style={{ color: 'hsl(152,60%,72%)' }}>{a.nickname}</strong> · {INSTITUTIONS.find(i => i.id === a.institution)?.name} · pw: <code style={{ color: 'hsl(50,100%,72%)' }}>{a.password}</code>
-                      </button>
-                    ))}
-                  </div>
                 </form>
               )}
 
@@ -1668,42 +1695,26 @@ export default function Application() {
                 <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                     <span style={{ fontSize: '16px', marginTop: '1px' }}>🛡️</span>
-                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>We do <strong style={{ color: 'rgba(255,255,255,0.85)' }}>not</strong> collect your name, student ID, or email. Only your nickname and institution identify your account.</p>
+                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>We do <strong style={{ color: 'rgba(255,255,255,0.85)' }}>not</strong> collect your name or student ID. Only your nickname is used.</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Nickname <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
-                    <input type="text" value={regNick} onChange={e => setRegNick(e.target.value)} placeholder="e.g. Genius, Aisling, TK..." required autoComplete="username"
+                    <input type="text" value={regNick} onChange={e => setRegNick(e.target.value)} placeholder="e.g. Taps, Grace, Simba..." required autoComplete="username"
                       style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
-                    <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>This is how Chengeto will greet you. No real name needed.</p>
+                    <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>This is how Chengeto greets you. No real name needed.</p>
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Institution <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
-                    <select value={regInst} onChange={e => setRegInst(e.target.value)}
-                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
-                      {INSTITUTION_TYPES.map(t => (
-                        <optgroup key={t.id} label={t.label} style={{ background: '#1a2a1a' }}>
-                          {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
-                            <option key={i.id} value={i.id} style={{ background: '#1a2a1a', color: '#fff' }}>{i.name}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Phone Number <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 400, textTransform: 'none', fontSize: '10px' }}>(optional)</span></label>
+                    <input type="tel" value={regPhone} onChange={e => setRegPhone(e.target.value)} placeholder="+263 77 123 4567"
+                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                    <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.35)', marginTop: '4px' }}>Used only for appointment reminders. Never shared.</p>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Level / Year <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
-                      <select value={regLevel} onChange={e => setRegLevel(e.target.value)}
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
-                        {STUDY_LEVELS.map(l => <option key={l} value={l} style={{ background: '#1a2a1a' }}>{l}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Gender</label>
-                      <select value={regGender} onChange={e => setRegGender(e.target.value)}
-                        style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
-                        {GENDERS.map(g => <option key={g.id} value={g.id} style={{ background: '#1a2a1a' }}>{g.label}</option>)}
-                      </select>
-                    </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Gender</label>
+                    <select value={regGender} onChange={e => setRegGender(e.target.value)}
+                      style={{ width: '100%', padding: '11px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(18,32,20,0.95)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}>
+                      {GENDERS.map(g => <option key={g.id} value={g.id} style={{ background: '#1a2a1a' }}>{g.label}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Password <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
@@ -1728,7 +1739,7 @@ export default function Application() {
                     ✅ Create My Account
                   </button>
                   <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>
-                    Your data stays on this device. Chengeto does not collect or share personal information.
+                    Your data stays on this device. Chengeto does not share personal information.
                   </p>
                 </form>
               )}
@@ -1777,17 +1788,20 @@ export default function Application() {
           <button onClick={() => { setPage("home"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "home" ? "active" : ""}`}>
             🏠 <span>Home</span>
           </button>
-          <button onClick={() => { setPage("hiv"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "hiv" ? "active" : ""}`}>
-            🛡️ <span>HIV</span>
+          <button onClick={() => requireAuth('biometrics')} className={`nav-button ${page === "biometrics" ? "active" : ""}`}>
+            💓 <span>Health Tracker</span>
           </button>
-          <button onClick={() => { setPage("pregnancy"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "pregnancy" ? "active" : ""}`}>
-            🌸 <span>Pregnancy</span>
+          <button onClick={() => { setPage("tutor"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "tutor" ? "active" : ""}`}>
+            📚 <span>Health Tutor</span>
           </button>
-          <button onClick={() => { setPage("compare"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "compare" ? "active" : ""}`}>
-            ⚖️ <span>Compare</span>
+          <button onClick={() => requireAuth('community')} className={`nav-button ${page === "community" ? "active" : ""}`}>
+            🤝 <span>Community</span>
           </button>
           <button onClick={() => { setPage("directory"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "directory" ? "active" : ""}`}>
             📍 <span>Services</span>
+          </button>
+          <button onClick={() => { setPage("onlinedoc"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "onlinedoc" ? "active" : ""}`}>
+            👨‍⚕️ <span>Online Doc</span>
           </button>
           <button onClick={() => { setPage("podcast"); setHivTab("main"); setPregTab("main"); }} className={`nav-button ${page === "podcast" ? "active" : ""}`}>
             🎙️ <span>Podcast</span>
@@ -1807,12 +1821,13 @@ export default function Application() {
           {/* ── Header right: Log In / Sign Up OR minimal avatar ── */}
           {currentUser ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px', paddingLeft: '12px', borderLeft: '1px solid var(--color-border)' }}>
-              <div
-                title={`Signed in as ${currentUser.nickname}`}
-                style={{ width: '32px', height: '32px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '14px', flexShrink: 0, cursor: 'default', border: '2px solid rgba(255,255,255,0.15)' }}
+              <button
+                onClick={() => setPage("profile")}
+                title={`Signed in as ${currentUser.nickname} (Click to open Dashboard)`}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', background: currentUser?.avatarColor || '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '14px', flexShrink: 0, cursor: 'pointer', border: '2px solid rgba(255,255,255,0.15)', padding: 0 }}
               >
                 {(currentUser?.nickname || '?').charAt(0).toUpperCase()}
-              </div>
+              </button>
               <button
                 onClick={handleLogout}
                 title="Sign out"
@@ -1837,8 +1852,48 @@ export default function Application() {
       {/* ── HOME VIEW ── */}
       {page === "home" && (
         <div className="animate-fade-in">
+          {/* ── PREDICTIVE ALERTS BANNER (Moved inside hero) ── */}
+
           {/* Hero section */}
           <section className="hero-banner">
+            {/* Random Alert Banner Overlay */}
+            {randomAlert && (
+              <div 
+                onClick={() => { setActiveArticle(randomAlert); setPage("article"); }}
+                title="Click to open full Health News Bulletin"
+                style={{ 
+                  position: 'absolute',
+                  top: '74px', // Clears the absolute home-header
+                  left: '0',
+                  right: '0',
+                  padding: '12px 20px', 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  cursor: 'pointer',
+                  zIndex: 10,
+                  transition: 'background 0.2s',
+                  color: 'rgba(255,255,255,0.95)',
+                  fontSize: '14px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.6)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.4)'}
+              >
+                <span style={{ fontSize: '18px' }}>{randomAlert.icon}</span>
+                <span style={{ fontWeight: 800 }}>{randomAlert.title[lang] || randomAlert.title.en}:</span>
+                <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis' }}>{randomAlert.message[lang] || randomAlert.message.en}</span>
+                <span style={{ marginLeft: '12px', fontSize: '11px', fontWeight: 800, color: randomAlert.borderColor, textTransform: 'uppercase' }}>
+                  Click to read →
+                </span>
+              </div>
+            )}
             {/* ── PERSONALISED GREETING pill overlay ── */}
             {(() => {
               const hour = new Date().getHours();
@@ -1877,10 +1932,10 @@ export default function Application() {
             </p>
             <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button 
-                onClick={handlePortalAccess} 
+                onClick={() => setPage("bulletin")} 
                 className="breathe-btn"
               >
-                📦 Commodity Portal
+                📰 Health News Bulletin
               </button>
               <button 
                 onClick={() => setShowChatComingSoon(true)} 
@@ -1972,6 +2027,16 @@ export default function Application() {
                 </p>
                 <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Start Quiz →</span>
               </div>
+
+              {/* Card 4 - Biometric Tracker */}
+              <div className="glass-card" onClick={() => setPage("biometrics")} style={{ cursor: 'pointer' }}>
+                <div style={{ fontSize: '36px', marginBottom: '12px' }}>💓</div>
+                <h3 style={{ fontSize: '18px', color: 'var(--color-primary)', marginBottom: '8px' }}>Health Tracker</h3>
+                <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                  Log your blood pressure, sugar, and weight privately offline. Track your progress with clear graphs.
+                </p>
+                <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-accent)' }}>Track Now →</span>
+              </div>
             </div>
           </div>
 
@@ -2007,6 +2072,28 @@ export default function Application() {
             </div>
           </div>
 
+          {/* Expanded Health Content Modules */}
+          <div style={{ padding: '0 24px 60px 24px', maxWidth: '1000px', margin: '0 auto' }}>
+            <h2 style={{ textAlign: 'center', fontSize: '24px', color: 'var(--color-primary)', marginBottom: '32px' }}>General Health & Wellness</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+              {HEALTH_MODULES.map(mod => (
+                <div key={mod.id} style={{ background: 'var(--color-bg-surface)', padding: '24px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '30px' }}>{mod.icon}</span>
+                    <h3 style={{ color: mod.color, fontWeight: 700, fontSize: '18px', margin: 0 }}>{mod.title[lang] || mod.title.en}</h3>
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: 0 }}>{mod.description[lang] || mod.description.en}</p>
+                  {mod.articles.length > 0 && (
+                    <div style={{ marginTop: 'auto' }}>
+                      <button className="btn" style={{ width: '100%', padding: '8px', fontSize: '12px', background: 'transparent', border: `1px solid ${mod.color}`, color: mod.color, cursor: 'pointer', borderRadius: 'var(--radius-md)' }}>
+                        Explore Articles →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* ── TESTIMONIALS SECTION ── */}
           <section className="testimonials-section">
@@ -2616,7 +2703,38 @@ export default function Application() {
         </div>
       )}
 
-      {/* ── PREGNANCY SECTION VIEW ── */}
+      {/* ── ARTICLE VIEW ── */}
+      {page === "article" && activeArticle && (
+        <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '750px', margin: '0 auto', minHeight: '80vh' }}>
+          <button 
+            className="nav-button" 
+            style={{ marginBottom: '24px', padding: '8px 16px', fontSize: '14px', background: 'var(--color-bg-surface)' }}
+            onClick={() => setPage("bulletin")}
+          >
+            &larr; Back to Bulletins
+          </button>
+          
+          <div className="glass-card" style={{ padding: '40px', borderTop: `6px solid ${activeArticle.borderColor}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+              <span style={{ fontSize: '48px' }}>{activeArticle.icon}</span>
+              <div>
+                <span style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', padding: '6px 12px', borderRadius: '12px', background: activeArticle.bgColor, color: activeArticle.borderColor, marginBottom: '8px', display: 'inline-block' }}>
+                  {activeArticle.type} Alert
+                </span>
+                <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 800, color: 'var(--color-text-main)' }}>
+                  {activeArticle.title[lang] || activeArticle.title.en}
+                </h1>
+              </div>
+            </div>
+            
+            <div style={{ fontSize: '16px', color: 'var(--color-text-main)', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+              {activeArticle.article ? (activeArticle.article[lang] || activeArticle.article.en) : (activeArticle.message[lang] || activeArticle.message.en)}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── PREGNANCY & MATERNAL HEALTH ── */}
       {page === "pregnancy" && (
         <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '1000px', margin: '0 auto' }}>
 
@@ -3171,109 +3289,12 @@ export default function Application() {
 
       {/* ── PROFILE VIEW ── */}
       {page === "profile" && (
-        <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '600px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h2 style={{ fontSize: '28px', color: 'var(--color-primary)', marginBottom: '8px' }}>Your Profile</h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Your identity stays private — only your nickname is visible.</p>
-          </div>
-
-          <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-            {/* Avatar & Colors */}
-            <div className="glass-card">
-              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '16px', fontWeight: 800 }}>Avatar Color</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: profColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '32px', flexShrink: 0, boxShadow: `0 8px 24px ${profColor}50`, transition: 'background 0.3s' }}>
-                  {(profNickname || '?').charAt(0).toUpperCase()}
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
-                  {AVATAR_COLORS.map(c => (
-                    <button key={c.color} type="button" onClick={() => setProfColor(c.color)} title={c.label}
-                      style={{ width: '32px', height: '32px', borderRadius: '50%', background: c.color, border: profColor === c.color ? '3px solid #fff' : 'none', cursor: 'pointer', outline: profColor === c.color ? `2px solid ${c.color}` : 'none', transition: 'all 0.15s' }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Profile Information */}
-            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Profile Information</h3>
-
-              {/* Nickname */}
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Nickname</label>
-                <input type="text" value={profNickname} onChange={e => setProfNickname(e.target.value)} placeholder="e.g. Genius" required
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', fontWeight: 700, outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* Institution */}
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Institution</label>
-                <select value={profInst} onChange={e => setProfInst(e.target.value)}
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                  {INSTITUTION_TYPES.map(t => (
-                    <optgroup key={t.id} label={t.label}>
-                      {INSTITUTIONS.filter(i => i.type === t.id).map(i => (
-                        <option key={i.id} value={i.id}>{i.name}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-
-              {/* Level + Gender */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Level / Year</label>
-                  <select value={profLevel} onChange={e => setProfLevel(e.target.value)}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                    {STUDY_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Gender</label>
-                  <select value={profGender} onChange={e => setProfGender(e.target.value)}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}>
-                    {GENDERS.map(g => <option key={g.id} value={g.id}>{g.label}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Security */}
-            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h3 style={{ fontSize: '15px', color: 'var(--color-text-main)', marginBottom: '4px', fontWeight: 800 }}>Change Password</h3>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '-8px' }}>Leave blank to keep your current password.</p>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>Current Password</label>
-                <input type="password" value={profPwCurrent} onChange={e => setProfPwCurrent(e.target.value)} placeholder="Required to change password"
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>New Password</label>
-                <input type="password" value={profPwNew} onChange={e => setProfPwNew(e.target.value)} placeholder="Min 6 characters"
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-bg-base)', color: 'var(--color-text-main)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-            </div>
-
-            {profPwErr && (
-              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#DC2626' }}>
-                ⚠️ {profPwErr}
-              </div>
-            )}
-            {profSaved && (
-              <div className="animate-fade-in" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', color: '#15803d', textAlign: 'center', fontWeight: 700 }}>
-                ✅ Profile updated successfully!
-              </div>
-            )}
-
-            <button type="submit"
-              style={{ padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--color-primary)', color: '#fff', fontWeight: 800, fontSize: '15px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
-              💾 Save Profile Changes
-            </button>
-          </form>
-        </div>
+        <UserProfile 
+          currentUser={currentUser} 
+          setCurrentUser={setCurrentUser} 
+          updateUserProfile={updateUserProfile} 
+          setPage={setPage} 
+        />
       )}
 
       {page === "compare" && (
@@ -3637,6 +3658,57 @@ export default function Application() {
         </div>
       )}
 
+      {/* ── HEALTH TUTOR VIEW ── */}
+      {page === "tutor" && (
+        <HealthTutor lang={lang} setPage={setPage} />
+      )}
+
+      {/* ── HEALTH NEWS BULLETIN VIEW ── */}
+      {page === "bulletin" && (
+        <div className="animate-fade-in" style={{ padding: '40px 24px', maxWidth: '800px', margin: '0 auto', minHeight: '80vh' }}>
+          <h2 style={{ fontSize: '28px', color: 'var(--color-primary)', textAlign: 'center', marginBottom: '8px' }}>📰 Health News Bulletin</h2>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', textAlign: 'center', marginBottom: '32px' }}>
+            Seasonal updates, critical health warnings, and news to keep you safe and informed.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {HEALTH_ALERTS.map(alert => (
+              <div key={alert.id} className="glass-card" style={{ borderLeft: `6px solid ${alert.borderColor}`, padding: '24px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '32px' }}>{alert.icon}</span>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--color-text-main)' }}>{alert.title[lang] || alert.title.en}</h3>
+                    <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', padding: '4px 8px', borderRadius: '12px', background: alert.bgColor, color: alert.borderColor }}>
+                      {alert.type}
+                    </span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
+                    {alert.message[lang] || alert.message.en}
+                  </p>
+                  <button 
+                    className="primary-button" 
+                    style={{ marginTop: '16px', padding: '8px 16px', fontSize: '13px' }}
+                    onClick={() => { setActiveArticle(alert); setPage("article"); }}
+                  >
+                    Read Full Article &rarr;
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── UTANO COMMUNITY VIEW ── */}
+      {page === "community" && (
+        <UtanoCommunity lang={lang} currentUser={currentUser} setPage={setPage} />
+      )}
+
+      {/* ── ONLINE DOCTOR VIEW ── */}
+      {page === "onlinedoc" && (
+        <OnlineDoc lang={lang} currentUser={currentUser} setPage={setPage} />
+      )}
+
       {/* ── CHATBOT VIEW ── */}
       {page === "chat" && (
         <div className="animate-fade-in" style={{ padding: '40px 24px' }}>
@@ -3681,6 +3753,11 @@ export default function Application() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* ── BIOMETRICS TRACKER VIEW ── */}
+      {page === "biometrics" && (
+        <HealthTracker setPage={setPage} />
       )}
 
       {/* ── CYCLE TRACKER VIEW ── */}
