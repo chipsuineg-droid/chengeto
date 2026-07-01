@@ -3879,12 +3879,9 @@ export default function Application() {
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '40px', paddingTop: '20px', textAlign: 'center' }}>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px' }}>
-            CHENGETO : Part of the MASCOT mHealth Tool | Developed by Team CHENGETO | University of Zimbabwe
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginTop: '4px' }}>
-            Powered by CeSHHAR Zimbabwe & MASCOT Study | NIHR Funded
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '40px', paddingTop: '20px', textAlign: 'center', paddingBottom: '20px' }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
+            Chengeto powered by PodMyth
           </p>
         </div>
       </footer>
