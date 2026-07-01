@@ -1105,3 +1105,42 @@ h1, h2, h3, h4, h5, h6 {
 .ticker { display: inline-block; white-space: nowrap; padding-left: 100%; animation: ticker 25s linear infinite; font-size: 13px; font-weight: 700; color: var(--color-primary); }
 .ticker:hover { animation-play-state: paused; }
 @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+/* Health Tracker Additional Styles */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.primary-button {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px 24px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.primary-button:hover {
+  background: #0EA5E9; /* Slightly lighter shade for hover, assuming primary is blue/teal */
+  transform: translateY(-1px);
+}
+.primary-button:active {
+  transform: translateY(0);
+}

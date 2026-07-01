@@ -23,8 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-# Audio files — too large for GitHub, serve locally or via CDN
+# Audio files ï¿½ too large for GitHub, serve locally or via CDN
 public/audio/*.m4a
 public/audio/*.mp3
 public/audio/*.wav
 
+.vercel
