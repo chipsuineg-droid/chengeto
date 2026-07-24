@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const SPECIALTIES = [
   { id: 'general', icon: '🩺', name: 'General Practitioner', desc: 'Common illnesses, checkups, referrals', color: '#22C55E' },
   { id: 'mental', icon: '🧠', name: 'Mental Health Counsellor', desc: 'Stress, anxiety, depression, trauma', color: '#A855F7' },
-  { id: 'sexual', icon: '🛡️', name: 'Sexual Health Advisor', desc: 'HIV, STIs, contraception, PrEP/PEP', color: '#06B6D4' },
+  { id: 'sexual', icon: '🛡️', name: 'Reproductive Health Advisor', desc: 'HIV, STIs, contraception, reproductive care', color: '#06B6D4' },
   { id: 'maternal', icon: '🤰', name: 'Maternal Health Specialist', desc: 'Pregnancy, antenatal, postnatal care', color: '#EC4899' },
   { id: 'nutrition', icon: '🥗', name: 'Nutrition Counsellor', desc: 'Diet, weight, diabetes, lifestyle', color: '#F59E0B' },
 ];

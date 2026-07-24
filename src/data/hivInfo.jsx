@@ -167,13 +167,13 @@ export const HIV_INFO_SECTIONS = [
           </p>
         </div>
         <p style={{ marginBottom: '12px', lineHeight: 1.7 }}>
-          When a person with HIV takes their treatment consistently and achieves an <strong>undetectable viral load</strong>, they <strong>cannot pass HIV</strong> to a sexual partner. This is proven by science.
+          When a person with HIV takes their treatment consistently and achieves an <strong>undetectable viral load</strong>, they <strong>cannot pass HIV</strong> to a partner. This is proven by science.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {[
             '🧪 Undetectable means the virus level in blood is too low to detect',
             '💊 This happens with consistent ART (antiretroviral therapy)',
-            '❤️ Zero risk of sexual transmission when undetectable',
+            '🛡️ Zero risk of transmission when undetectable',
             '🌍 U=U is accepted by WHO, UNAIDS, and global health organisations',
           ].map((point, i) => (
             <p key={i} style={{ padding: '10px 14px', background: 'rgba(5,150,105,0.08)', borderRadius: '10px', fontSize: '13.5px', lineHeight: 1.6 }}>{point}</p>
@@ -231,7 +231,7 @@ export const HIV_INFO_SECTIONS = [
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {[
-            { icon: '🌍', text: 'HIV can affect anyone — regardless of gender, age, or sexual orientation.' },
+            { icon: '🌍', text: 'HIV can affect anyone - regardless of gender, age, or background.' },
             { icon: '💊', text: 'ART (Antiretroviral Therapy) is the treatment for HIV. It keeps the virus under control.' },
             { icon: '❤️', text: 'People on treatment live long, full, healthy lives — just like anyone else.' },
             { icon: '🔬', text: 'There is no cure yet, but HIV is 100% manageable and 100% preventable.' },

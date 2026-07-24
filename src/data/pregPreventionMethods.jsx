@@ -123,7 +123,7 @@ export const PREG_PREVENTION_METHODS = [
         "Do not build up hormones in a woman’s body.",
         "Do not make women infertile.",
         "Do not cause birth defects or multiple births.",
-        "Do not change women’s sexual behaviour.",
+        "Do not change intimate behaviour.",
         "Do not collect in the stomach.",
         "Do not disrupt an existing pregnancy."
       ]
@@ -243,10 +243,10 @@ export const PREG_PREVENTION_METHODS = [
     icon: "🧤",
     urgent: false,
     dual: true,
-    tagline: "A barrier contraception method for preventing pregnancy and sexually transmitted infections.",
+    tagline: "A barrier contraception method for preventing pregnancy and STIs.",
     effectiveness: 98,
     detail: {
-      description: "The male condom is a barrier contraception method for preventing pregnancy and sexually transmitted infections including HIV.",
+      description: "The male condom is a barrier contraception method for preventing pregnancy and STIs including HIV.",
       formOfUse: "Worn over the penis.",
       howItWorks: [
         "Creates a physical barrier that prevents sperm from fertilizing an egg.",
@@ -255,12 +255,12 @@ export const PREG_PREVENTION_METHODS = [
       howToUse: [
         "Place condom at tip of erect penis.",
         "Pinch the tip to leave space for semen.",
-        "Roll down to base before sexual contact.",
+        "Roll down to base before intimate contact.",
         "Hold base after ejaculation while pulling out.",
         "Dispose properly."
       ],
       frequency: [
-        "Use every time before sexual activity."
+        "Use every time before activity."
       ],
       effectiveness: "About 13 pregnancies per 100 women with common use. About 2 pregnancies per 100 women with correct use. 98% effective when used correctly.",
       sideEffects: [
@@ -597,7 +597,7 @@ export const PREG_PREVENTION_METHODS = [
       ],
       misunderstandings: [
         "Does not remove a woman’s organs.",
-        "Does not affect sexual pleasure.",
+        "Does not affect pleasure.",
         "Does not make women weak.",
         "Does not immediately cause menopause."
       ]
@@ -644,7 +644,7 @@ export const PREG_PREVENTION_METHODS = [
       ],
       misunderstandings: [
         "Does not affect masculinity.",
-        "Does not reduce sexual performance.",
+        "Does not reduce performance.",
         "Does not remove the testicles.",
         "Does not cause weakness."
       ]
@@ -672,7 +672,7 @@ export const PREG_PREVENTION_METHODS = [
         "The penis must be pulled out before ejaculation every time during sex."
       ],
       frequency: [
-        "Used every time during sexual intercourse."
+        "Used every time during intercourse."
       ],
       effectiveness: "Less effective than many modern contraceptive methods. Pregnancy can still occur if semen enters the vagina.",
       sideEffects: [

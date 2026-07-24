@@ -1,4 +1,4 @@
-// ── HIV PREVENTION METHODS DATA (MASCOT Document) ──
+// ── HIV PREVENTION METHODS DATA (PodMyth Document) ──
 // Full detailed information for all HIV prevention methods
 
 export const HIV_PREVENTION_METHODS = [
@@ -215,19 +215,19 @@ export const HIV_PREVENTION_METHODS = [
     cat: "Before Exposure",
     detail: {
       description: "The male condom is a thin latex or polyurethane sheath worn over the penis during sex to reduce the risk of HIV, STIs, and pregnancy.",
-      formOfUse: "Worn over the penis before sexual contact.",
+      formOfUse: "Worn over the penis before intimate contact.",
       howItWorks: [
         "Creates a physical barrier preventing semen from entering the vagina, anus, or mouth.",
         "Helps reduce HIV and STI transmission."
       ],
       howToUse: [
-        "Place on the erect penis before sexual contact.",
+        "Place on the erect penis before intimate contact.",
         "Roll down fully.",
         "Hold the base during withdrawal after ejaculation.",
         "Dispose properly after use."
       ],
       frequency: [
-        "Used once during each sexual act."
+        "Used once during each encounter."
       ],
       effectiveness: "Up to 98% effective when used correctly and consistently.",
       sideEffects: [
@@ -238,7 +238,7 @@ export const HIV_PREVENTION_METHODS = [
         "Available free in many public health facilities.",
         "Also sold in pharmacies and supermarkets."
       ],
-      cost: "Free at government clinics and student health centres. Also available at pharmacies.",
+      cost: "Free at government clinics and health centres. Also available at pharmacies.",
       stiProtection: [
         "Helps reduce HIV and STI transmission.",
         "The ONLY method that protects against both HIV and pregnancy at the same time."
@@ -270,7 +270,7 @@ export const HIV_PREVENTION_METHODS = [
         "Creates a barrier preventing semen from entering the vagina."
       ],
       howToUse: [
-        "Insert into the vagina before sexual activity.",
+        "Insert into the vagina before intimate activity.",
         "Remove after use and dispose safely."
       ],
       frequency: [
@@ -284,7 +284,7 @@ export const HIV_PREVENTION_METHODS = [
       access: [
         "Available in selected public and private facilities."
       ],
-      cost: "Free at government clinics and student health centres.",
+      cost: "Free at government clinics and health centres.",
       stiProtection: [
         "Reduces HIV and STI transmission risk.",
         "Also protects against pregnancy."
@@ -372,7 +372,7 @@ export const HIV_PREVENTION_METHODS = [
       howToUse: [
         "The procedure is performed by trained medical personnel in a clinical setting.",
         "Wound care instructions must be followed after the procedure.",
-        "Sexual activity should be avoided for at least 6 weeks after the procedure to allow full healing."
+        "Intimate activity should be avoided for at least 6 weeks after the procedure to allow full healing."
       ],
       frequency: [
         "Permanent procedure.",
@@ -422,7 +422,7 @@ export const HIV_PREVENTION_METHODS = [
       formOfUse: "Antiretroviral therapy (ART) tablets taken consistently as prescribed by a healthcare provider.",
       howItWorks: [
         "ART reduces HIV in the body to undetectable levels.",
-        "When HIV is undetectable, it cannot be sexually transmitted."
+        "When HIV is undetectable, it cannot be transmitted."
       ],
       howToUse: [
         "ART must be taken consistently every day as prescribed.",
@@ -441,7 +441,7 @@ export const HIV_PREVENTION_METHODS = [
       ],
       access: [
         "ART is available free at all government health facilities in Zimbabwe.",
-        "People living with HIV can access ART at public hospitals, clinics, and student health facilities."
+        "People living with HIV can access ART at public hospitals and clinics."
       ],
       cost: "ART is free at all government health facilities in Zimbabwe.",
       stiProtection: [

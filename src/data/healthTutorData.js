@@ -362,7 +362,7 @@ conditions globally. Post-traumatic stress, substance use disorders, and psychos
       { myth: 'You just need to pray harder / be stronger.', fact: 'While faith and community are valuable, mental health conditions often require professional treatment just like physical diseases.' },
     ],
     emergency: { icon: '🚨', title: 'Mental Health Crisis', body: 'If someone is talking about suicide, harming themselves, or seems completely detached from reality — do NOT leave them alone. Remove harmful objects if possible. Contact Zimbabwe National AIDS & Crisis Hotline: +263 4 700 822 or take them to the nearest hospital.' },
-    localInfo: 'Mental health services are available at Parirenyatwa Hospital Psychiatry Unit, Ingutsheni Central Hospital (Bulawayo), all district hospitals, and through trained community health workers. University counselling services are free for students.',
+    localInfo: 'Mental health services are available at Parirenyatwa Hospital Psychiatry Unit, Ingutsheni Central Hospital (Bulawayo), all district hospitals, and through trained community health workers. Public counselling services are available for all citizens.',
   },
 
   // ── NUTRITION ─────────────────────────────────────────────────────────────
