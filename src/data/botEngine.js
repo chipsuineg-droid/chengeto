@@ -446,6 +446,132 @@ export const BOT_RESPONSES = [
     ]
   },
   
+  // ── Cholera & Waterborne Diseases ───────────────────────────────────────────
+  {
+    id: "cholera",
+    triggers: [
+      /cholera/i,
+      /waterborne/i,
+      /watery diarrhea|diarrhoea/i,
+      /vomiting (and|severe)/i,
+    ],
+    reply: [
+      "💧 **Cholera & Waterborne Diseases**",
+      "",
+      "Cholera is a severe bacterial infection causing rapid dehydration through watery diarrhea and vomiting.",
+      "",
+      "**What to do:**",
+      "1. Drink ORS (Oral Rehydration Salts) immediately. If unavailable, mix 6 level teaspoons of sugar and 1/2 teaspoon of salt in 1 litre of clean water.",
+      "2. Go to the nearest clinic or cholera treatment centre immediately.",
+      "",
+      "**Prevention:**",
+      "• Boil all drinking water or treat it with water guard/aqua tablets.",
+      "• Wash hands with soap under running water before eating and after using the toilet.",
+      "• Eat food while it is hot."
+    ]
+  },
+
+  // ── Malaria ──────────────────────────────────────────────────────────────────
+  {
+    id: "malaria",
+    triggers: [
+      /malaria/i,
+      /mosquito/i,
+      /fever and chills/i,
+      /sweating and headache/i,
+    ],
+    reply: [
+      "🦟 **Malaria Information**",
+      "",
+      "Malaria is caused by mosquito bites and can be fatal if not treated quickly.",
+      "",
+      "**Symptoms:**",
+      "High fever, chills, severe headaches, muscle aches, and fatigue.",
+      "",
+      "**What to do:**",
+      "• Visit a clinic immediately for a rapid malaria test. Do not self-medicate with painkillers if malaria is suspected in an endemic area.",
+      "",
+      "**Prevention:**",
+      "• Sleep under a treated mosquito net.",
+      "• Clear stagnant water around your home."
+    ]
+  },
+
+  // ── Mental Health ────────────────────────────────────────────────────────────
+  {
+    id: "mental_health",
+    triggers: [
+      /depressed|depression/i,
+      /anxiety|anxious/i,
+      /suicide|kill myself/i,
+      /stressed/i,
+      /mental/i,
+    ],
+    reply: [
+      "🧠 **Mental Health Support**",
+      "",
+      "It takes courage to speak about mental health. You are not alone.",
+      "",
+      "**If you are in a crisis:**",
+      "🚨 Please call the **Suicide/Crisis hotline immediately: +263 4 700 822** or the Friendship Bench toll-free at **08080002**.",
+      "",
+      "**General Advice:**",
+      "• Depression and anxiety are medical conditions, not signs of weakness.",
+      "• Talk to a trusted friend or family member.",
+      "• Visit a clinic or use the Online Doctor tab to speak to a Mental Health Counsellor."
+    ]
+  },
+
+  // ── Maternal & Pregnancy Care ────────────────────────────────────────────────
+  {
+    id: "maternal_care",
+    triggers: [
+      /pregnant|pregnancy/i,
+      /antenatal/i,
+      /having a baby/i,
+      /morning sickness/i,
+    ],
+    reply: [
+      "🤰 **Maternal & Pregnancy Care**",
+      "",
+      "**Antenatal Care (ANC):**",
+      "You should register at a local clinic as soon as you know you are pregnant (ideally before 12 weeks). ANC visits are free at government clinics.",
+      "",
+      "**Warning Signs during Pregnancy:**",
+      "Seek emergency help if you experience:",
+      "• Vaginal bleeding",
+      "• Severe headaches or blurred vision",
+      "• Reduced baby movements",
+      "• Water breaking prematurely",
+      "",
+      "Eat a balanced diet, take prescribed iron/folic acid supplements, and rest often."
+    ]
+  },
+
+  // ── Nutrition & Diet ─────────────────────────────────────────────────────────
+  {
+    id: "nutrition",
+    triggers: [
+      /diet/i,
+      /nutrition/i,
+      /lose weight|gain weight/i,
+      /healthy eating/i,
+    ],
+    reply: [
+      "🥗 **Nutrition & Healthy Eating**",
+      "",
+      "A balanced diet is crucial for a strong immune system.",
+      "",
+      "**Key Guidelines:**",
+      "• Eat plenty of vegetables and fruits daily.",
+      "• Choose whole grains (like brown rice, sorghum, or millet) over refined carbs.",
+      "• Drink at least 8 glasses of water a day.",
+      "• Reduce sugar, salt, and processed foods.",
+      "",
+      "Use our **Health Tracker** to log your meals or speak to the Nutrition Counsellor in the Online Doctor tab."
+    ]
+  },
+  
   // ── First Aid ────────────────────────────────────────────────────────────────
   {
     id: "first_aid",
@@ -566,14 +692,20 @@ export const BOT_RESPONSES = [
 ];
 
 // ── Smart bot matcher ────────────────────────────────────────────────────────
-export function getBotResponse(userText, nickname) {
+export function getBotResponse(userText, nickname, mode = 'general') {
   const name = nickname ? nickname : null;
 
+  // Score responses based on triggers
   const scored = BOT_RESPONSES.map(r => {
     let score = 0;
     for (const pattern of r.triggers) {
       if (pattern.test(userText)) score += 10;
     }
+    // Boost score if the response category matches the current active mode
+    if (mode === 'first_aid' && r.id === 'first_aid') score += 5;
+    if (mode === 'emergency' && r.id === 'emergency_numbers') score += 5;
+    if (mode === 'chronic' && r.id === 'chronic_conditions') score += 5;
+    
     return { ...r, score };
   }).filter(r => r.score > 0)
     .sort((a, b) => b.score - a.score);
@@ -582,24 +714,46 @@ export function getBotResponse(userText, nickname) {
   if (scored.length > 0) {
     lines = scored[0].reply;
   } else {
-    lines = [
-      `${name ? name + ', I' : 'I'} am your general health assistant. I can help with a wide range of topics!`,
-      "",
-      "You can ask me things like:",
-      "• 🚑 \"What is the first aid for a burn?\"",
-      "• 🚨 \"What are the emergency ambulance numbers?\"",
-      "• 🩺 \"How do I treat a fever or stomach ache?\"",
-      "• 💊 \"Tips for managing high blood pressure or diabetes?\"",
-      "• 🛡️ \"I had unprotected sex — what should I do?\"",
-      "• 🔬 \"Where can I get tested for HIV?\"",
-      "",
-      "If you have a complex medical issue, please visit the **Online Doctor** tab or your local clinic. I'm here and everything is private. 🔒",
-    ];
+    // Mode-specific fallbacks when the bot doesn't understand the query
+    if (mode === 'first_aid') {
+      lines = [
+        "🚑 **First Aid Mode**",
+        "I specialize in providing quick guidance for burns, cuts, bleeding, choking, and CPR.",
+        "Since I don't fully understand your query, and this could be an emergency, please consider calling an ambulance or rushing to the nearest clinic.",
+      ];
+    } else if (mode === 'emergency') {
+      lines = [
+        "🚨 **Emergency Mode**",
+        "I can provide national emergency numbers for the Ambulance, Police, Fire Brigade, and crisis hotlines.",
+        "If you are in immediate danger, please dial 993 for Ambulance or 995 for Police toll-free.",
+      ];
+    } else if (mode === 'chronic') {
+      lines = [
+        "💊 **Chronic Care Mode**",
+        "I can provide foundational advice for managing Diabetes, Hypertension, Asthma, and HIV.",
+        "For specific medication dosages or complex symptoms, please consult the Online Doctor or your local clinic.",
+      ];
+    } else {
+      lines = [
+        `${name ? name + ', I' : 'I'} am your general health assistant. I am equipped with a vast medical library!`,
+        "",
+        "You can ask me things like:",
+        "• 🚑 \"What is the first aid for a burn?\"",
+        "• 🚨 \"What are the emergency ambulance numbers?\"",
+        "• 🩺 \"How do I treat a fever or stomach ache?\"",
+        "• 💊 \"Tips for managing high blood pressure or diabetes?\"",
+        "• 🦟 \"What are the symptoms of Malaria or Cholera?\"",
+        "• 🧠 \"I am feeling very anxious or depressed.\"",
+        "• 🤰 \"What are the warning signs during pregnancy?\"",
+        "",
+        "If you have a complex medical issue, please visit the **Online Doctor** tab or your local clinic. I'm here and everything is private. 🔒",
+      ];
+    }
   }
 
   // Prefix with name on first line if applicable and not already handled
   const firstLine = lines[0];
-  if (name && !firstLine.includes(name)) {
+  if (name && !firstLine.includes(name) && !firstLine.includes('**')) {
     lines = [name + ", " + firstLine.charAt(0).toLowerCase() + firstLine.slice(1), ...lines.slice(1)];
   }
 

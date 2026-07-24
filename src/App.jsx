@@ -1253,6 +1253,7 @@ export default function Application() {
   const [trackerNotes, setTrackerNotes] = useState("Tap days below to inspect fertile vs safe windows.");
   
   // Chatbot states
+  const [chatMode, setChatMode] = useState("general"); // general | first_aid | emergency | chronic
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const chatBottomRef = useRef(null);
@@ -1352,15 +1353,10 @@ export default function Application() {
     // 2. AI API Integration (Mock/Fallback)
     let answer = "";
     try {
-      // ⚠️ In a real scenario, this would be a fetch to an AI API.
-      // E.g.: fetch('https://api.openai.com/v1/chat/completions', { ... })
-      // Since we don't have an API key and are running entirely client-side,
-      // we will simulate the AI delay and fallback to our local botEngine.
-      
       const simulateApiCall = new Promise((resolve) => {
         setTimeout(() => {
           const nickname = currentUser?.nickname || null;
-          resolve(getBotResponse(sanitizedText, nickname));
+          resolve(getBotResponse(sanitizedText, nickname, chatMode));
         }, 1200);
       });
       
@@ -1375,6 +1371,11 @@ export default function Application() {
       const withoutTyping = prev.filter(m => !m.isTyping);
       return [...withoutTyping, { sender: 'bot', text: answer }];
     });
+  };
+
+  const handleModeSwitch = (modeId, modeLabel, welcomeMsg) => {
+    setChatMode(modeId);
+    setChatMessages(prev => [...prev, { sender: 'bot', text: `🟢 Switched to **${modeLabel}**.\n\n${welcomeMsg}` }]);
   };
 
   // Commodity code generator
@@ -3727,34 +3728,35 @@ export default function Application() {
               </div>
             </div>
             
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '12px 16px', background: 'var(--color-card)', borderBottom: '1px solid var(--color-border)', WebkitOverflowScrolling: 'touch' }} className="hide-scrollbar">
-              {[
-                { label: '🚑 First Aid', query: 'What is the first aid for a burn or cut?' },
-                { label: '🚨 Emergency Numbers', query: 'What are the emergency numbers in Zimbabwe?' },
-                { label: '🩺 General Symptoms', query: 'How do I treat a fever or stomach ache?' },
-                { label: '💊 Chronic Care', query: 'Tips for managing high blood pressure or diabetes' }
-              ].map((action, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSendMessage(null, action.query)}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    border: '1px solid var(--color-primary)',
-                    background: 'rgba(5, 150, 105, 0.1)',
-                    color: 'var(--color-primary)',
-                    fontSize: '12.5px',
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={e => { e.target.style.background = 'var(--color-primary)'; e.target.style.color = '#fff'; }}
-                  onMouseLeave={e => { e.target.style.background = 'rgba(5, 150, 105, 0.1)'; e.target.style.color = 'var(--color-primary)'; }}
-                >
-                  {action.label}
-                </button>
-              ))}
+            <div style={{ padding: '12px 16px', background: 'var(--color-card)', borderBottom: '1px solid var(--color-border)' }}>
+              <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Select Bot Mode:</p>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }} className="hide-scrollbar">
+                {[
+                  { id: 'general', label: '🩺 General', welcome: 'Ask me any general health questions, from symptoms to reproductive care.' },
+                  { id: 'first_aid', label: '🚑 First Aid', welcome: 'I am ready. Describe the injury or emergency (e.g. burn, bleeding, choking).' },
+                  { id: 'emergency', label: '🚨 Emergencies', welcome: 'Do you need ambulance numbers or mental health hotlines?' },
+                  { id: 'chronic', label: '💊 Chronic Care', welcome: 'Ask me about managing Diabetes, Hypertension, Asthma, or HIV.' }
+                ].map((mode, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleModeSwitch(mode.id, mode.label, mode.welcome)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '20px',
+                      border: '1px solid var(--color-primary)',
+                      background: chatMode === mode.id ? 'var(--color-primary)' : 'rgba(5, 150, 105, 0.1)',
+                      color: chatMode === mode.id ? '#fff' : 'var(--color-primary)',
+                      fontSize: '12.5px',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="chat-messages">
@@ -3774,7 +3776,12 @@ export default function Application() {
               <input
                 type="text"
                 className="chat-input"
-                placeholder="Describe your situation e.g. I slept with someone without a condom..."
+                placeholder={
+                  chatMode === 'first_aid' ? 'Describe the injury (e.g. child swallowed poison)...' :
+                  chatMode === 'emergency' ? 'What emergency number do you need?' :
+                  chatMode === 'chronic' ? 'Ask about managing your condition...' :
+                  'Ask any health question...'
+                }
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
               />
