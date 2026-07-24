@@ -1332,13 +1332,14 @@ export default function Application() {
   };
 
   // Chat bot logic — scenario-based clinical engine
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
+  const handleSendMessage = async (e, directText = null) => {
+    if (e) e.preventDefault();
+    
+    const userText = directText || chatInput.trim();
+    if (!userText) return;
 
-    const userText = chatInput.trim();
     setChatMessages(prev => [...prev, { sender: 'user', text: userText }]);
-    setChatInput('');
+    if (!directText) setChatInput('');
 
     // Show typing indicator
     setChatMessages(prev => [...prev, { sender: 'bot', text: '...', isTyping: true }]);
@@ -3726,6 +3727,36 @@ export default function Application() {
               </div>
             </div>
             
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '12px 16px', background: 'var(--color-card)', borderBottom: '1px solid var(--color-border)', WebkitOverflowScrolling: 'touch' }} className="hide-scrollbar">
+              {[
+                { label: '🚑 First Aid', query: 'What is the first aid for a burn or cut?' },
+                { label: '🚨 Emergency Numbers', query: 'What are the emergency numbers in Zimbabwe?' },
+                { label: '🩺 General Symptoms', query: 'How do I treat a fever or stomach ache?' },
+                { label: '💊 Chronic Care', query: 'Tips for managing high blood pressure or diabetes' }
+              ].map((action, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSendMessage(null, action.query)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--color-primary)',
+                    background: 'rgba(5, 150, 105, 0.1)',
+                    color: 'var(--color-primary)',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => { e.target.style.background = 'var(--color-primary)'; e.target.style.color = '#fff'; }}
+                  onMouseLeave={e => { e.target.style.background = 'rgba(5, 150, 105, 0.1)'; e.target.style.color = 'var(--color-primary)'; }}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+
             <div className="chat-messages">
               {chatMessages.map((msg, index) => (
                 <div key={index} className={`chat-bubble ${msg.sender}${msg.isTyping ? ' typing-bubble' : ''}`}>

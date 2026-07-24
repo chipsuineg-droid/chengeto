@@ -445,6 +445,124 @@ export const BOT_RESPONSES = [
       "Nyora chero mubvunzo wako muChiShona kana ChiRungu. Ndinokubatsira. 💚"
     ]
   },
+  
+  // ── First Aid ────────────────────────────────────────────────────────────────
+  {
+    id: "first_aid",
+    triggers: [
+      /first aid/i,
+      /burn|burned|burnt/i,
+      /cut|bleeding/i,
+      /choking/i,
+      /cpr/i,
+      /fainted|passed out/i,
+      /poison|swallowed something/i,
+    ],
+    reply: [
+      "🚑 **First Aid Basics**",
+      "",
+      "**🩸 Bleeding:**",
+      "Apply firm, direct pressure to the wound with a clean cloth. If it's a limb, elevate it above the heart. Do not remove the cloth if blood soaks through; add another on top.",
+      "",
+      "**🔥 Burns:**",
+      "Cool the burn under cool (not ice cold) running water for at least 10-20 minutes. Do not pop blisters. Do not apply butter, oil, or toothpaste. Cover loosely with cling film or a clean plastic bag.",
+      "",
+      "**😶 Choking:**",
+      "Encourage them to cough. If that fails, give 5 sharp back blows between the shoulder blades. If still choking, give 5 abdominal thrusts (Heimlich maneuver).",
+      "",
+      "**⚠️ CPR (Unresponsive & Not Breathing):**",
+      "Call an ambulance immediately. Push hard and fast in the center of the chest (100-120 pushes a minute).",
+      "",
+      "🚨 *If this is a severe emergency, please go to the nearest hospital or call for help immediately.*"
+    ]
+  },
+
+  // ── Emergency Numbers ────────────────────────────────────────────────────────
+  {
+    id: "emergency_numbers",
+    triggers: [
+      /emergency numbers/i,
+      /ambulance/i,
+      /police/i,
+      /fire brigade/i,
+      /hotline/i,
+      /call for help/i,
+    ],
+    reply: [
+      "🚨 **Important Emergency Numbers in Zimbabwe**",
+      "",
+      "🚑 **Ambulance (MARS/EMRAS/City):**",
+      "• 993 (Toll-free, national)",
+      "• +263 242 753 959 (Harare EMRAS)",
+      "• +263 292 62301 (Bulawayo EMRAS)",
+      "",
+      "🚓 **Police:**",
+      "• 995 (Toll-free)",
+      "• +263 242 748836 (Harare Central)",
+      "",
+      "🚒 **Fire Brigade:**",
+      "• 993 or 994 (Toll-free)",
+      "",
+      "📞 **Mental Health & Support Hotlines:**",
+      "• Musasa Project (GBV): 08080038 (Toll-free)",
+      "• Childline: 116 (Toll-free)",
+      "• Suicide/Crisis: +263 4 700 822",
+      "",
+      "Please stay on the line and speak clearly when calling emergency services."
+    ]
+  },
+
+  // ── General Medical & Symptoms ───────────────────────────────────────────────
+  {
+    id: "general_health",
+    triggers: [
+      /general health|symptoms/i,
+      /headache|migraine/i,
+      /fever|high temperature/i,
+      /stomach|tummy ache|diarrhea/i,
+      /fatigue|tired/i,
+      /flu|cold|cough/i,
+    ],
+    reply: [
+      "🩺 **General Health & Symptoms Guidance**",
+      "",
+      "**🤒 Fever & Headaches:**",
+      "Ensure you are drinking plenty of fluids. Rest in a cool, quiet place. Paracetamol can help reduce fever and pain. *Warning:* If a fever is very high, lasts more than 3 days, or is accompanied by a stiff neck, seek medical help immediately (could be malaria or meningitis).",
+      "",
+      "**🤢 Stomach Ache / Diarrhoea:**",
+      "Stay hydrated! Drink ORS (Oral Rehydration Salts) or a mix of clean water, a pinch of salt, and a teaspoon of sugar. Avoid greasy or spicy foods.",
+      "",
+      "**🤧 Coughs & Colds:**",
+      "Rest and warm fluids (like lemon and honey) can soothe the throat. If you have shortness of breath or a cough lasting more than 2-3 weeks, please visit a clinic to rule out TB or pneumonia.",
+      "",
+      "💡 *I am an AI assistant. For proper medical diagnosis or persistent symptoms, please use the 'Online Doctor' tab to speak with a professional or visit your local clinic.*"
+    ]
+  },
+
+  // ── Chronic Conditions ───────────────────────────────────────────────────────
+  {
+    id: "chronic_conditions",
+    triggers: [
+      /chronic/i,
+      /diabetes|sugar/i,
+      /blood pressure|hypertension|bp/i,
+      /asthma/i,
+    ],
+    reply: [
+      "💊 **Chronic Conditions Management**",
+      "",
+      "**🩸 Diabetes (High Blood Sugar):**",
+      "Take your medication/insulin exactly as prescribed. Eat regular, balanced meals high in fibre and low in refined sugars. If you feel dizzy, confused, or sweaty (low sugar), eat something sweet immediately.",
+      "",
+      "**❤️ Hypertension (High BP):**",
+      "Take your BP pills daily, even if you feel fine! Reduce salt intake, exercise regularly, and avoid stress. High BP is a 'silent killer' and often has no symptoms.",
+      "",
+      "**🫁 Asthma:**",
+      "Always carry your rescue inhaler. Avoid known triggers (smoke, strong smells, dust, cold air). If your inhaler isn't working during an attack, seek emergency care.",
+      "",
+      "Track your vitals using our **Health Tracker** tab!"
+    ]
+  },
 ];
 
 // ── Smart bot matcher ────────────────────────────────────────────────────────
@@ -465,17 +583,17 @@ export function getBotResponse(userText, nickname) {
     lines = scored[0].reply;
   } else {
     lines = [
-      `${name ? name + ', I' : 'I'} want to make sure you get accurate information.`,
+      `${name ? name + ', I' : 'I'} am your general health assistant. I can help with a wide range of topics!`,
       "",
       "You can ask me things like:",
-      "• \"I slept with someone without a condom — what should I do?\"",
-      "• \"How do I get PrEP?\"",
-      "• \"How can I avoid getting pregnant?\"",
-      "• \"Where can I get tested for HIV?\"",
-      "• \"What is U=U?\"",
-      "• \"I'm scared I might have an STI\"",
+      "• 🚑 \"What is the first aid for a burn?\"",
+      "• 🚨 \"What are the emergency ambulance numbers?\"",
+      "• 🩺 \"How do I treat a fever or stomach ache?\"",
+      "• 💊 \"Tips for managing high blood pressure or diabetes?\"",
+      "• 🛡️ \"I had unprotected sex — what should I do?\"",
+      "• 🔬 \"Where can I get tested for HIV?\"",
       "",
-      "I'm here and everything is private. 🔒",
+      "If you have a complex medical issue, please visit the **Online Doctor** tab or your local clinic. I'm here and everything is private. 🔒",
     ];
   }
 
