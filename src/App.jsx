@@ -70,7 +70,7 @@ const GENDERS = [
 ];
 
 
-// ── AUTH UTILITIES (privacy-first: no student ID, no email, no full name) ──
+// ── AUTH UTILITIES (privacy-first: no ID, no email, no full name) ──
 // Unique account key = nickname only (no institution)
 const makeAccountKey = (nickname) =>
   nickname.trim().toLowerCase().replace(/\s+/g, '_');
@@ -138,7 +138,7 @@ const UI = {
     hivSigns: "Signs and Symptoms: Early signs (within 2-4 weeks) can feel like a severe flu (fever, chills, rash, night sweats, muscle aches, sore throat). Some people have absolutely no symptoms for years, making testing crucial.",
     hivFacts: "Quick Facts: Did you know? You cannot get HIV from a toilet seat! Also, with modern medicine (ART), someone with HIV can reach an 'undetectable' viral load, meaning they cannot transmit the virus to partners (U=U: Undetectable = Untransmittable).",
     hivVsAids: "HIV vs AIDS: AIDS is the most severe stage. However, with modern treatment (ART), people with HIV in Zimbabwe live full, healthy lives and will not progress to AIDS.",
-    hivStatus: "Knowing your status: Regular testing (every 3–6 months if sexually active) is the only way to know. Kits are free at student and government clinics.",
+    hivStatus: "Knowing your status: Regular testing (every 3–6 months if sexually active) is the only way to know. Kits are free at local and government clinics.",
     hivEmergencyTitle: "Urgent possible HIV exposure in the last 72 hours?",
     hivEmergencyBody: "PEP tablets can prevent infection, but they must be started within 72 hours. Proceed to the nearest Hospital A&E department immediately.",
     pregTitle: "🌸 Pregnancy Prevention / Contraception",
@@ -246,18 +246,18 @@ const PREG_MYTHS = [
 const ALL_OPTIONS = [...HIV_PREVENTION_METHODS.map(o => ({ ...o, type: "HIV" })), ...PREG_PREVENTION_METHODS.map(o => ({ ...o, type: "Pregnancy" }))];
 
 const SERVICES = [
-  { name: "UZ Student Health Centre", institution: "University of Zimbabwe", services: ["HIVST", "PrEP", "Condoms", "Contraception", "PEP referral"], contact: "+263 242 303211", hours: "Mon-Fri 8am-4pm", city: "Harare", lat: -17.7831, lng: 31.0530 },
-  { name: "NUST Student Clinic", institution: "National University of Science & Technology", services: ["HIVST", "Condoms", "Contraception", "Referral"], contact: "+263 292 282842", hours: "Mon-Fri 8am-4:30pm", city: "Bulawayo", lat: -20.1802, lng: 28.6148 },
+  { name: "UZ Health Centre", institution: "University of Zimbabwe", services: ["HIVST", "PrEP", "Condoms", "Contraception", "PEP referral"], contact: "+263 242 303211", hours: "Mon-Fri 8am-4pm", city: "Harare", lat: -17.7831, lng: 31.0530 },
+  { name: "NUST Clinic", institution: "National University of Science & Technology", services: ["HIVST", "Condoms", "Contraception", "Referral"], contact: "+263 292 282842", hours: "Mon-Fri 8am-4:30pm", city: "Bulawayo", lat: -20.1802, lng: 28.6148 },
   { name: "MSU Health Services", institution: "Midlands State University", services: ["HIVST", "Condoms", "Contraception"], contact: "+263 54 2260331", hours: "Mon-Fri 8am-4pm", city: "Gweru", lat: -19.4975, lng: 29.8378 },
-  { name: "BUSE Student Clinic", institution: "Bindura University of Science Education", services: ["HIVST", "Condoms", "Contraception", "Referral"], contact: "+263 712 607 339", hours: "Mon-Fri 8am-4pm", city: "Bindura", lat: -17.3115, lng: 31.3307 },
+  { name: "BUSE Clinic", institution: "Bindura University of Science Education", services: ["HIVST", "Condoms", "Contraception", "Referral"], contact: "+263 712 607 339", hours: "Mon-Fri 8am-4pm", city: "Bindura", lat: -17.3115, lng: 31.3307 },
   { name: "CUT Health Centre", institution: "Chinhoyi University of Technology", services: ["HIVST", "Condoms", "Contraception"], contact: "+263 67 22203", hours: "Mon-Fri 8am-4pm", city: "Chinhoyi", lat: -17.3773, lng: 30.1983 },
   { name: "WUA Clinic", institution: "Women's University in Africa", services: ["HIVST", "Condoms", "Contraception", "Referral"], contact: "+263 242 459601", hours: "Mon-Fri 8am-4pm", city: "Harare", lat: -17.8175, lng: 31.0911 },
-  { name: "GZU Student Clinic", institution: "Great Zimbabwe University", services: ["HIVST", "Condoms", "Contraception"], contact: "+263 39 2266648", hours: "Mon-Fri 8am-4pm", city: "Masvingo", lat: -20.0768, lng: 30.8242 },
+  { name: "GZU Clinic", institution: "Great Zimbabwe University", services: ["HIVST", "Condoms", "Contraception"], contact: "+263 39 2266648", hours: "Mon-Fri 8am-4pm", city: "Masvingo", lat: -20.0768, lng: 30.8242 },
   { name: "Africa University Clinic", institution: "Africa University", services: ["HIVST", "Condoms", "Contraception", "PrEP"], contact: "+263 20 60026", hours: "Mon-Fri 8am-4pm", city: "Mutare", lat: -18.8878, lng: 32.5516 },
   { name: "LSU Health Services", institution: "Lupane State University", services: ["HIVST", "Condoms", "Contraception", "Referral"], contact: "+263 289 253 226", hours: "Mon-Fri 8am-4pm", city: "Lupane", lat: -18.9315, lng: 27.8070 },
   { name: "HIT Campus Clinic", institution: "Harare Institute of Technology", services: ["HIVST", "Condoms", "Contraception"], contact: "+263 242 741422", hours: "Mon-Fri 8am-4pm", city: "Harare", lat: -17.8306, lng: 31.0250 },
   { name: "CUZ Clinic", institution: "Catholic University of Zimbabwe", services: ["Condoms", "Contraception", "Referral"], contact: "+263 242 570176", hours: "Mon-Fri 8am-4pm", city: "Harare", lat: -17.8488, lng: 31.0658 },
-  { name: "Solusi Student Clinic", institution: "Solusi University", services: ["Condoms", "Contraception"], contact: "+263 292 288921", hours: "Mon-Fri 8am-4pm", city: "Bulawayo", lat: -20.3013, lng: 27.9150 },
+  { name: "Solusi Clinic", institution: "Solusi University", services: ["Condoms", "Contraception"], contact: "+263 292 288921", hours: "Mon-Fri 8am-4pm", city: "Bulawayo", lat: -20.3013, lng: 27.9150 },
   { name: "Parirenyatwa Hospitals", institution: "Government Hospital", services: ["HIVST", "PrEP", "PEP", "Condoms", "Contraception", "VMMC"], contact: "+263 242 701000", hours: "24/7 Emergency", city: "Harare", lat: -17.8157, lng: 31.0423 },
   { name: "Sally Mugabe Hospital", institution: "Government Hospital", services: ["HIVST", "PrEP", "PEP", "Condoms", "Contraception"], contact: "+263 242 621000", hours: "24/7 Emergency", city: "Harare", lat: -17.8687, lng: 31.0286 }
 ];
@@ -300,7 +300,7 @@ const ABCDE = [
     lightColor: "#D1FAE5",
     icon: "🛡️",
     body: "Using a condom correctly every time you have sex is highly effective (98%). Condoms are the ONLY method that protects against BOTH HIV AND pregnancy simultaneously.",
-    zimbabweContext: "Free male and female condoms are available at all university student clinics and government health centres nationwide. No prescription needed.",
+    zimbabweContext: "Free male and female condoms are available at all local clinics and government health centres nationwide. No prescription needed.",
   },
   {
     letter: "D",
@@ -318,7 +318,7 @@ const ABCDE = [
     lightColor: "#E0F2FE",
     icon: "🧪",
     body: "Regular HIV testing is the gateway to prevention and treatment. Knowing your status lets you protect yourself and your partners. If positive, ART treatment starts immediately and is FREE.",
-    zimbabweContext: "HIV self-test kits are FREE at UZ, NUST, and MSU student health centres. Results in 20 minutes, done privately at home.",
+    zimbabweContext: "HIV self-test kits are FREE at local health centres. Results in 20 minutes, done privately at home.",
   },
 ];
 
@@ -383,7 +383,7 @@ const HOW_TO_GUIDES = [
     tip: "Emergency contraception is NOT an abortion pill. It prevents pregnancy from starting. It does NOT work if you are already pregnant.",
     steps: [
       { num: 1, icon: "⚡", title: "Act Quickly", desc: "Emergency contraception must be taken as soon as possible after unprotected sex : within 72 hours (3 days). Earlier = more effective." },
-      { num: 2, icon: "🏥", title: "Get the Pill", desc: "Available free at government clinics and student health centres. Also at pharmacies (small fee). No prescription required." },
+      { num: 2, icon: "🏥", title: "Get the Pill", desc: "Available free at government clinics and local health centres. Also at pharmacies (small fee). No prescription required." },
       { num: 3, icon: "💊", title: "Take the Tablet", desc: "Swallow the Levonorgestrel tablet (1.5mg) with water. You can take it with food to reduce nausea. It is a single tablet." },
       { num: 4, icon: "🔔", title: "Know What to Expect", desc: "You may feel nauseous, have spotting, or your next period may come early or late. This is normal." },
       { num: 5, icon: "📅", title: "Follow Up", desc: "If your period is more than 1 week late after taking EC, do a pregnancy test. Visit a clinic to discuss ongoing contraception." },
@@ -502,12 +502,12 @@ const PODCAST_EPISODES = [
     coverColor: "#D97706",
     coverLight: "#FEF3C7",
     tags: ["Healthcare", "Prevention", "PrEP", "Education"],
-    summary: "Sister Grace has worked at Parirenyatwa's HIV clinic for 14 years. She has seen thousands of young patients and shares what she wishes every university student knew: the moment you walk through those doors, there is no judgement. She discusses PEP, PrEP, misconceptions she hears daily, and the power of showing up for your own health.",
+    summary: "Sister Grace has worked at Parirenyatwa's HIV clinic for 14 years. She has seen thousands of young patients and shares what she wishes every young person knew: the moment you walk through those doors, there is no judgement. She discusses PEP, PrEP, misconceptions she hears daily, and the power of showing up for your own health.",
     chapters: [
       { time: "00:00", title: "Introduction" },
       { time: "05:00", title: "What I see every day" },
       { time: "11:40", title: "The biggest misconceptions" },
-      { time: "18:15", title: "PEP and PrEP: what students miss" },
+      { time: "18:15", title: "PEP and PrEP: what people miss" },
       { time: "26:30", title: "When young people do not come in time" },
       { time: "31:00", title: "My message to Zimbabwe's youth" },
     ],
@@ -1697,7 +1697,7 @@ export default function Application() {
                 <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                     <span style={{ fontSize: '16px', marginTop: '1px' }}>🛡️</span>
-                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>We do <strong style={{ color: 'rgba(255,255,255,0.85)' }}>not</strong> collect your name or student ID. Only your nickname is used.</p>
+                    <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>We do <strong style={{ color: 'rgba(255,255,255,0.85)' }}>not</strong> collect your name or ID. Only your nickname is used.</p>
                   </div>
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '5px' }}>Nickname <span style={{ color: 'hsl(152,60%,60%)' }}>*</span></label>
@@ -1747,7 +1747,7 @@ export default function Application() {
               )}
             </div>
             <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: '16px' }}>
-              🔒 Private &amp; Secure · Works Offline · Made for Zimbabwe Students
+              🔒 Private &amp; Secure · Works Offline · Made for Zimbabweans
             </p>
           </div>
         </div>
@@ -1981,7 +1981,7 @@ export default function Application() {
                 <span style={{ fontSize: '26px' }}>🎓</span>
                 <div>
                   <h4 style={{ fontWeight: 800, fontSize: '13px', color: '#4ade80' }}>Expert Verified</h4>
-                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Content aligns with CeSHHAR Zimbabwe &amp; MASCOT standards.</p>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Content aligns with PodMyth standards.</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '280px' }}>
@@ -2101,7 +2101,7 @@ export default function Application() {
           <section className="testimonials-section">
             <div className="testimonials-container">
               <h2 style={{ textAlign: 'center', fontSize: '24px', color: 'var(--color-primary)', marginBottom: '6px', fontWeight: 800 }}>
-                {lang === 'sn' ? 'Zvinotaurwa nevadzidzi' : lang === 'nd' ? 'Okutshiwo ngabafundi' : 'What students are saying'}
+                {lang === 'sn' ? 'Zvinotaurwa nevanhu' : lang === 'nd' ? 'Okutshiwo ngabantu' : 'What people are saying'}
               </h2>
               <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', marginBottom: '32px', fontStyle: 'italic' }}>
                 {lang === 'sn' 
@@ -2215,7 +2215,7 @@ export default function Application() {
                 ))}
               </div>
               <div style={{ marginTop: '28px', padding: '18px 20px', background: 'var(--color-rose-light)', borderRadius: '14px', fontSize: '13.5px', color: 'var(--color-text-main)', lineHeight: 1.7 }}>
-                💡 <strong>Remember:</strong> When in doubt, visit any government clinic or student health centre. Consultations are free and completely confidential.
+                💡 <strong>Remember:</strong> When in doubt, visit any government clinic or local health centre. Consultations are free and completely confidential.
               </div>
             </div>
           )}
@@ -3632,7 +3632,7 @@ export default function Application() {
               </div>
 
               <p style={{ fontSize: '12px', color: 'var(--color-text-main)', maxWidth: '420px', margin: '0 auto 10px', lineHeight: 1.5 }}>
-                Show this barcode or write the code down. When you visit your student health clinic (e.g. UZ, NUST) or public hospital, show it to the receptionist. No explanations or names needed.
+                Show this barcode or write the code down. When you visit your local health clinic or public hospital, show it to the receptionist. No explanations or names needed.
               </p>
               <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 600 }}>Generated on: {currentPickupCode.date}</div>
             </div>
@@ -3892,7 +3892,7 @@ export default function Application() {
           <div style={{ maxWidth: '300px' }}>
             <h4 style={{ color: 'var(--color-text-light)', fontSize: '16px', letterSpacing: '1px', marginBottom: '12px', fontWeight: 800 }}>🛡️ CHENGETO</h4>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', lineHeight: 1.5 }}>
-              Chengeto is a Progressive Web Application (PWA) created to deliver private, accurate information on reproductive health and HIV prevention. Developed for students in Zimbabwe.
+              Chengeto is a Progressive Web Application (PWA) created to deliver private, accurate information on reproductive health and HIV prevention. Developed for people in Zimbabwe.
             </p>
           </div>
 
@@ -3982,7 +3982,7 @@ export default function Application() {
             }}>
               <span style={{ fontSize: '15px' }}>🛡️</span>
               <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.4 }}>
-                Anonymous &amp; private. No student ID or real name required.
+                Anonymous &amp; private. No ID or real name required.
               </p>
             </div>
 
@@ -4021,7 +4021,7 @@ export default function Application() {
             </div>
 
             <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.22)', marginTop: '20px' }}>
-              🔒 Private &amp; Secure · Offline Ready · Made for Zimbabwe Students
+              🔒 Private &amp; Secure · Offline Ready · Made for Zimbabweans
             </p>
           </div>
         </div>
@@ -4390,7 +4390,7 @@ export default function Application() {
             </button>
 
             <p style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.2)', marginTop: '16px' }}>
-              Powered by CHENGETO · Built for Zimbabwe Students
+              Powered by PodMyth · Built for Zimbabweans
             </p>
           </div>
         </div>
