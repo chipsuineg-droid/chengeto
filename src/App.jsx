@@ -15,6 +15,7 @@ import OnlineDoc from './components/OnlineDoc';
 import { HEALTH_ALERTS } from './data/alerts';
 import { HEALTH_MODULES } from './data/healthModules';
 import { sanitizePrompt } from './utils/privacyLayer';
+import AdminDashboard from './components/AdminDashboard';
 
 // ── LANGUAGES ──
 const LANG_LABELS = {
@@ -699,6 +700,9 @@ const TESTIMONIALS = [
 
 export default function Application() {
   const [page, setPage] = useState("home");
+  const [isAdminMode, setIsAdminMode] = useState(
+    () => window.location.hash === '#admin'
+  );
   const [randomAlert, setRandomAlert] = useState(() => HEALTH_ALERTS[Math.floor(Math.random() * HEALTH_ALERTS.length)]);
 
   useEffect(() => {
@@ -4407,4 +4411,13 @@ export default function Application() {
       )}
     </div>
   );
+  // Admin Dashboard Route - navigate to /#admin to access
+  if (isAdminMode) {
+    return (
+      <AdminDashboard onExitAdmin={() => {
+        window.history.replaceState(null, '', window.location.pathname);
+        setIsAdminMode(false);
+      }} />
+    );
+  }
 }
