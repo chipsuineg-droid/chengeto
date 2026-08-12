@@ -1,19 +1,19 @@
-# CHENGETO - Youth Health & Self-Care Platform
+# CHENGETO - Private AI Health & Self-Care Platform
 
-CHENGETO is a Progressive Web Application (PWA) designed to provide confidential, reliable, and accessible information on reproductive health, contraception, and HIV prevention for tertiary students in Zimbabwe. Developed in alignment with CeSHHAR Zimbabwe and MASCOT standards, the platform operates offline-first to remain highly accessible.
+CHENGETO is a Progressive Web Application (PWA) powered by **PodMyth**, designed to provide confidential, reliable, and accessible information on reproductive health, contraception, and HIV prevention for all Zimbabweans. The platform operates offline-first to remain highly accessible across the country.
 
 ---
 
 ## 🌟 Key Features
 
-* **confidential & Anonymous**: No accounts, profile registration, or personal details are required. User data remains local to their device.
-* **Offline-First Support**: Key educational guides, search indexes, and calculations are loaded locally, allowing the application to work without internet connectivity.
+* **Confidential & Anonymous**: No accounts, profile registration, or personal details are required to use the core application. User data remains local to their device.
+* **Offline-First Support**: Key educational guides, interactive modules, and calculations are loaded locally, allowing the application to work seamlessly without internet connectivity.
 * **Multilingual Localization**: Full user interface and content switching between **English**, **Shona** (chiShona), and **Ndebele** (isiNdebele).
-* ** Confidentially Pickup Code Portal**: Allows students to generate a private pickup code to obtain condoms or self-testing kits anonymously from campus health services.
-* **Confidential Health Assistant**: An interactive chat interface providing instant answers about costs, locations, and directions without judgement.
-* **Interactive Method Comparison & Quizzes**: Features contraceptive method comparisons, lifestyle eligibility quizzes, and visual mind maps.
+* **AI Health Assistant (Coming Soon)**: An interactive chat interface providing instant, judgment-free answers about health methods, costs, locations, and directions.
+* **Health Tracker & Tutor**: Keep track of health goals and learn with interactive educational modules and quizzes.
+* **Interactive Method Comparison**: Compare different contraceptive methods, check lifestyle eligibility, and explore visual mind maps for both HIV prevention and pregnancy care.
 * **Visual Guides**: Interactive custom SVG anatomical guides showing contraceptive placements and step-by-step procedures.
-* **Multilingual Testimonials**: Real-time rotating and swipeable carousel showcasing feedback from students across various universities in Zimbabwe (e.g. UZ, MSU, CUT, GZU).
+* **Admin Dashboard**: A secure portal for administrators to manage active clinics, health alerts, AI bot triggers (Bot Brain), educational content, and view platform analytics.
 
 ---
 
