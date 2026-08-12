@@ -701,8 +701,22 @@ const TESTIMONIALS = [
 export default function Application() {
   const [page, setPage] = useState("home");
   const [isAdminMode, setIsAdminMode] = useState(
-    () => window.location.hash === '#admin'
+    () => window.location.hash.includes('admin') || window.location.search.includes('admin')
   );
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      if (window.location.hash.includes('admin') || window.location.search.includes('admin')) {
+        setIsAdminMode(true);
+      }
+    };
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
+    };
+  }, []);
   const [randomAlert, setRandomAlert] = useState(() => HEALTH_ALERTS[Math.floor(Math.random() * HEALTH_ALERTS.length)]);
 
   useEffect(() => {
