@@ -1488,6 +1488,17 @@ export default function Application() {
     { label: "Pregnancy Protection", get: o => (o.dual || o.type === "Pregnancy" || PREG_PREVENTION_METHODS.some(x => x.id === o.id)) ? "✅ Yes" : "❌ No" },
   ];
 
+  // ── ADMIN DASHBOARD ROUTE ──
+  // Navigate to /#admin in the browser URL to access
+  if (isAdminMode) {
+    return (
+      <AdminDashboard onExitAdmin={() => {
+        window.history.replaceState(null, '', window.location.pathname);
+        setIsAdminMode(false);
+      }} />
+    );
+  }
+
   return (
     <div>
 
@@ -4411,13 +4422,4 @@ export default function Application() {
       )}
     </div>
   );
-  // Admin Dashboard Route - navigate to /#admin to access
-  if (isAdminMode) {
-    return (
-      <AdminDashboard onExitAdmin={() => {
-        window.history.replaceState(null, '', window.location.pathname);
-        setIsAdminMode(false);
-      }} />
-    );
-  }
 }

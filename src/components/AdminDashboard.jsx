@@ -466,7 +466,7 @@ function Login({ onLogin }) {
   const submit = e => {
     e.preventDefault(); setLoading(true); setErr("");
     setTimeout(() => {
-      if (u === ADMIN_CREDENTIALS.username && p === ADMIN_CREDENTIALS.password) { saveAdminSession(); onLogin(); }
+      if (u.trim() === ADMIN_CREDENTIALS.username && p.trim() === ADMIN_CREDENTIALS.password) { saveAdminSession(); onLogin(); }
       else setErr("Invalid username or password. Please try again.");
       setLoading(false);
     }, 700);
